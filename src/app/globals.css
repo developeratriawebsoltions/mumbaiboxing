@@ -1,26 +1,303 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
+/* ─── Font tokens ──────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-inter);
+  --font-bebas: var(--font-bebas);
+  --font-sans:  var(--font-inter);
+  --font-mono:  ui-monospace, monospace;
+
+  /* Color aliases → CSS vars */
+  --color-background:           var(--background);
+  --color-foreground:           var(--foreground);
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+
+  --color-sidebar:                      var(--sidebar);
+  --color-sidebar-foreground:           var(--sidebar-foreground);
+  --color-sidebar-primary:              var(--sidebar-primary);
+  --color-sidebar-primary-foreground:   var(--sidebar-primary-foreground);
+  --color-sidebar-accent:               var(--sidebar-accent);
+  --color-sidebar-accent-foreground:    var(--sidebar-accent-foreground);
+  --color-sidebar-border:               var(--sidebar-border);
+  --color-sidebar-ring:                 var(--sidebar-ring);
+
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.8);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ─── Design tokens — Navy × Gold palette ──────── */
+:root {
+  /* Brand */
+  --brand-navy:       #0B1120;   /* deepest navy */
+  --brand-navy-2:     #111827;   /* nav / card bg */
+  --brand-navy-3:     #1E2A3B;   /* elevated surface */
+  --brand-gold:       #D4A017;   /* primary accent */
+  --brand-gold-light: #F0C040;   /* hover/glow gold */
+  --brand-gold-muted: #7A5C00;   /* subdued gold text */
+  --brand-white:      #F8F9FA;
+  --brand-gray:       #94A3B8;   /* muted text */
+
+  /* Shadcn / Tailwind tokens */
+  --background:              #F1F5F9;
+  --foreground:              #0B1120;
+  --card:                    #FFFFFF;
+  --card-foreground:         #0B1120;
+  --popover:                 #FFFFFF;
+  --popover-foreground:      #0B1120;
+  --primary:                 #D4A017;
+  --primary-foreground:      #0B1120;
+  --secondary:               #1E2A3B;
+  --secondary-foreground:    #F8F9FA;
+  --muted:                   #E2E8F0;
+  --muted-foreground:        #64748B;
+  --accent:                  #D4A017;
+  --accent-foreground:       #0B1120;
+  --destructive:             #EF4444;
+  --border:                  #CBD5E1;
+  --input:                   #E2E8F0;
+  --ring:                    #D4A017;
+  --radius:                  0.75rem;
+
+  /* Sidebar */
+  --sidebar:                     #0B1120;
+  --sidebar-foreground:          #F8F9FA;
+  --sidebar-primary:             #D4A017;
+  --sidebar-primary-foreground:  #0B1120;
+  --sidebar-accent:              #1E2A3B;
+  --sidebar-accent-foreground:   #F8F9FA;
+  --sidebar-border:              #1E2A3B;
+  --sidebar-ring:                #D4A017;
+}
+
+/* ─── Base layer ────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ─── Display font utility ──────────────────────── */
+.font-display {
+  font-family: var(--font-bebas), var(--font-inter), sans-serif;
+  letter-spacing: 0.04em;
+}
+.font-inter {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Keyframe animations ────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.12; transform: scale(1); }
+  50%       { opacity: 0.28; transform: scale(1.1); }
+}
+@keyframes ticker {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes borderSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ─── Animation utilities ───────────────────────── */
+.animate-fade-up    { animation: fadeUp    0.7s cubic-bezier(.22,1,.36,1) both; }
+.animate-fade-in    { animation: fadeIn    0.6s ease both; }
+.animate-slide-left { animation: slideLeft 0.7s cubic-bezier(.22,1,.36,1) both; }
+.animate-glow-pulse { animation: pulseGlow 5s ease-in-out infinite; }
+.animate-ticker     { animation: ticker   30s linear infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(212,160,23,.35) 50%, transparent 100%);
+  background-size: 200% auto;
+  animation: shimmer 2.4s linear infinite;
+}
+
+.delay-100 { animation-delay: 0.10s; }
+.delay-150 { animation-delay: 0.15s; }
+.delay-200 { animation-delay: 0.20s; }
+.delay-300 { animation-delay: 0.30s; }
+.delay-400 { animation-delay: 0.40s; }
+.delay-500 { animation-delay: 0.50s; }
+.delay-600 { animation-delay: 0.60s; }
+.delay-700 { animation-delay: 0.70s; }
+
+/* ─── Gold gradient text ─────────────────────────── */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #F0C040 0%, #D4A017 50%, #A87600 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Gold shimmer text (hero headline) ─────────── */
+.text-gold-shimmer {
+  background: linear-gradient(90deg, #D4A017 0%, #F0C040 30%, #FFFBEB 50%, #F0C040 70%, #D4A017 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ─── Component CSS classes (replaces onMouseEnter) ── */
+
+/* Stats cards */
+.stat-card {
+  background: #0B1120;
+  border-color: rgba(212,160,23,0.15);
+}
+.stat-card:hover {
+  border-color: rgba(212,160,23,0.55);
+  box-shadow: 0 16px 40px rgba(212,160,23,0.15);
+}
+
+/* About highlight cards */
+.about-highlight-card {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+.about-highlight-card:hover {
+  border-color: rgba(212,160,23,0.45);
+}
+
+/* Service cards */
+.service-card {
+  background: #0B1120;
+  border-color: rgba(212,160,23,0.12);
+}
+.service-card:hover {
+  border-color: rgba(212,160,23,0.50);
+}
+
+/* Ranking rows */
+.ranking-row {
+  background: rgba(30,42,59,0.5);
+  border: 1px solid rgba(212,160,23,0.10);
+}
+.ranking-row:hover {
+  border-color: rgba(212,160,23,0.40);
+  background: rgba(30,42,59,0.85);
+}
+
+/* Rank badge variants */
+.rank-gold    { background: rgba(212,160,23,0.20); color: #F0C040; }
+.rank-silver  { background: rgba(148,163,184,0.20); color: #CBD5E1; }
+.rank-bronze  { background: rgba(180,100,30,0.20); color: #FB923C; }
+.rank-default { background: rgba(255,255,255,0.08); color: #94A3B8; }
+
+/* Ranking link */
+.rank-link { color: #D4A017; }
+.rank-link:hover { color: #F0C040; }
+
+/* Event cards */
+.event-card {
+  background: #0B1120;
+  border-color: rgba(212,160,23,0.12);
+}
+.event-card:hover {
+  border-color: rgba(212,160,23,0.45);
+}
+
+/* Notice rows */
+.notice-row {
+  background: #FFFFFF;
+  border-color: #E2E8F0;
+}
+.notice-row:hover {
+  border-color: rgba(212,160,23,0.40);
+  box-shadow: 0 4px 20px rgba(212,160,23,0.08);
+}
+
+/* Notice badge variants */
+.badge-blue   { background: rgba(59,130,246,0.12); color: #60A5FA; }
+.badge-gold   { background: rgba(212,160,23,0.12); color: #F0C040; }
+.badge-purple { background: rgba(168,85,247,0.12); color: #C084FC; }
+
+/* Footer links */
+.footer-link { color: #64748B; }
+.footer-link:hover { color: #F0C040; }
+
+/* ─── Gold border glow button ─────────────────────── */
+.btn-gold {
+  background: linear-gradient(135deg, #D4A017, #F0C040);
+  color: #0B1120;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 0 0 rgba(212,160,23,0);
+}
+.btn-gold:hover {
+  box-shadow: 0 4px 24px rgba(212,160,23,.45);
+  transform: translateY(-2px);
+}
+
+/* ─── Ghost button ───────────────────────────────── */
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid rgba(212,160,23,.45);
+  color: #F0C040;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+.btn-ghost:hover {
+  background: rgba(212,160,23,.1);
+  border-color: #D4A017;
+  transform: translateY(-2px);
+}
+
+/* ─── Glass card ─────────────────────────────────── */
+.glass-card {
+  background: rgba(30, 42, 59, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(212,160,23,.18);
+}
+.glass-card:hover {
+  border-color: rgba(212,160,23,.45);
+  background: rgba(30, 42, 59, 0.8);
 }
