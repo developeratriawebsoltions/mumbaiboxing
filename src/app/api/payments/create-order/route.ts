@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 const ROLE_FEES: Record<string, number> = {
   boxer: 100,
   coach: 1000,
@@ -14,6 +9,11 @@ const ROLE_FEES: Record<string, number> = {
 
 export async function POST(req: NextRequest) {
   try {
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID!,
+      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
+
     const { role, userId } = await req.json();
     const amount = ROLE_FEES[role?.toLowerCase()] ?? 100;
 
