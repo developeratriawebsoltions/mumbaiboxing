@@ -2,17 +2,17 @@ import Link from "next/link";
 
 export default function CTA() {
   return (
-    <section className="py-28 relative overflow-hidden" style={{ background: "#060C18" }}>
+    <section className="py-28 relative overflow-hidden" style={{ background: "#0F172B" }}>
 
       {/* Centre glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[700px] h-[320px] rounded-full blur-3xl opacity-25"
-          style={{ background: "radial-gradient(ellipse, #D4A017 0%, transparent 70%)" }} />
+          style={{ background: "radial-gradient(ellipse, #DC2626 0%, transparent 70%)" }} />
       </div>
 
       {/* Grid texture */}
       <div className="absolute inset-0 opacity-[0.025]" style={{
-        backgroundImage: "linear-gradient(rgba(212,160,23,1) 1px,transparent 1px),linear-gradient(90deg,rgba(212,160,23,1) 1px,transparent 1px)",
+        backgroundImage: "linear-gradient(rgba(220,38,38,1) 1px,transparent 1px),linear-gradient(90deg,rgba(220,38,38,1) 1px,transparent 1px)",
         backgroundSize: "72px 72px",
       }} />
 
@@ -20,15 +20,15 @@ export default function CTA() {
 
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-7"
-          style={{ background: "rgba(212,160,23,0.12)", border: "1px solid rgba(212,160,23,0.30)" }}>
-          <span className="w-2 h-2 rounded-full animate-pulse inline-block" style={{ background: "#D4A017" }} />
-          <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#F0C040" }}>
+          style={{ background: "rgba(220,38,38,0.12)", border: "1px solid rgba(220,38,38,0.30)" }}>
+          <span className="w-2 h-2 rounded-full animate-pulse inline-block" style={{ background: "#DC2626" }} />
+          <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#EF4444" }}>
             Join the Association Today
           </span>
         </div>
 
         {/* Headline — Bebas */}
-        <h2 className="font-display text-[72px] md:text-[96px] leading-none text-white tracking-wide max-w-3xl mx-auto">
+        <h2 className="font-display text-[48px] sm:text-[64px] md:text-[80px] lg:text-[96px] leading-none text-white tracking-wide max-w-3xl mx-auto">
           READY TO START YOUR
           <br />
           <span className="text-gold-shimmer">BOXING JOURNEY?</span>

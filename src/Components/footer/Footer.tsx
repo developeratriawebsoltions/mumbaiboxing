@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mail, Phone, MapPin } from "lucide-react";
 
 const footerLinks = [
   {
@@ -32,8 +33,8 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#0B1120" }}>
-      <div className="h-px w-full" style={{ background: "linear-gradient(90deg,transparent,#D4A017,transparent)" }} />
+    <footer style={{ background: "#0F172B" }}>
+      <div className="h-px w-full" style={{ background: "linear-gradient(90deg,transparent,#DC2626,transparent)" }} />
 
       <div className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
@@ -43,21 +44,21 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-5">
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center font-display text-lg"
-                style={{ background: "linear-gradient(135deg,#F0C040,#D4A017)", color: "#0B1120" }}
+                style={{ background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#FFFFFF" }}
               >
                 M
               </div>
               <span className="font-display text-xl tracking-wider text-white">
-                MUMBAI <span style={{ color: "#D4A017" }}>BOXING</span>
+                MUMBAI <span style={{ color: "#DC2626" }}>BOXING</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: "#64748B" }}>
               Official governing body for amateur boxing across Mumbai. BFI affiliated since 1985.
             </p>
             <div className="mt-6 space-y-2 text-sm" style={{ color: "#475569" }}>
-              <p>📧 info@mumbaiboxing.org</p>
-              <p>📞 +91 22 1234 5678</p>
-              <p>📍 Mumbai, Maharashtra</p>
+              <p className="flex items-center gap-2"><Mail size={14} /> info@mumbaiboxing.org</p>
+              <p className="flex items-center gap-2"><Phone size={14} /> +91 22 1234 5678</p>
+              <p className="flex items-center gap-2"><MapPin size={14} /> Mumbai, Maharashtra</p>
             </div>
           </div>
 
@@ -66,7 +67,7 @@ export default function Footer() {
             <div key={col.heading}>
               <h4
                 className="text-xs font-bold uppercase tracking-widest mb-5"
-                style={{ color: "#D4A017" }}
+                style={{ color: "#DC2626" }}
               >
                 {col.heading}
               </h4>
@@ -86,7 +87,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div
           className="mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-3"
-          style={{ borderTop: "1px solid rgba(212,160,23,0.12)" }}
+          style={{ borderTop: "1px solid rgba(220,38,38,0.12)" }}
         >
           <p className="text-xs" style={{ color: "#334155" }}>
             © 2025 Mumbai Boxing Association. All rights reserved.

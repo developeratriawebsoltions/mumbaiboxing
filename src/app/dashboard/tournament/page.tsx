@@ -1,120 +1,195 @@
 "use client";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
-import { useState } from "react";
+import { useRole } from "@/hooks/useRole";
 
-const tabs = ["Registration", "Weigh-in", "Medical List", "Draw Sheet", "Bout Schedule", "Results", "Medal Tally"];
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
-const events = [
-  { name: "Mumbai Open Boxing Championship 2025", date: "20 Feb 2025", venue: "Andheri Sports Complex", entries: 128, status: "Open" },
-  { name: "Borivali Taluka Boxing Trials", date: "15 Mar 2025", venue: "Borivali Indoor Stadium", entries: 64, status: "Open" },
-  { name: "District Under-19 Championship", date: "10 Apr 2025", venue: "Kurla Sports Hall", entries: 0, status: "Upcoming" },
-];
-
-const bouts = [
-  { no: 1, time: "09:00 AM", boxer1: "Rahul Sharma", boxer2: "Aman Singh", weight: "60 KG", result: "Rahul W" },
-  { no: 2, time: "09:30 AM", boxer1: "Pooja Desai", boxer2: "Sneha Kulkarni", weight: "52 KG", result: "-" },
-  { no: 3, time: "10:00 AM", boxer1: "Vikas More", boxer2: "Kiran Patil", weight: "48 KG", result: "-" },
-];
+type Tournament = {
+  id: number;
+  name: string;
+  location: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  weightClass: string | null;
+  status: string;
+  entryFee: number | null;
+  registered: boolean;
+};
 
 export default function TournamentDashboard() {
-  const [active, setActive] = useState("Registration");
+  const role = useRole();
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [paying, setPaying] = useState<number | null>(null);
+  const [successId, setSuccessId] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadTournaments();
+  }, []);
+
+  function loadTournaments() {
+    setLoading(true);
+    fetch("/api/tournaments")
+      .then((r) => r.json())
+      .then((d) => { if (d?.error) setError(d.error); else setTournaments(d); })
+      .catch(() => setError("Failed to load tournaments."))
+      .finally(() => setLoading(false));
+  }
+
+  function loadRazorpay(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  }
+
+  async function handleRegister(tournament: Tournament) {
+    setPaying(tournament.id);
+    try {
+      const loaded = await loadRazorpay();
+      if (!loaded) { alert("Payment gateway failed to load. Try again."); return; }
+
+      const res = await fetch("/api/tournaments/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tournamentId: tournament.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "Registration failed"); return; }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.amount,
+        currency: "INR",
+        name: "Mumbai Boxing Association",
+        description: `Entry Fee – ${data.tournamentName}`,
+        order_id: data.orderId,
+        handler: async (response: any) => {
+          const verify = await fetch("/api/tournaments/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              tournamentId: tournament.id,
+            }),
+          });
+          const vData = await verify.json();
+          if (verify.ok && vData.success) {
+            setSuccessId(tournament.id);
+            loadTournaments();
+          } else {
+            alert(vData.error || "Payment verification failed");
+          }
+        },
+        prefill: {},
+        theme: { color: "#0f172a" },
+        modal: { ondismiss: () => setPaying(null) },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch {
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setPaying(null);
+    }
+  }
+
+  const formatDate = (d: string | null) =>
+    d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "TBD";
+
+  const statusColor = (s: string) =>
+    s === "open" ? "bg-green-100 text-green-700"
+    : s === "ongoing" ? "bg-blue-100 text-blue-700"
+    : s === "completed" ? "bg-gray-100 text-gray-600"
+    : "bg-yellow-100 text-yellow-700";
+
+  const myEntries = tournaments.filter((t) => t.registered);
+  const upcoming = tournaments.filter((t) => t.status !== "completed");
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role={role || undefined}>
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Tournament Dashboard</h2>
-            <p className="text-gray-500 text-sm">Manage events, entries, bouts, results & medal tally</p>
+        <div>
+          <h2 className="text-2xl font-bold">Tournaments</h2>
+          <p className="text-gray-500 text-sm">Upcoming events & your registrations</p>
+        </div>
+
+        {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        {successId && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+            <p className="text-green-700 font-medium">✅ Registration successful! Payment receipt saved to your dashboard.</p>
+            <button onClick={() => setSuccessId(null)} className="text-green-500 text-sm hover:underline">Dismiss</button>
           </div>
-          <button className="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700">+ Create Event</button>
-        </div>
+        )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Active Events", value: "2" },
-            { label: "Total Entries", value: "192" },
-            { label: "Bouts Scheduled", value: "96" },
-            { label: "Medals Awarded", value: "48" },
-          ].map((s) => (
-            <div key={s.label} className="bg-white border rounded-xl p-5 shadow-sm text-center">
-              <p className="text-3xl font-bold">{s.value}</p>
-              <p className="text-sm text-gray-500 mt-1">{s.label}</p>
+        {!loading && !error && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[
+                { label: "Total Events", value: tournaments.length },
+                { label: "My Registrations", value: myEntries.length },
+                { label: "Upcoming", value: upcoming.length },
+              ].map((s) => (
+                <div key={s.label} className="bg-white border rounded-xl p-5 shadow-sm text-center">
+                  <p className="text-3xl font-bold">{s.value}</p>
+                  <p className="text-sm text-gray-500 mt-1">{s.label}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setActive(t)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                active === t ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-
-        {active === "Registration" && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Upcoming Events</h3>
-            {events.map((ev, i) => (
-              <div key={i} className="bg-white border rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div>
-                  <h4 className="font-semibold">{ev.name}</h4>
-                  <p className="text-sm text-gray-500">{ev.date} · {ev.venue}</p>
-                  <p className="text-sm mt-1">Entries: <span className="font-medium">{ev.entries}</span></p>
-                </div>
-                <div className="flex gap-2">
-                  <span className={`text-xs px-3 py-1 rounded-full ${ev.status === "Open" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                    {ev.status}
-                  </span>
-                  <button className="text-sm bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-red-700">Register Entries</button>
-                </div>
+            {tournaments.length === 0 ? (
+              <div className="bg-white border rounded-xl p-8 text-center text-gray-400">No tournaments found.</div>
+            ) : (
+              <div className="space-y-4">
+                {tournaments.map((t) => (
+                  <div key={t.id} className="bg-white border rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-semibold">{t.name}</h4>
+                        {t.registered && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">✓ Registered</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatDate(t.startDate)}{t.endDate ? ` – ${formatDate(t.endDate)}` : ""} · {t.location ?? "Venue TBD"}
+                      </p>
+                      {t.weightClass && <p className="text-xs text-gray-400 mt-0.5">Weight: {t.weightClass}</p>}
+                      <p className="text-xs text-gray-400 mt-0.5">Entry Fee: ₹{(t.entryFee ?? 500).toLocaleString("en-IN")}</p>
+                    </div>
+                    <div className="flex items-center gap-3 self-start md:self-auto">
+                      <span className={`text-xs px-3 py-1 rounded-full capitalize ${statusColor(t.status)}`}>
+                        {t.status}
+                      </span>
+                      {role === "boxer" && !t.registered && t.status !== "completed" && (
+                        <button
+                          onClick={() => handleRegister(t)}
+                          disabled={paying === t.id}
+                          className="text-sm bg-slate-900 text-white px-4 py-1.5 rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                        >
+                          {paying === t.id ? "Processing..." : "Register & Pay"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-
-        {active === "Bout Schedule" && (
-          <div>
-            <h3 className="font-semibold text-lg mb-3">Bout Schedule – Mumbai Open 2025</h3>
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-                  <tr>
-                    {["Bout #", "Time", "Boxer 1", "Boxer 2", "Weight", "Result"].map((h) => (
-                      <th key={h} className="text-left px-4 py-3">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {bouts.map((b) => (
-                    <tr key={b.no} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-bold">{b.no}</td>
-                      <td className="px-4 py-3 text-gray-500">{b.time}</td>
-                      <td className="px-4 py-3 font-medium">{b.boxer1}</td>
-                      <td className="px-4 py-3 font-medium">{b.boxer2}</td>
-                      <td className="px-4 py-3 text-gray-500">{b.weight}</td>
-                      <td className="px-4 py-3 text-green-600 font-medium">{b.result}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {!["Registration", "Bout Schedule"].includes(active) && (
-          <div className="bg-white border rounded-xl p-8 shadow-sm text-center text-gray-400">
-            <p className="text-lg font-medium">{active}</p>
-            <p className="text-sm mt-1">This section will display {active.toLowerCase()} data.</p>
-          </div>
+            )}
+          </>
         )}
       </div>
     </DashboardLayout>

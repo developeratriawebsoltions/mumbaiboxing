@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  boxer
+  coach
+  academy
+  association
+  school
+  taluka
+  superadmin
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  boxer       Boxer?
+  coach       Coach?
+  academy     Academy?
+  documents   Document[]
+}
+
+model Boxer {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @unique
+  user             User      @relation(fields: [userId], references: [id])
+  name             String
+  dob              DateTime?
+  weight           String?
+  ageGroup         String?
+  academyId        Int?
+  academy          Academy?  @relation(fields: [academyId], references: [id])
+  rank             Int?
+  membershipExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  medical           Medical?
+  certificates      Certificate[]
+  payments          Payment[]
+  tournamentEntries TournamentEntry[]
+}
+
+model Coach {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @unique
+  user             User      @relation(fields: [userId], references: [id])
+  name             String
+  phone            String?
+  academyId        Int?
+  academy          Academy?  @relation(fields: [academyId], references: [id])
+  membershipExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  certificates Certificate[]
+  payments     Payment[]
+}
+
+model Academy {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @unique
+  user             User      @relation(fields: [userId], references: [id])
+  name             String
+  address          String?
+  phone            String?
+  membershipExpiry DateTime?
+  boxers           Boxer[]
+  coaches          Coach[]
+  createdAt        DateTime  @default(now())
+  payments         Payment[]
+}
+
+model Tournament {
+  id          Int      @id @default(autoincrement())
+  name        String
+  location    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  weightClass String?
+  status      String   @default("upcoming")
+  entryFee    Int?     @default(500)
+  createdAt   DateTime @default(now())
+  entries     TournamentEntry[]
+}
+
+model TournamentEntry {
+  id           Int        @id @default(autoincrement())
+  tournamentId Int
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  boxerId      Int
+  boxer        Boxer      @relation(fields: [boxerId], references: [id])
+  createdAt    DateTime   @default(now())
+}
+
+model Medical {
+  id          Int      @id @default(autoincrement())
+  boxerId     Int      @unique
+  boxer       Boxer    @relation(fields: [boxerId], references: [id])
+  fitnessStatus String @default("Valid")  // Valid | Expired | Expiring Soon
+  expiryDate  DateTime?
+  injury      String?  @default("None")
+  eligible    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model Certificate {
+  id        Int      @id @default(autoincrement())
+  boxerId   Int?
+  boxer     Boxer?   @relation(fields: [boxerId], references: [id])
+  coachId   Int?
+  coach     Coach?   @relation(fields: [coachId], references: [id])
+  type      String
+  event     String
+  issuedAt  DateTime @default(now())
+  qrStatus  String   @default("verified")
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  boxerId   Int?
+  boxer     Boxer?   @relation(fields: [boxerId], references: [id])
+  coachId   Int?
+  coach     Coach?   @relation(fields: [coachId], references: [id])
+  academyId Int?
+  academy   Academy? @relation(fields: [academyId], references: [id])
+  type      String
+  amount    Int
+  method    String?
+  status    String   @default("Pending")
+  membershipExpiry DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  label     String
+  filePath  String
+  fileType  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, label])
+}

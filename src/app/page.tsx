@@ -6,21 +6,21 @@ import Services from "@/Components/home/Servvices";
 import Rankings from "@/Components/home/Rankings";
 import UpcomingTournaments from "@/Components/home/UpcomingTournaments";
 import Notices from "@/Components/home/Notices";
-import CTA from "@/Components/home/CTA";
 import Footer from "@/Components/footer/Footer";
 
 export default function Home() {
   return (
     <>
-      <Navbar />
-      <Hero />
+      <div className="relative">
+        <Navbar />
+        <Hero />
+      </div>
       <Stats />
       <About />
       <Services />
       <Rankings />
       <UpcomingTournaments />
       <Notices />
-      <CTA />
       <Footer />
     </>
   );

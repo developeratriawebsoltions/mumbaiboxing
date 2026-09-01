@@ -1,4 +1,6 @@
+"use client";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import { useRole } from "@/hooks/useRole";
 
 const reportTypes = [
   {
@@ -20,8 +22,10 @@ const reportTypes = [
 ];
 
 export default function ReportsDashboard() {
+  const role = useRole();
+
   return (
-    <DashboardLayout>
+    <DashboardLayout role={role || undefined}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold">Reports Dashboard</h2>

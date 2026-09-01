@@ -1,0 +1,71 @@
+MUMBAI BOXING ASSOCIATION - PROJECT OVERVIEW
+============================================
+
+WHAT THIS PROJECT IS
+--------------------
+A web application for the Mumbai Boxing Association to manage boxers,
+coaches, academies, tournaments, medical records, certificates, and
+payments. Users sign up / log in by role and get role-specific dashboards.
+
+TECH STACK
+----------
+- Framework:  Next.js 16 (App Router), React 19, TypeScript
+- Database:   MySQL via Prisma ORM 5
+- Styling:    Tailwind CSS v4, shadcn/ui, radix-ui, lucide-react
+- Auth:       JWT (jose library), bcryptjs for password hashing
+- Tooling:    ESLint, TypeScript
+
+PROJECT STRUCTURE (top-level)
+-----------------------------
+- prisma/          Database schema (schema.prisma), seed data (seed.ts)
+- src/app/         All pages and API routes (Next.js App Router)
+- src/Components/  Reusable UI components (navbar, footer, cards, dashboard layout, home sections)
+- src/data/        Static mock data (boxers, coaches)
+- src/hooks/       Custom React hooks (useRole)
+- src/lib/         Helpers: prisma client, jwt, utils
+- src/middleware.ts  Route protection / auth checks
+- public/          Static assets (images, icons)
+- .env             Environment variables (DATABASE_URL, JWT secret)
+
+DATABASE MODELS (prisma/schema.prisma)
+--------------------------------------
+- User          Email/password login + role (see roles below)
+- Boxer         Boxer profile, weight, age group, rank, linked to academy
+- Coach         Coach profile, phone, linked to academy
+- Academy       Gym / academy with boxers and coaches
+- Tournament    Event with location, dates, weight class, status
+- TournamentEntry  Boxer registered into a tournament
+- Medical       Boxer medical fitness status, expiry, injury, eligibility
+- Certificate   Awards/qualification certificates for boxers and coaches
+- Payment       Fee/registration payments for boxers and coaches
+
+USER ROLES
+----------
+boxer, coach, academy, association, school, taluka, superadmin
+
+KEY PAGES
+---------
+- /login, /register            Authentication
+- /                           Public landing page (hero, stats, tournaments, rankings, notices)
+- /dashboard/...               Role-specific dashboards:
+    boxer, coach, academy, association, school, taluka, superadmin,
+    admin, tournament, medical, certificates, documents, ranking,
+    payment, reports, public
+
+API ROUTES (src/app/api)
+------------------------
+- /auth/login, /auth/logout, /auth/me   Auth
+- /register                               Account creation
+- /admin/login, /admin/boxers, /admin/coaches   Admin
+- /boxer, /coach                           Profile data
+- /tournaments, /rankings                  Competition data
+- /medical, /certificates, /payments       Records
+
+COMMON SCRIPTS (npm run)
+------------------------
+- dev          Start dev server
+- build        Production build
+- lint         Run ESLint
+- db:migrate   Prisma migrate dev
+- db:seed      Seed the database
+- db:studio    Open Prisma Studio UI

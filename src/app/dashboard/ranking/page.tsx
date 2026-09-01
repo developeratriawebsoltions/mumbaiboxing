@@ -1,82 +1,99 @@
 "use client";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
-import { useState } from "react";
+import { useRole } from "@/hooks/useRole";
 
-const tabs = ["Age-wise", "Weight-wise", "Taluka-wise", "District", "Male", "Female"];
-
-const rankings = [
-  { rank: 1, name: "Rahul Sharma", weight: "60 KG", taluka: "Borivali", points: 120, gender: "Male" },
-  { rank: 2, name: "Aman Singh", weight: "65 KG", taluka: "Andheri", points: 110, gender: "Male" },
-  { rank: 3, name: "Vikas More", weight: "60 KG", taluka: "Kurla", points: 98, gender: "Male" },
-  { rank: 4, name: "Pooja Desai", weight: "52 KG", taluka: "Andheri", points: 115, gender: "Female" },
-  { rank: 5, name: "Sneha Kulkarni", weight: "46 KG", taluka: "Borivali", points: 102, gender: "Female" },
-];
+type RankedBoxer = {
+  id: number;
+  name: string;
+  weight: string | null;
+  ageGroup: string | null;
+  rank: number;
+  academy: { name: string } | null;
+  isMe: boolean;
+};
 
 export default function RankingDashboard() {
-  const [active, setActive] = useState("Age-wise");
+  const role = useRole();
+  const [rankings, setRankings] = useState<RankedBoxer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/rankings")
+      .then((r) => r.json())
+      .then((d) => { if (d?.error) setError(d.error); else setRankings(d); })
+      .catch(() => setError("Failed to load rankings."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const me = rankings.find((r) => r.isMe);
+
+  const rankStyle = (rank: number) =>
+    rank === 1 ? "bg-yellow-100 text-yellow-700"
+    : rank === 2 ? "bg-gray-200 text-gray-700"
+    : rank === 3 ? "bg-orange-100 text-orange-600"
+    : "bg-slate-100 text-slate-600";
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role={role || undefined}>
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Ranking Dashboard</h2>
-            <p className="text-gray-500 text-sm">View & update boxer rankings across categories</p>
-          </div>
-          <button className="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700">Update Points</button>
+        <div>
+          <h2 className="text-2xl font-bold">Rankings</h2>
+          <p className="text-gray-500 text-sm">Current boxer rankings</p>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setActive(t)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                active === t ? "bg-slate-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        {/* Rankings Table */}
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-              <tr>
-                {["Rank", "Boxer", "Weight", "Taluka", "Gender", "Points", "Action"].map((h) => (
-                  <th key={h} className="text-left px-4 py-3">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {rankings.map((r) => (
-                <tr key={r.rank} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
-                      r.rank === 1 ? "bg-yellow-100 text-yellow-700"
-                      : r.rank === 2 ? "bg-gray-200 text-gray-700"
-                      : r.rank === 3 ? "bg-orange-100 text-orange-600"
-                      : "bg-slate-100 text-slate-600"
-                    }`}>
-                      {r.rank}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-medium">{r.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.weight}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.taluka}</td>
-                  <td className="px-4 py-3 text-gray-500">{r.gender}</td>
-                  <td className="px-4 py-3 font-bold">{r.points}</td>
-                  <td className="px-4 py-3">
-                    <button className="text-xs text-blue-600 hover:underline">Edit</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {!loading && !error && (
+          <>
+            {me && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-4">
+                <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold ${rankStyle(me.rank)}`}>
+                  #{me.rank}
+                </span>
+                <div>
+                  <p className="font-semibold text-sm">Your Current Rank</p>
+                  <p className="text-xs text-gray-500">{me.weight ?? "—"} · {me.ageGroup ?? "—"} · {me.academy?.name ?? "—"}</p>
+                </div>
+              </div>
+            )}
+
+            {rankings.length === 0 ? (
+              <div className="bg-white border rounded-xl p-8 text-center text-gray-400">No rankings available yet.</div>
+            ) : (
+              <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                    <tr>
+                      {["Rank", "Boxer", "Weight", "Age Group", "Academy"].map((h) => (
+                        <th key={h} className="text-left px-4 py-3">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {rankings.map((r) => (
+                      <tr key={r.id} className={`hover:bg-gray-50 ${r.isMe ? "bg-blue-50" : ""}`}>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${rankStyle(r.rank)}`}>
+                            {r.rank}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-medium">
+                          {r.name} {r.isMe && <span className="text-xs text-blue-600 ml-1">(You)</span>}
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">{r.weight ?? "—"}</td>
+                        <td className="px-4 py-3 text-gray-500">{r.ageGroup ?? "—"}</td>
+                        <td className="px-4 py-3 text-gray-500">{r.academy?.name ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </DashboardLayout>
   );

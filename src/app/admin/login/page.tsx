@@ -9,14 +9,25 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (email === "admin@mba.com" && password === "superadmin@123") {
-      localStorage.setItem("mba_role", "superadmin");
-      router.push("/dashboard");
-    } else {
-      setError("Invalid credentials.");
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Invalid credentials."); return; }
+      router.push(data.redirect);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -101,10 +112,11 @@ export default function AdminLoginPage() {
             )}
             <button
               type="submit"
-              className="w-full rounded-xl py-3 text-sm font-bold mt-2 transition-all duration-200"
+              disabled={loading}
+              className="w-full rounded-xl py-3 text-sm font-bold mt-2 transition-all duration-200 disabled:opacity-60"
               style={{ background: "linear-gradient(135deg,#EF4444,#B91C1C)", color: "#fff" }}
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 

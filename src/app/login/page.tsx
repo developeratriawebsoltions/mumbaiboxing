@@ -3,16 +3,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const ROLES = ["Boxer", "Coach", "Academy", "Association", "School", "Taluka"] as const;
+const ROLES = ["Boxer", "Coach", "Academy",] as const;
 
-const CREDENTIALS: Record<string, { email: string; password: string; redirect: string }> = {
-  Boxer:       { email: "boxer@mba.com",       password: "boxer@123",   redirect: "/dashboard/boxer" },
-  Coach:       { email: "coach@mba.com",       password: "coach@123",   redirect: "/dashboard/coach" },
-  Academy:     { email: "academy@mba.com",     password: "academy@123", redirect: "/dashboard/academy" },
-  Association: { email: "association@mba.com", password: "assoc@123",   redirect: "/dashboard/association" },
-  School:      { email: "school@mba.com",      password: "school@123",  redirect: "/dashboard/school" },
-  Taluka:      { email: "taluka@mba.com",      password: "taluka@123",  redirect: "/dashboard/taluka" },
-};
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,43 +13,47 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const cred = CREDENTIALS[role];
-    if (email === cred.email && password === cred.password) {
-      localStorage.setItem("mba_role", role.toLowerCase());
-      router.push(cred.redirect);
-    } else {
-      setError("Invalid email or password.");
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || "Login failed."); return; }
+      router.push(data.redirect);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "#0B1120" }}
+      style={{ background: "#FFFFFF" }}
     >
       {/* Background glow */}
       <div
-        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none animate-glow-pulse"
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(212,160,23,0.15) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(220,38,38,0.08) 0%, transparent 70%)",
           top: "10%", left: "50%", transform: "translateX(-50%)",
         }}
       />
 
       <div className="relative w-full max-w-md animate-fade-up">
-        {/* Logo / Title */}
+        {/* Title */}
         <div className="text-center mb-8">
-          <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-            style={{ background: "linear-gradient(135deg,#D4A017,#F0C040)" }}
-          >
-            <span className="text-2xl font-black" style={{ color: "#0B1120" }}>MB</span>
-          </div>
-          <h1 className="text-3xl font-extrabold" style={{ color: "#F8F9FA" }}>
+          <h1 className="text-3xl font-extrabold" style={{ color: "#1E293B" }}>
             Welcome Back
           </h1>
           <p className="text-sm mt-1" style={{ color: "#94A3B8" }}>
@@ -68,14 +65,14 @@ export default function LoginPage() {
         <div
           className="rounded-3xl p-8"
           style={{
-            background: "#111827",
-            border: "1px solid rgba(212,160,23,0.2)",
-            boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+            background: "#FFFFFF",
+            border: "1px solid rgba(220,38,38,0.2)",
+            boxShadow: "0 24px 64px rgba(0,0,0,0.1)",
           }}
         >
           {/* Role selector */}
           <div className="mb-6">
-            <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#D4A017" }}>
+            <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#DC2626" }}>
               Login As
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -87,8 +84,8 @@ export default function LoginPage() {
                   className="rounded-xl py-2 text-xs font-semibold transition-all duration-150"
                   style={
                     role === r
-                      ? { background: "linear-gradient(135deg,#D4A017,#F0C040)", color: "#0B1120" }
-                      : { background: "#1E2A3B", color: "#94A3B8", border: "1px solid rgba(212,160,23,0.12)" }
+                      ? { background: "linear-gradient(135deg,#DC2626,#EF4444)", color: "#FFFFFF" }
+                      : { background: "#F1F5F9", color: "#64748B", border: "1px solid rgba(220,38,38,0.12)" }
                   }
                 >
                   {r}
@@ -110,12 +107,12 @@ export default function LoginPage() {
                 placeholder={role === "Boxer" ? "e.g. boxer@mba.com" : "Enter your email"}
                 className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
                 style={{
-                  background: "#1E2A3B",
-                  border: "1px solid rgba(212,160,23,0.18)",
-                  color: "#F8F9FA",
+                  background: "#F1F5F9",
+                  border: "1px solid rgba(220,38,38,0.25)",
+                  color: "#1E293B",
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#D4A017")}
-                onBlur={(e) => (e.target.style.borderColor = "rgba(212,160,23,0.18)")}
+                onFocus={(e) => (e.target.style.borderColor = "#DC2626")}
+                onBlur={(e) => (e.target.style.borderColor = "rgba(220,38,38,0.18)")}
               />
             </div>
 
@@ -131,12 +128,12 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all pr-11"
                   style={{
-                    background: "#1E2A3B",
-                    border: "1px solid rgba(212,160,23,0.18)",
-                    color: "#F8F9FA",
+                    background: "#F1F5F9",
+                    border: "1px solid rgba(220,38,38,0.25)",
+                    color: "#1E293B",
                   }}
-                  onFocus={(e) => (e.target.style.borderColor = "#D4A017")}
-                  onBlur={(e) => (e.target.style.borderColor = "rgba(212,160,23,0.18)")}
+                  onFocus={(e) => (e.target.style.borderColor = "#DC2626")}
+                  onBlur={(e) => (e.target.style.borderColor = "rgba(220,38,38,0.18)")}
                 />
                 <button
                   type="button"
@@ -154,7 +151,7 @@ export default function LoginPage() {
                 <input type="checkbox" className="rounded" />
                 Remember me
               </label>
-              <Link href="/forgot-password" className="rank-link hover:underline">
+              <Link href="/forgot-password" style={{ color: "#DC2626" }} className="hover:underline">
                 Forgot password?
               </Link>
             </div>
@@ -162,8 +159,8 @@ export default function LoginPage() {
             {error && (
               <p className="text-xs text-center" style={{ color: "#EF4444" }}>{error}</p>
             )}
-            <button type="submit" className="btn-gold w-full rounded-xl py-3 text-sm mt-2">
-              Sign In as {role}
+            <button type="submit" disabled={loading} className="btn-gold w-full rounded-xl py-3 text-sm mt-2 disabled:opacity-60">
+              {loading ? "Signing in..." : `Sign In as ${role}`}
             </button>
           </form>
 
@@ -175,7 +172,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <p className="text-center text-xs mt-6" style={{ color: "#475569" }}>
+        <p className="text-center text-xs mt-6" style={{ color: "#94A3B8" }}>
           © 2025 Mumbai Boxing Association. All rights reserved.
         </p>
       </div>

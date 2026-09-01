@@ -1,75 +1,103 @@
+"use client";
+import { Check } from "lucide-react";
+
+const milestones = [
+  { year: "1985", title: "Founded",           desc: "Mumbai Boxing Association established." },
+  { year: "2000", title: "City-Wide Reach",   desc: "Expansion of academies across all districts." },
+  { year: "2015", title: "National Stage",    desc: "Consistent national-level tournament wins." },
+  { year: "2026", title: "Digital Era",       desc: "Complete digital management platform.", active: true },
+];
+
 const highlights = [
-  { title: "Founded 1985",  desc: "Over 4 decades of developing boxing talent in Mumbai." },
-  { title: "BFI Affiliated", desc: "Officially recognized by Boxing Federation of India." },
-  { title: "3 Talukas",     desc: "Active chapters in Borivali, Andheri & Kurla talukas." },
-  { title: "Digital First", desc: "Fully digital boxer IDs, certificates & records system." },
+  "Building Champions",
+  "Promoting Fitness",
+  "Creating Opportunities",
+  "Stronger Communities",
 ];
 
 export default function About() {
   return (
-    <section id="about" className="py-24" style={{ background: "#FFFFFF" }}>
-      <div className="container mx-auto px-6">
+    <section id="about" style={{ background: "#070D14" }}>
+
+      {/* ── Main Content ── */}
+      <div className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          {/* Left — visual block */}
-          <div className="animate-fade-up relative">
-            <div
-              className="relative rounded-3xl overflow-hidden aspect-[4/3] flex items-center justify-center"
-              style={{ background: "linear-gradient(145deg,#060C18 0%,#0B1120 60%,#111827 100%)" }}
-            >
-              <div
-                className="absolute inset-0 opacity-30"
-                style={{ background: "radial-gradient(ellipse at 30% 70%,rgba(212,160,23,.35) 0%,transparent 60%)" }}
-              />
-              <div className="relative text-center px-8">
-                <div className="text-8xl mb-4 drop-shadow-2xl">🥊</div>
-                <p className="font-display text-4xl text-white tracking-widest">SINCE 1985</p>
-                <p className="text-sm mt-2" style={{ color: "#94A3B8" }}>Shaping Mumbai's Boxing Legacy</p>
-              </div>
-              <div
-                className="absolute bottom-6 left-6 rounded-2xl px-5 py-3 shadow-2xl"
-                style={{ background: "linear-gradient(135deg,#D4A017,#F0C040)" }}
-              >
-                <p className="text-2xl font-extrabold" style={{ color: "#0B1120" }}>40+</p>
-                <p className="text-xs font-semibold" style={{ color: "rgba(11,17,32,.7)" }}>Years of Excellence</p>
-              </div>
-              <div className="absolute top-6 right-6 bg-white rounded-2xl px-5 py-3 shadow-2xl">
-                <p className="text-2xl font-extrabold" style={{ color: "#0B1120" }}>1,240+</p>
-                <p className="text-xs font-semibold" style={{ color: "#64748B" }}>Active Boxers</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right — copy */}
-          <div className="animate-slide-left">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#D4A017" }}>About Us</p>
-            <h2 className="text-4xl font-extrabold leading-tight" style={{ color: "#0B1120" }}>
-              The Heart of Boxing<br />in Mumbai
+          {/* LEFT: Mission */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-3" style={{ color: "#DC2626" }}>
+              About Us
+            </p>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white uppercase leading-tight mb-6">
+              The Heart of<br />
+              <span style={{ color: "#DC2626" }}>Boxing</span> in Mumbai
             </h2>
-            <p className="mt-5 leading-relaxed text-base" style={{ color: "#64748B" }}>
-              Mumbai Boxing Association (MBA) is the premier governing body for amateur boxing
-              across Mumbai. We manage registrations, certifications, rankings and events for
-              boxers, coaches and academies across all three talukas — Borivali, Andheri and Kurla.
+            <p className="text-sm leading-relaxed mb-8" style={{ color: "#94A3B8" }}>
+              For nearly four decades, the Mumbai Boxing Association has been the cornerstone of
+              combat sports in Maharashtra — shaping lives through discipline, determination, and
+              the relentless spirit of boxing.
             </p>
 
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ul className="grid grid-cols-2 gap-3 mb-10">
               {highlights.map((h) => (
-                <div
-                  key={h.title}
-                  className="about-highlight-card group flex gap-3 p-4 rounded-2xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                >
+                <li key={h} className="flex items-center gap-2 text-sm font-medium text-white">
+                  <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: "rgba(220,38,38,0.15)", border: "1px solid #DC2626" }}>
+                    <Check size={11} color="#DC2626" strokeWidth={3} />
+                  </span>
+                  {h}
+                </li>
+              ))}
+            </ul>
+
+            <a
+              href="#"
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-all duration-200 hover:gap-4"
+              style={{ background: "#DC2626" }}
+            >
+              Learn More <span>→</span>
+            </a>
+          </div>
+
+          {/* RIGHT: Timeline */}
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-5 top-0 bottom-0 w-px" style={{ background: "linear-gradient(to bottom, transparent, #DC2626 15%, #DC2626 85%, transparent)" }} />
+
+            <div className="flex flex-col gap-8">
+              {milestones.map((m) => (
+                <div key={m.year} className="flex gap-6 items-start pl-14 relative">
+                  {/* Dot */}
                   <div
-                    className="w-2 h-2 mt-2 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform"
-                    style={{ background: "#D4A017" }}
+                    className="absolute left-[14px] top-1.5 w-3 h-3 rounded-full shrink-0"
+                    style={
+                      m.active
+                        ? { background: "#DC2626", boxShadow: "0 0 0 4px rgba(220,38,38,0.2)" }
+                        : { background: "#0A0F18", border: "2px solid rgba(255,255,255,0.3)" }
+                    }
                   />
+
+                  {/* Year badge */}
+                  <div
+                    className="shrink-0 px-3 py-1 text-xs font-extrabold rounded"
+                    style={
+                      m.active
+                        ? { background: "#DC2626", color: "#fff" }
+                        : { background: "rgba(255,255,255,0.05)", color: "#94A3B8", border: "1px solid rgba(255,255,255,0.08)" }
+                    }
+                  >
+                    {m.year}
+                  </div>
+
                   <div>
-                    <p className="font-bold text-sm" style={{ color: "#0B1120" }}>{h.title}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>{h.desc}</p>
+                    <p className="text-sm font-bold text-white mb-0.5">{m.title}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: "#64748B" }}>{m.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </section>

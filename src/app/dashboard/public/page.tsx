@@ -1,5 +1,6 @@
 "use client";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import { useRole } from "@/hooks/useRole";
 import { useState } from "react";
 
 const tabs = ["Boxer Search", "Coach Search", "Academy Search", "Rankings", "Event Results", "Certificate Verify", "Notices"];
@@ -11,11 +12,12 @@ const notices = [
 ];
 
 export default function PublicDashboard() {
+  const role = useRole();
   const [active, setActive] = useState("Boxer Search");
   const [query, setQuery] = useState("");
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role={role || undefined}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold">Public Dashboard</h2>
