@@ -650,7 +650,7 @@ export default function RegisterPage() {
     if (!validateStep1(e.currentTarget)) return;
 
     const values = { ...formData, role };
-    const emailValue = values.email?.trim() || '';
+    const emailValue = (formData.email ?? '').trim();
 
     if (!emailValue) {
       setError('Please provide an email address.');
