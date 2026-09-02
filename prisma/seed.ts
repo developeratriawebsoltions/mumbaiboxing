@@ -7,15 +7,25 @@ async function main() {
   const email = "admin@mba.com";
   const password = "superadmin@123";
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({
+    where: { email },
+  });
+
   if (existing) {
     console.log("Superadmin already exists:", email);
     return;
   }
 
   const hashed = await bcrypt.hash(password, 10);
+
   await prisma.user.create({
-    data: { email, password: hashed, role: "superadmin" },
+    data: {
+      email,
+      password: hashed,
+      role: "superadmin",
+      registrationStatus: "ACTIVE",
+      updatedAt: new Date(),
+    },
   });
 
   console.log("✅ Superadmin created:");
@@ -25,5 +35,10 @@ async function main() {
 }
 
 main()
-  .catch((e) => { console.error(e); process.exit(1); })
-  .finally(() => prisma.$disconnect());
+  .catch((e) => {
+    console.error("❌ Seed error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

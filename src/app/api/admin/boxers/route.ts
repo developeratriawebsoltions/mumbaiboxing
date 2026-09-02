@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
     include: {
       user: {
-        include: { documents: { select: { id: true, label: true, filePath: true, fileType: true } } },
+        include: { document: { select: { id: true, label: true, filePath: true, fileType: true } } },
       },
       academy: { select: { name: true } },
       medical: { select: { fitnessStatus: true, expiryDate: true, eligible: true } },

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const entriesFor = searchParams.get("entries");
 
   if (entriesFor) {
-    const entries = await prisma.tournamentEntry.findMany({
+    const entries = await prisma.tournamententry.findMany({
       where: { tournamentId: Number(entriesFor) },
       include: {
         boxer: {
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
   const tournaments = await prisma.tournament.findMany({
     orderBy: { startDate: "asc" },
-    include: { _count: { select: { entries: true } } },
+    include: { _count: { select: { tournamententry: true } } },
   });
 
   return NextResponse.json(tournaments);
@@ -91,7 +91,7 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "ID is required" }, { status: 400 });
 
-  await prisma.tournamentEntry.deleteMany({ where: { tournamentId: Number(id) } });
+  await prisma.tournamententry.deleteMany({ where: { tournamentId: Number(id) } });
   await prisma.tournament.delete({ where: { id: Number(id) } });
 
   return NextResponse.json({ success: true });

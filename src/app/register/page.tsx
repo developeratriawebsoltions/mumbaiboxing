@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { jsPDF } from 'jspdf';
 
 // Existing registration APIs are preserved:
 // /api/auth/me, /api/otp/send, /api/otp/verify, /api/register,
@@ -51,10 +52,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
+      <label
+        className="mb-1.5 block text-xs font-semibold"
+        style={{ color: '#94A3B8' }}
+      >
         {label}
         {required && <span style={{ color: '#DC2626' }}> *</span>}
       </label>
+
       <input
         name={name}
         type={type}
@@ -65,7 +70,9 @@ function Field({
         className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
         style={inputStyle}
         onFocus={(e) => (e.target.style.borderColor = '#DC2626')}
-        onBlur={(e) => (e.target.style.borderColor = 'rgba(220,38,38,0.18)')}
+        onBlur={(e) =>
+          (e.target.style.borderColor = 'rgba(220,38,38,0.18)')
+        }
       />
     </div>
   );
@@ -88,10 +95,14 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
+      <label
+        className="mb-1.5 block text-xs font-semibold"
+        style={{ color: '#94A3B8' }}
+      >
         {label}
         {required && <span style={{ color: '#DC2626' }}> *</span>}
       </label>
+
       <select
         name={name}
         required={required}
@@ -100,9 +111,12 @@ function SelectField({
         className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
         style={{ ...inputStyle, appearance: 'none' }}
         onFocus={(e) => (e.target.style.borderColor = '#DC2626')}
-        onBlur={(e) => (e.target.style.borderColor = 'rgba(220,38,38,0.18)')}
+        onBlur={(e) =>
+          (e.target.style.borderColor = 'rgba(220,38,38,0.18)')
+        }
       >
         <option value="">Select...</option>
+
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -126,9 +140,14 @@ function RadioField({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
-        {label}<span style={{ color: '#DC2626' }}> *</span>
+      <label
+        className="mb-2 block text-xs font-semibold"
+        style={{ color: '#94A3B8' }}
+      >
+        {label}
+        <span style={{ color: '#DC2626' }}> *</span>
       </label>
+
       <div className="flex gap-5">
         {['Male', 'Female'].map((gender) => (
           <label
@@ -145,6 +164,7 @@ function RadioField({
               className="accent-red-600"
               required
             />
+
             {gender}
           </label>
         ))}
@@ -170,10 +190,14 @@ function TextAreaField({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
+      <label
+        className="mb-1.5 block text-xs font-semibold"
+        style={{ color: '#94A3B8' }}
+      >
         {label}
         {required && <span style={{ color: '#DC2626' }}> *</span>}
       </label>
+
       <textarea
         name={name}
         rows={4}
@@ -184,7 +208,9 @@ function TextAreaField({
         className="w-full resize-none rounded-xl px-4 py-3 text-sm outline-none transition-all"
         style={inputStyle}
         onFocus={(e) => (e.target.style.borderColor = '#DC2626')}
-        onBlur={(e) => (e.target.style.borderColor = 'rgba(220,38,38,0.18)')}
+        onBlur={(e) =>
+          (e.target.style.borderColor = 'rgba(220,38,38,0.18)')
+        }
       />
     </div>
   );
@@ -199,44 +225,76 @@ function FileField({
   onFileSelect: (fieldName: string, file: File | null) => void;
   selectedFile?: File;
 }) {
-  const fieldName = label.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/-$/, '').toLowerCase();
+  const fieldName = label
+    .replace(/[^a-zA-Z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/-$/, '')
+    .toLowerCase();
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
-        {label}<span style={{ color: '#DC2626' }}> *</span>
+      <label
+        className="mb-1.5 block text-xs font-semibold"
+        style={{ color: '#94A3B8' }}
+      >
+        {label}
+        <span style={{ color: '#DC2626' }}> *</span>
       </label>
+
       <label
         className="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl py-5 transition-all"
         style={{ ...inputStyle, borderStyle: 'dashed' }}
       >
-        <span className="mb-1 max-w-full truncate px-3 text-center text-xs" style={{ color: '#64748B' }}>
+        <span
+          className="mb-1 max-w-full truncate px-3 text-center text-xs"
+          style={{ color: '#64748B' }}
+        >
           {selectedFile?.name || 'Click to upload · Max 10 MB'}
         </span>
-        <span className="text-xs font-semibold" style={{ color: '#DC2626' }}>
+
+        <span
+          className="text-xs font-semibold"
+          style={{ color: '#DC2626' }}
+        >
           {selectedFile ? 'Change file' : 'Browse file'}
         </span>
+
         <input
           type="file"
           name={fieldName}
           data-label={label}
           accept="image/*,.pdf"
           className="hidden"
-          onChange={(e) => onFileSelect(fieldName, e.target.files?.[0] || null)}
+          onChange={(e) =>
+            onFileSelect(fieldName, e.target.files?.[0] || null)
+          }
         />
       </label>
     </div>
   );
 }
 
-function SectionTitle({ title, description }: { title: string; description?: string }) {
+function SectionTitle({
+  title,
+  description,
+}: {
+  title: string;
+  description?: string;
+}) {
   return (
     <div className="mb-5">
-      <h2 className="text-lg font-bold" style={{ color: '#1E293B' }}>
+      <h2
+        className="text-lg font-bold"
+        style={{ color: '#1E293B' }}
+      >
         {title}
       </h2>
+
       {description && (
-        <p className="mt-1 text-xs leading-5" style={{ color: '#64748B' }}>
+        <p
+          className="mt-1 text-xs leading-5"
+          style={{ color: '#64748B' }}
+        >
           {description}
         </p>
       )}
@@ -251,37 +309,63 @@ function Stepper({ step }: { step: Step }) {
         {steps.map((item, index) => {
           const completed = step > item.number;
           const active = step === item.number;
+
           return (
-            <div key={item.number} className="flex min-w-0 flex-1 items-start">
+            <div
+              key={item.number}
+              className="flex min-w-0 flex-1 items-start"
+            >
               <div className="flex min-w-0 flex-1 flex-col items-center">
                 <div
                   className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all"
                   style={
                     active || completed
-                      ? { background: 'linear-gradient(135deg,#DC2626,#EF4444)', color: '#FFFFFF' }
-                      : { background: '#E2E8F0', color: '#64748B', border: '1px solid rgba(220,38,38,0.14)' }
+                      ? {
+                          background:
+                            'linear-gradient(135deg,#DC2626,#EF4444)',
+                          color: '#FFFFFF',
+                        }
+                      : {
+                          background: '#E2E8F0',
+                          color: '#64748B',
+                          border:
+                            '1px solid rgba(220,38,38,0.14)',
+                        }
                   }
                 >
                   {completed ? '✓' : item.number}
                 </div>
+
                 <span
                   className="mt-2 hidden text-center text-[10px] font-semibold sm:block"
-                  style={{ color: active ? '#1E293B' : '#64748B' }}
+                  style={{
+                    color: active ? '#1E293B' : '#64748B',
+                  }}
                 >
                   {item.short}
                 </span>
               </div>
+
               {index < steps.length - 1 && (
                 <div
                   className="mt-[18px] h-px flex-1"
-                  style={{ background: step > item.number ? '#DC2626' : 'rgba(148,163,184,0.15)' }}
+                  style={{
+                    background:
+                      step > item.number
+                        ? '#DC2626'
+                        : 'rgba(148,163,184,0.15)',
+                  }}
                 />
               )}
             </div>
           );
         })}
       </div>
-      <div className="mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: '#94A3B8' }}>
+
+      <div
+        className="mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em]"
+        style={{ color: '#94A3B8' }}
+      >
         <span>Step {step} of 4</span>
         <span>{steps[step - 1].title}</span>
       </div>
@@ -310,8 +394,18 @@ function BasicDetails({
       />
 
       <Field
-        label={role === 'Academy' ? 'Academy / Club Name' : role === 'Coach' ? 'Full Name of Coach' : 'Boxer Full Name'}
-        placeholder={role === 'Academy' ? 'Official academy or club name' : 'Enter full name'}
+        label={
+          role === 'Academy'
+            ? 'Academy / Club Name'
+            : role === 'Coach'
+              ? 'Full Name of Coach'
+              : 'Boxer Full Name'
+        }
+        placeholder={
+          role === 'Academy'
+            ? 'Official academy or club name'
+            : 'Enter full name'
+        }
         name="name"
         value={formData.name || ''}
         onChange={onChange}
@@ -326,6 +420,7 @@ function BasicDetails({
           value={formData.email || ''}
           onChange={onChange}
         />
+
         <Field
           label="Mobile Number"
           placeholder="+91 XXXXX XXXXX"
@@ -340,7 +435,11 @@ function BasicDetails({
         <RadioField
           label="Gender"
           name={role === 'Boxer' ? 'boxerGender' : 'gender'}
-          value={formData[role === 'Boxer' ? 'boxerGender' : 'gender'] || ''}
+          value={
+            formData[
+              role === 'Boxer' ? 'boxerGender' : 'gender'
+            ] || ''
+          }
           onChange={onChange}
         />
       )}
@@ -356,9 +455,14 @@ function BasicDetails({
       )}
 
       <div>
-        <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
-          Password<span style={{ color: '#DC2626' }}> *</span>
+        <label
+          className="mb-1.5 block text-xs font-semibold"
+          style={{ color: '#94A3B8' }}
+        >
+          Password
+          <span style={{ color: '#DC2626' }}> *</span>
         </label>
+
         <div className="relative">
           <input
             name="password"
@@ -370,9 +474,15 @@ function BasicDetails({
             onChange={onChange}
             className="w-full rounded-xl px-4 py-3 pr-12 text-sm outline-none transition-all"
             style={inputStyle}
-            onFocus={(e) => (e.target.style.borderColor = '#DC2626')}
-            onBlur={(e) => (e.target.style.borderColor = 'rgba(220,38,38,0.18)')}
+            onFocus={(e) =>
+              (e.target.style.borderColor = '#DC2626')
+            }
+            onBlur={(e) =>
+              (e.target.style.borderColor =
+                'rgba(220,38,38,0.18)')
+            }
           />
+
           <button
             type="button"
             onClick={onTogglePassword}
@@ -384,11 +494,24 @@ function BasicDetails({
         </div>
       </div>
 
-      <label className="flex cursor-pointer items-start gap-2 text-xs leading-5" style={{ color: '#94A3B8' }}>
-        <input type="checkbox" name="termsAccepted" className="mt-1 rounded" required />
+      <label
+        className="flex cursor-pointer items-start gap-2 text-xs leading-5"
+        style={{ color: '#94A3B8' }}
+      >
+        <input
+          type="checkbox"
+          name="termsAccepted"
+          className="mt-1 rounded"
+          required
+        />
+
         <span>
           I agree to the{' '}
-          <Link href="/terms" style={{ color: '#DC2626' }} className="font-semibold hover:underline">
+          <Link
+            href="/terms"
+            style={{ color: '#DC2626' }}
+            className="font-semibold hover:underline"
+          >
             Terms & Conditions
           </Link>
         </span>
@@ -405,16 +528,38 @@ function BoxerAdditionalDetails({
 }: {
   formData: Record<string, string>;
   files: Record<string, File>;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void;
   onFileSelect: (fieldName: string, file: File | null) => void;
 }) {
   return (
     <div className="space-y-4">
-      <SectionTitle title="Boxer details" description="Add your competition and academy information." />
+      <SectionTitle
+        title="Boxer details"
+        description="Add your competition and academy information."
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Competition Category" placeholder="e.g. Senior / Junior" name="ageGroup" value={formData.ageGroup || ''} onChange={onChange} />
-        <Field label="Aadhaar Number" placeholder="Enter Aadhaar number" name="aadhaar" value={formData.aadhaar || ''} onChange={onChange} />
+        <Field
+          label="Competition Category"
+          placeholder="e.g. Senior / Junior"
+          name="ageGroup"
+          value={formData.ageGroup || ''}
+          onChange={onChange}
+        />
+
+        <Field
+          label="Aadhaar Number"
+          placeholder="Enter Aadhaar number"
+          name="aadhaar"
+          value={formData.aadhaar || ''}
+          onChange={onChange}
+        />
       </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <SelectField
           label="Weight Category Boys"
@@ -422,29 +567,110 @@ function BoxerAdditionalDetails({
           required={false}
           value={formData.weight || ''}
           onChange={onChange}
-          options={['47–50 kg', '50–55 kg', '55–60 kg', '60–65 kg', '65–70 kg', '70–75 kg', '75–80 kg', '80–85 kg', '85–90 kg', '+90 kg']}
+          options={[
+            '47–50 kg',
+            '50–55 kg',
+            '55–60 kg',
+            '60–65 kg',
+            '65–70 kg',
+            '70–75 kg',
+            '75–80 kg',
+            '80–85 kg',
+            '85–90 kg',
+            '+90 kg',
+          ]}
         />
+
         <SelectField
           label="Weight Category Girls"
           name="weightGirls"
           required={false}
           value={formData.weightGirls || ''}
           onChange={onChange}
-          options={['45–48 kg', '48–51 kg', '51–54 kg', '54–57 kg', '57–60 kg', '60–65 kg', '65–70 kg', '70–75 kg', '75–80 kg', '+80 kg']}
+          options={[
+            '45–48 kg',
+            '48–51 kg',
+            '51–54 kg',
+            '54–57 kg',
+            '57–60 kg',
+            '60–65 kg',
+            '65–70 kg',
+            '70–75 kg',
+            '75–80 kg',
+            '+80 kg',
+          ]}
         />
       </div>
-      <Field label="Academy / Club" placeholder="Academy name" name="academyName" value={formData.academyName || ''} onChange={onChange} />
-      <p className="rounded-xl border px-3 py-2 text-[11px] leading-5" style={{ borderColor: 'rgba(220,38,38,0.12)', color: '#64748B', background: '#F8FAFC' }}>
+
+      <Field
+        label="Academy / Club"
+        placeholder="Academy name"
+        name="academyName"
+        value={formData.academyName || ''}
+        onChange={onChange}
+      />
+
+      <p
+        className="rounded-xl border px-3 py-2 text-[11px] leading-5"
+        style={{
+          borderColor: 'rgba(220,38,38,0.12)',
+          color: '#64748B',
+          background: '#F8FAFC',
+        }}
+      >
         Select either the boys or girls weight category as applicable.
       </p>
-      <div className="rounded-2xl border p-4" style={{ borderColor: 'rgba(220,38,38,0.18)', background: '#F8FAFC' }}>
-        <p className="mb-3 text-sm font-semibold" style={{ color: '#1E293B' }}>Documents</p>
+
+      <div
+        className="rounded-2xl border p-4"
+        style={{
+          borderColor: 'rgba(220,38,38,0.18)',
+          background: '#F8FAFC',
+        }}
+      >
+        <p
+          className="mb-3 text-sm font-semibold"
+          style={{ color: '#1E293B' }}
+        >
+          Documents
+        </p>
+
         <div className="space-y-3">
-          <FileField label="Birth Certificate" selectedFile={files['birth-certificate']} onFileSelect={onFileSelect} />
-          <FileField label="Aadhaar Card" selectedFile={files['aadhaar-card']} onFileSelect={onFileSelect} />
-          <FileField label="Passport size Photo" selectedFile={files['passport-size-photo']} onFileSelect={onFileSelect} />
-          <FileField label="Medical Fitness Certificate by (MBBS) Dr." selectedFile={files['medical-fitness-certificate-by-mbbs-dr-']} onFileSelect={onFileSelect} />
-          <FileField label="HIV / Hepatitis B & C Test Report" selectedFile={files['hiv-hepatitis-b-c-test-report']} onFileSelect={onFileSelect} />
+          <FileField
+            label="Birth Certificate"
+            selectedFile={files['birth-certificate']}
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Aadhaar Card"
+            selectedFile={files['aadhaar-card']}
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Passport size Photo"
+            selectedFile={files['passport-size-photo']}
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Medical Fitness Certificate by (MBBS) Dr."
+            selectedFile={
+              files[
+                'medical-fitness-certificate-by-mbbs-dr'
+              ]
+            }
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="HIV / Hepatitis B & C Test Report"
+            selectedFile={
+              files['hiv-hepatitis-b-c-test-report']
+            }
+            onFileSelect={onFileSelect}
+          />
         </div>
       </div>
     </div>
@@ -459,20 +685,57 @@ function CoachAdditionalDetails({
 }: {
   formData: Record<string, string>;
   files: Record<string, File>;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void;
   onFileSelect: (fieldName: string, file: File | null) => void;
 }) {
   return (
     <div className="space-y-4">
-      <SectionTitle title="Coach details" description="Add your coaching background, qualifications and centre information." />
+      <SectionTitle
+        title="Coach details"
+        description="Add your coaching background, qualifications and centre information."
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Academy / Club / School Name" placeholder="Enter academy or club name" name="academyName" value={formData.academyName || ''} onChange={onChange} />
-        <Field label="Training Location / Area" placeholder="e.g. Borivali, Mumbai" name="trainingLocation" value={formData.trainingLocation || ''} onChange={onChange} />
+        <Field
+          label="Academy / Club / School Name"
+          placeholder="Enter academy or club name"
+          name="academyName"
+          value={formData.academyName || ''}
+          onChange={onChange}
+        />
+
+        <Field
+          label="Training Location / Area"
+          placeholder="e.g. Borivali, Mumbai"
+          name="trainingLocation"
+          value={formData.trainingLocation || ''}
+          onChange={onChange}
+        />
       </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Coaching Experience" placeholder="e.g. 5 years" name="coachingExperience" value={formData.coachingExperience || ''} onChange={onChange} />
-        <Field label="Number of Boxers Training Under You" placeholder="e.g. 12" type="number" name="boxerCount" value={formData.boxerCount || ''} onChange={onChange} />
+        <Field
+          label="Coaching Experience"
+          placeholder="e.g. 5 years"
+          name="coachingExperience"
+          value={formData.coachingExperience || ''}
+          onChange={onChange}
+        />
+
+        <Field
+          label="Number of Boxers Training Under You"
+          placeholder="e.g. 12"
+          type="number"
+          name="boxerCount"
+          value={formData.boxerCount || ''}
+          onChange={onChange}
+        />
       </div>
+
       <TextAreaField
         label="Achievements as a Coach"
         placeholder="Describe your coaching achievements..."
@@ -480,18 +743,50 @@ function CoachAdditionalDetails({
         value={formData.achievements || ''}
         onChange={onChange}
       />
+
       <SelectField
         label="Coaching Qualification"
         name="coachingQualification"
         value={formData.coachingQualification || ''}
         onChange={onChange}
-        options={['NIS Certified full diploma', 'NIS Certified 6 week', 'Former National Boxer', 'State Certified (CCCP)', 'Former State Boxer', 'Other']}
+        options={[
+          'NIS Certified full diploma',
+          'NIS Certified 6 week',
+          'Former National Boxer',
+          'State Certified (CCCP)',
+          'Former State Boxer',
+          'Other',
+        ]}
       />
-      <div className="rounded-2xl border p-4" style={{ borderColor: 'rgba(220,38,38,0.18)', background: '#F8FAFC' }}>
-        <p className="mb-3 text-sm font-semibold" style={{ color: '#1E293B' }}>Supporting documents</p>
+
+      <div
+        className="rounded-2xl border p-4"
+        style={{
+          borderColor: 'rgba(220,38,38,0.18)',
+          background: '#F8FAFC',
+        }}
+      >
+        <p
+          className="mb-3 text-sm font-semibold"
+          style={{ color: '#1E293B' }}
+        >
+          Supporting documents
+        </p>
+
         <div className="space-y-3">
-          <FileField label="Upload any boxing certificate" selectedFile={files['upload-any-boxing-certificate']} onFileSelect={onFileSelect} />
-          <FileField label="Upload centre photo" selectedFile={files['upload-centre-photo']} onFileSelect={onFileSelect} />
+          <FileField
+            label="Upload any boxing certificate"
+            selectedFile={
+              files['upload-any-boxing-certificate']
+            }
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Upload centre photo"
+            selectedFile={files['upload-centre-photo']}
+            onFileSelect={onFileSelect}
+          />
         </div>
       </div>
     </div>
@@ -503,60 +798,397 @@ function AcademyAdditionalDetails({
   onChange,
 }: {
   formData: Record<string, string>;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void;
 }) {
   return (
     <div className="space-y-4">
-      <SectionTitle title="Academy details" description="Provide the academy location and coach contact information." />
+      <SectionTitle
+        title="Academy details"
+        description="Provide the academy location and coach contact information."
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="District Name" placeholder="Enter district name" name="district" value={formData.district || ''} onChange={onChange} />
-        <SelectField label="Taluka" name="taluka" value={formData.taluka || ''} onChange={onChange} options={['BORIVALI', 'ANDHERI', 'KURLA']} />
+        <Field
+          label="District Name"
+          placeholder="Enter district name"
+          name="district"
+          value={formData.district || ''}
+          onChange={onChange}
+        />
+
+        <SelectField
+          label="Taluka"
+          name="taluka"
+          value={formData.taluka || ''}
+          onChange={onChange}
+          options={['BORIVALI', 'ANDHERI', 'KURLA']}
+        />
       </div>
-      <Field label="Coach Name" placeholder="Enter coach name" name="coachName" value={formData.coachName || ''} onChange={onChange} />
+
+      <Field
+        label="Coach Name"
+        placeholder="Enter coach name"
+        name="coachName"
+        value={formData.coachName || ''}
+        onChange={onChange}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Coach Mobile Number" placeholder="+91 XXXXX XXXXX" type="tel" name="coachPhone" value={formData.coachPhone || ''} onChange={onChange} />
-        <Field label="Coach Email ID" placeholder="coach@example.com" type="email" name="coachEmail" value={formData.coachEmail || ''} onChange={onChange} />
+        <Field
+          label="Coach Mobile Number"
+          placeholder="+91 XXXXX XXXXX"
+          type="tel"
+          name="coachPhone"
+          value={formData.coachPhone || ''}
+          onChange={onChange}
+        />
+
+        <Field
+          label="Coach Email ID"
+          placeholder="coach@example.com"
+          type="email"
+          name="coachEmail"
+          value={formData.coachEmail || ''}
+          onChange={onChange}
+        />
       </div>
     </div>
   );
 }
 
-function Review({ role, formData, files }: { role: Role; formData: Record<string, string>; files: Record<string, File> }) {
-  const entries = Object.entries(formData).filter(([key, value]) => {
-    const hidden = ['password', 'termsAccepted', 'email'];
-    return Boolean(value) && !hidden.includes(key);
-  });
+function Review({
+  role,
+  formData,
+  files,
+}: {
+  role: Role;
+  formData: Record<string, string>;
+  files: Record<string, File>;
+}) {
+  const entries = Object.entries(formData).filter(
+    ([key, value]) => {
+      const hidden = ['password', 'termsAccepted', 'email'];
+      return Boolean(value) && !hidden.includes(key);
+    }
+  );
 
   return (
-    <div className="rounded-2xl border p-4" style={{ borderColor: 'rgba(220,38,38,0.18)', background: '#F8FAFC' }}>
+    <div
+      className="rounded-2xl border p-4"
+      style={{
+        borderColor: 'rgba(220,38,38,0.18)',
+        background: '#F8FAFC',
+      }}
+    >
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold" style={{ color: '#1E293B' }}>Review your registration</p>
-          <p className="mt-1 text-xs" style={{ color: '#64748B' }}>Check your details before creating the account.</p>
+          <p
+            className="text-sm font-semibold"
+            style={{ color: '#1E293B' }}
+          >
+            Review your registration
+          </p>
+
+          <p
+            className="mt-1 text-xs"
+            style={{ color: '#64748B' }}
+          >
+            Check your details before creating the account.
+          </p>
         </div>
-        <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: 'rgba(220,38,38,0.12)', color: '#EF4444' }}>
+
+        <span
+          className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
+          style={{
+            background: 'rgba(220,38,38,0.12)',
+            color: '#EF4444',
+          }}
+        >
           {role}
         </span>
       </div>
+
       <div className="grid gap-x-5 gap-y-3 sm:grid-cols-2">
         <div>
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748B' }}>Email</p>
-          <p className="mt-1 break-all text-sm" style={{ color: '#1E293B' }}>{formData.email}</p>
+          <p
+            className="text-[10px] uppercase tracking-wider"
+            style={{ color: '#64748B' }}
+          >
+            Email
+          </p>
+
+          <p
+            className="mt-1 break-all text-sm"
+            style={{ color: '#1E293B' }}
+          >
+            {formData.email}
+          </p>
         </div>
+
         {entries.map(([key, value]) => (
           <div key={key}>
-            <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748B' }}>{key.replace(/([A-Z])/g, ' $1')}</p>
-            <p className="mt-1 break-words text-sm" style={{ color: '#1E293B' }}>{value}</p>
+            <p
+              className="text-[10px] uppercase tracking-wider"
+              style={{ color: '#64748B' }}
+            >
+              {key.replace(/([A-Z])/g, ' $1')}
+            </p>
+
+            <p
+              className="mt-1 break-words text-sm"
+              style={{ color: '#1E293B' }}
+            >
+              {value}
+            </p>
           </div>
         ))}
       </div>
-      <div className="mt-4 border-t pt-4" style={{ borderColor: 'rgba(148,163,184,0.10)' }}>
-        <p className="text-xs" style={{ color: '#64748B' }}>
-          Files selected: <span className="font-semibold" style={{ color: '#1E293B' }}>{Object.keys(files).length}</span>
+
+      <div
+        className="mt-4 border-t pt-4"
+        style={{
+          borderColor: 'rgba(148,163,184,0.10)',
+        }}
+      >
+        <p
+          className="text-xs"
+          style={{ color: '#64748B' }}
+        >
+          Files selected:{' '}
+          <span
+            className="font-semibold"
+            style={{ color: '#1E293B' }}
+          >
+            {Object.keys(files).length}
+          </span>
         </p>
       </div>
     </div>
   );
+}
+
+function formatDate(value: string | Date) {
+  return new Date(value).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatShortDate(value: string | Date) {
+  return new Date(value).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function downloadMembershipCard(
+  membership: {
+    membershipId: string;
+    role: string;
+    validFrom: string;
+    expiry: string;
+  },
+  payment: {
+    invoiceNumber: string;
+  } | null,
+  memberName: string,
+  email: string
+) {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: [86, 54],
+  });
+
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, 86, 54, 'F');
+
+  doc.setTextColor(220, 38, 38);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MUMBAI BOXING ASSOCIATION', 6, 9);
+
+  doc.setTextColor(241, 245, 249);
+  doc.setFontSize(6);
+  doc.text('OFFICIAL MEMBERSHIP CARD', 6, 14);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text(memberName || email, 6, 23);
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(148, 163, 184);
+  doc.text(`Role: ${membership.role.toUpperCase()}`, 6, 28);
+
+  doc.setTextColor(241, 245, 249);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text(
+    `Membership ID: ${membership.membershipId}`,
+    6,
+    35
+  );
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6);
+
+  doc.text(
+    `Valid From: ${formatShortDate(membership.validFrom)}`,
+    6,
+    41
+  );
+
+  doc.text(
+    `Valid Until: ${formatShortDate(membership.expiry)}`,
+    6,
+    46
+  );
+
+  if (payment?.invoiceNumber) {
+    doc.text(`Invoice: ${payment.invoiceNumber}`, 52, 46);
+  }
+
+  doc.save(
+    `${membership.membershipId}-membership-card.pdf`
+  );
+}
+
+function downloadInvoice(
+  membership: {
+    membershipId: string;
+    role: string;
+    validFrom: string;
+    expiry: string;
+    activatedAt: string;
+  },
+  payment: {
+    invoiceNumber: string;
+    amount: number;
+    method: string;
+    status: string;
+  },
+  memberName: string,
+  email: string
+) {
+  const doc = new jsPDF();
+
+  doc.setTextColor(30, 41, 59);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MUMBAI BOXING ASSOCIATION', 20, 25);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Membership Fee Invoice', 20, 34);
+
+  doc.setDrawColor(220, 38, 38);
+  doc.line(20, 40, 190, 40);
+
+  doc.setTextColor(71, 85, 105);
+  doc.setFontSize(10);
+
+  doc.text(
+    `Invoice Number: ${payment.invoiceNumber}`,
+    20,
+    52
+  );
+
+  doc.text(
+    `Invoice Date: ${formatDate(membership.activatedAt)}`,
+    20,
+    60
+  );
+
+  doc.setTextColor(30, 41, 59);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Member Details', 20, 75);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text(
+    `Name: ${memberName || email}`,
+    20,
+    84
+  );
+
+  doc.text(`Email: ${email}`, 20, 92);
+
+  doc.text(
+    `Membership ID: ${membership.membershipId}`,
+    20,
+    100
+  );
+
+  doc.text(
+    `Membership Type: ${membership.role}`,
+    20,
+    108
+  );
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Payment Details', 20, 125);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Description', 20, 135);
+  doc.text('Annual Membership Fee', 20, 143);
+
+  doc.text('Amount', 150, 135);
+
+  doc.text(
+    `₹${payment.amount.toLocaleString('en-IN')}`,
+    150,
+    143
+  );
+
+  doc.line(20, 150, 190, 150);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Total Paid', 20, 162);
+
+  doc.text(
+    `₹${payment.amount.toLocaleString('en-IN')}`,
+    150,
+    162
+  );
+
+  doc.setFont('helvetica', 'normal');
+
+  doc.text(
+    `Payment Method: ${payment.method}`,
+    20,
+    176
+  );
+
+  doc.text(
+    `Payment Status: ${payment.status}`,
+    20,
+    184
+  );
+
+  doc.text(
+    `Membership Validity: ${formatShortDate(
+      membership.validFrom
+    )} - ${formatShortDate(membership.expiry)}`,
+    20,
+    198
+  );
+
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+
+  doc.text(
+    'This is a computer-generated invoice issued by Mumbai Boxing Association.',
+    20,
+    220
+  );
+
+  doc.save(`${payment.invoiceNumber}-invoice.pdf`);
 }
 
 export default function RegisterPage() {
@@ -568,10 +1200,40 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] =
+    useState<Record<string, string>>({});
   const [files, setFiles] = useState<Record<string, File>>({});
-  const [registeredUser, setRegisteredUser] = useState<{ id: number; role: string } | null>(null);
+
+  type MembershipInfo = {
+    membershipId: string;
+    role: string;
+    validFrom: string;
+    expiry: string;
+    activatedAt: string;
+  };
+
+  type PaymentInfo = {
+    id: number;
+    amount: number;
+    method: string;
+    status: string;
+    invoiceNumber: string;
+    isDeveloperBypass: boolean;
+  };
+
+  const [registeredUser, setRegisteredUser] = useState<{
+    id: number;
+    role: string;
+  } | null>(null);
+
+  const [membershipInfo, setMembershipInfo] =
+    useState<MembershipInfo | null>(null);
+
+  const [paymentInfo, setPaymentInfo] =
+    useState<PaymentInfo | null>(null);
+
   const [paymentDone, setPaymentDone] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -583,14 +1245,18 @@ export default function RegisterPage() {
       .catch(() => {});
   }, [router]);
 
-  // Razorpay is loaded once, but payment is still opened only when the user reaches Step 4.
   useEffect(() => {
-    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    const existing = document.querySelector(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+    );
+
     if (existing) return;
 
     const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.src =
+      'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
+
     document.body.appendChild(script);
 
     return () => {
@@ -598,32 +1264,57 @@ export default function RegisterPage() {
     };
   }, []);
 
-  const roleLabel = useMemo(() => `Register as ${role}`, [role]);
+  const roleLabel = useMemo(
+    () => `Register as ${role}`,
+    [role]
+  );
 
-  function handleFieldChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+  function handleFieldChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) {
     const { name, value } = e.target;
+
     if (!name) return;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (name === 'email') setEmail(value);
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (name === 'email') {
+      setEmail(value);
+    }
   }
 
-  function handleFileSelect(fieldName: string, file: File | null) {
+  function handleFileSelect(
+    fieldName: string,
+    file: File | null
+  ) {
     if (file && file.size > 10 * 1024 * 1024) {
       setError('Each file must be 10 MB or smaller.');
       return;
     }
 
     setError('');
+
     setFiles((prev) => {
       const next = { ...prev };
-      if (file) next[fieldName] = file;
-      else delete next[fieldName];
+
+      if (file) {
+        next[fieldName] = file;
+      } else {
+        delete next[fieldName];
+      }
+
       return next;
     });
   }
 
   function changeRole(nextRole: Role) {
     if (step !== 1 || nextRole === role) return;
+
     setRole(nextRole);
     setFormData({});
     setFiles({});
@@ -631,25 +1322,38 @@ export default function RegisterPage() {
     setOtp('');
     setOtpVerified(false);
     setError('');
+    setRegisteredUser(null);
+    setMembershipInfo(null);
+    setPaymentInfo(null);
+    setPaymentDone(false);
   }
 
   function validateStep1(form: HTMLFormElement) {
     if (!form.reportValidity()) return false;
+
     const password = formData.password?.trim() || '';
+
     if (password.length < 8) {
       setError('Password must be at least 8 characters.');
       return false;
     }
+
     return true;
   }
 
-  async function handleSendOtp(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSendOtp(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
     setError('');
 
     if (!validateStep1(e.currentTarget)) return;
 
-    const values = { ...formData, role };
+    const values = {
+      ...formData,
+      role,
+    };
+
     const emailValue = (formData.email ?? '').trim();
 
     if (!emailValue) {
@@ -658,12 +1362,18 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+
     try {
       const res = await fetch('/api/otp/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailValue }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: emailValue,
+        }),
       });
+
       const json = await res.json();
 
       if (!res.ok) {
@@ -676,7 +1386,9 @@ export default function RegisterPage() {
       setOtpVerified(false);
       setStep(2);
 
-      if (json.devOtp) setOtp(json.devOtp);
+      if (json.devOtp) {
+        setOtp(json.devOtp);
+      }
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -684,13 +1396,19 @@ export default function RegisterPage() {
     }
   }
 
-  function handleAdditionalNext(e: React.FormEvent<HTMLFormElement>) {
+  function handleAdditionalNext(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
     setError('');
 
     if (!e.currentTarget.reportValidity()) return;
 
-    if (role === 'Boxer' && !formData.weight && !formData.weightGirls) {
+    if (
+      role === 'Boxer' &&
+      !formData.weight &&
+      !formData.weightGirls
+    ) {
       setError('Please select a weight category.');
       return;
     }
@@ -700,6 +1418,7 @@ export default function RegisterPage() {
 
   async function handleVerifyOtp() {
     setError('');
+
     const cleanOtp = otp.trim();
 
     if (!/^\d{6}$/.test(cleanOtp)) {
@@ -708,16 +1427,25 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+
     try {
       const res = await fetch('/api/otp/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp: cleanOtp }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          otp: cleanOtp,
+        }),
       });
+
       const json = await res.json();
 
       if (!res.ok) {
-        setError(json.error || 'OTP verification failed');
+        setError(
+          json.error || 'OTP verification failed'
+        );
         return;
       }
 
@@ -740,9 +1468,14 @@ export default function RegisterPage() {
       'hiv-hepatitis-b-c-test-report',
     ];
 
-    const missing = requiredDocuments.some((key) => !files[key]);
+    const missing = requiredDocuments.some(
+      (key) => !files[key]
+    );
+
     if (missing) {
-      setError('Please upload all required boxer documents.');
+      setError(
+        'Please upload all required boxer documents.'
+      );
       return false;
     }
 
@@ -762,13 +1495,19 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const data: Record<string, string> = { ...formData, role };
+      const data: Record<string, string> = {
+        ...formData,
+        role,
+      };
 
       const res = await fetch('/api/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
+
       const json = await res.json();
 
       if (!res.ok) {
@@ -777,7 +1516,9 @@ export default function RegisterPage() {
       }
 
       const uploadFd = new FormData();
+
       uploadFd.append('userId', String(json.id));
+
       let hasFiles = false;
 
       Object.entries(files).forEach(([key, file]) => {
@@ -788,14 +1529,27 @@ export default function RegisterPage() {
       });
 
       if (hasFiles) {
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: uploadFd });
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFd,
+        });
+
         if (!uploadRes.ok) {
-          setError('Registration was created, but some documents could not be uploaded. Please contact support.');
+          setError(
+            'Registration was created, but some documents could not be uploaded. Please contact support.'
+          );
           return;
         }
       }
 
-      setRegisteredUser({ id: json.id, role: json.role });
+      setRegisteredUser({
+        id: json.id,
+        role: json.role,
+      });
+
+      setMembershipInfo(null);
+      setPaymentInfo(null);
+      setPaymentDone(false);
       setStep(4);
     } catch {
       setError('Network error. Please try again.');
@@ -805,99 +1559,261 @@ export default function RegisterPage() {
   }
 
   async function handlePayment() {
+  if (!registeredUser) return;
+
+  setError('');
+  setLoading(true);
+
+  try {
+    if (!window.Razorpay) {
+      setError('Payment gateway is still loading. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    // ---------------------------------------------------------
+    // CREATE RAZORPAY ORDER
+    // Server determines the actual fee from the user's role.
+    // ---------------------------------------------------------
+    const orderRes = await fetch('/api/payments/create-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: registeredUser.id,
+      }),
+    });
+
+    const order = await orderRes.json();
+
+    if (!orderRes.ok) {
+      setError(order.error || 'Failed to create payment order.');
+      setLoading(false);
+      return;
+    }
+
+    // ---------------------------------------------------------
+    // RAZORPAY CHECKOUT
+    // ---------------------------------------------------------
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+
+      amount: order.amount * 100,
+
+      currency: order.currency,
+
+      name: 'Mumbai Boxing Association',
+
+      description: `Annual Membership Fee – ${registeredUser.role}`,
+
+      order_id: order.orderId,
+
+      prefill: {
+        email,
+      },
+
+      theme: {
+        color: '#DC2626',
+      },
+
+      modal: {
+        ondismiss: () => {
+          setLoading(false);
+        },
+      },
+
+      // -------------------------------------------------------
+      // PAYMENT SUCCESS
+      // -------------------------------------------------------
+      handler: async (response: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+      }) => {
+        try {
+          setError('');
+          setLoading(true);
+
+          // ---------------------------------------------------
+          // VERIFY PAYMENT ON SERVER
+          // ---------------------------------------------------
+          const verifyRes = await fetch('/api/payments/verify', {
+            method: 'POST',
+
+            headers: {
+              'Content-Type': 'application/json',
+            },
+
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+
+              // Only identify the registration.
+              // Backend still verifies ownership/role/amount.
+              userId: registeredUser.id,
+            }),
+          });
+
+          const verifyJson = await verifyRes.json();
+
+          if (!verifyRes.ok) {
+            setError(
+              verifyJson.error ||
+                'Payment verification failed. Please contact support.'
+            );
+
+            setLoading(false);
+            return;
+          }
+
+          // ---------------------------------------------------
+          // PAYMENT VERIFIED + MEMBERSHIP ACTIVATED
+          // ---------------------------------------------------
+
+          setMembershipInfo(verifyJson.membership);
+          setPaymentInfo(verifyJson.payment);
+
+          setPaymentDone(true);
+
+          // IMPORTANT:
+          // DO NOT redirect automatically.
+          //
+          // The user should now see the same screen
+          // used by Developer Bypass.
+          setLoading(false);
+        } catch (error) {
+          console.error('Payment verification error:', error);
+
+          setError(
+            'Payment verification failed. Please contact support.'
+          );
+
+          setLoading(false);
+        }
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+
+    rzp.open();
+  } catch (error) {
+    console.error('Payment error:', error);
+
+    setError('Payment failed. Please try again.');
+
+    setLoading(false);
+  }
+}
+
+  async function handleDeveloperBypass() {
     if (!registeredUser) return;
+
     setError('');
+
+    const secret = window.prompt(
+      'Developer bypass authorization required.\n\nEnter the developer bypass secret:'
+    );
+
+    if (!secret) {
+      setError('Developer bypass cancelled.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      if (!window.Razorpay) {
-        setError('Payment gateway is still loading. Please try again.');
+      const res = await fetch(
+        '/api/payments/developer-bypass',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: registeredUser.id,
+            secret,
+          }),
+        }
+      );
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setError(
+          json.error || 'Developer bypass failed.'
+        );
         return;
       }
 
-      const orderRes = await fetch('/api/payments/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: registeredUser.role, userId: registeredUser.id }),
-      });
-      const order = await orderRes.json();
-
-      if (!orderRes.ok) {
-        setError(order.error || 'Failed to create order');
-        return;
-      }
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: order.amount * 100,
-        currency: order.currency,
-        name: 'Mumbai Boxing Association',
-        description: `Annual Registration Fee – ${registeredUser.role}`,
-        order_id: order.orderId,
-        handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
-          try {
-            const verifyRes = await fetch('/api/payments/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ...response,
-                userId: registeredUser.id,
-                role: registeredUser.role,
-              }),
-            });
-
-            if (verifyRes.ok) {
-              setPaymentDone(true);
-              setTimeout(() => router.push('/login'), 2500);
-            } else {
-              setError('Payment verification failed. Contact support.');
-            }
-          } catch {
-            setError('Payment verification failed. Contact support.');
-          } finally {
-            setLoading(false);
-          }
-        },
-        prefill: { email },
-        theme: { color: '#DC2626' },
-        modal: { ondismiss: () => setLoading(false) },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      setMembershipInfo(json.membership);
+      setPaymentInfo(json.payment);
+      setPaymentDone(true);
     } catch {
-      setError('Payment failed. Please try again.');
+      setError(
+        'Developer bypass failed. Please try again.'
+      );
+    } finally {
       setLoading(false);
     }
   }
 
-  const fee = registeredUser?.role === 'boxer' ? '100' : registeredUser?.role === 'coach' ? '1,000' : '1,500';
+  const fee =
+    registeredUser?.role === 'boxer'
+      ? '100'
+      : registeredUser?.role === 'coach'
+        ? '1,000'
+        : '1,500';
 
   return (
-    <div className="relative flex h-screen flex-col overflow-y-auto overflow-x-hidden px-4 py-8" style={{ background: '#FFFFFF' }}>
+    <div
+      className="relative flex h-screen flex-col overflow-y-auto overflow-x-hidden px-4 py-8"
+      style={{ background: '#FFFFFF' }}
+    >
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full animate-glow-pulse"
-        style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 70%)' }}
+        style={{
+          background:
+            'radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 70%)',
+        }}
       />
 
       <div className="relative mx-auto w-full max-w-xl animate-fade-up">
         <div className="mb-7 text-center sm:mb-8">
-          <h1 className="text-2xl font-extrabold sm:text-3xl" style={{ color: '#1E293B' }}>Create Account</h1>
-          <p className="mt-1 text-sm" style={{ color: '#64748B' }}>Register with Mumbai Boxing Association</p>
+          <h1
+            className="text-2xl font-extrabold sm:text-3xl"
+            style={{ color: '#1E293B' }}
+          >
+            Create Account
+          </h1>
+
+          <p
+            className="mt-1 text-sm"
+            style={{ color: '#64748B' }}
+          >
+            Register with Mumbai Boxing Association
+          </p>
         </div>
 
         <div
           className="rounded-3xl p-5 sm:p-8"
           style={{
             background: '#FFFFFF',
-            border: '1px solid rgba(220,38,38,0.2)',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.1)',
+            border:
+              '1px solid rgba(220,38,38,0.2)',
+            boxShadow:
+              '0 24px 64px rgba(0,0,0,0.1)',
           }}
         >
           <div className="mb-6">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-widest" style={{ color: '#DC2626' }}>
+            <label
+              className="mb-2 block text-xs font-bold uppercase tracking-widest"
+              style={{ color: '#DC2626' }}
+            >
               Register As
             </label>
+
             <div className="grid grid-cols-3 gap-2">
               {ROLES.map((r) => (
                 <button
@@ -908,8 +1824,17 @@ export default function RegisterPage() {
                   className="rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60"
                   style={
                     role === r
-                      ? { background: 'linear-gradient(135deg,#DC2626,#EF4444)', color: '#FFFFFF' }
-                      : { background: '#F1F5F9', color: '#64748B', border: '1px solid rgba(220,38,38,0.12)' }
+                      ? {
+                          background:
+                            'linear-gradient(135deg,#DC2626,#EF4444)',
+                          color: '#FFFFFF',
+                        }
+                      : {
+                          background: '#F1F5F9',
+                          color: '#64748B',
+                          border:
+                            '1px solid rgba(220,38,38,0.12)',
+                        }
                   }
                 >
                   {r}
@@ -921,43 +1846,95 @@ export default function RegisterPage() {
           <Stepper step={step} />
 
           {step === 1 && (
-            <form className="space-y-5" onSubmit={handleSendOtp}>
+            <form
+              className="space-y-5"
+              onSubmit={handleSendOtp}
+            >
               <BasicDetails
                 role={role}
                 formData={formData}
                 showPass={showPass}
                 onChange={handleFieldChange}
-                onTogglePassword={() => setShowPass((prev) => !prev)}
+                onTogglePassword={() =>
+                  setShowPass((prev) => !prev)
+                }
               />
-              {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
-              <button type="submit" disabled={loading} className="btn-gold mt-2 w-full rounded-xl py-3 text-sm font-semibold">
+
+              {error && (
+                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-gold mt-2 w-full rounded-xl py-3 text-sm font-semibold"
+              >
                 {loading ? 'Sending...' : 'Continue'}
               </button>
             </form>
           )}
 
           {step === 2 && (
-            <form className="space-y-5" onSubmit={handleAdditionalNext}>
+            <form
+              className="space-y-5"
+              onSubmit={handleAdditionalNext}
+            >
               {role === 'Boxer' && (
-                <BoxerAdditionalDetails formData={formData} files={files} onChange={handleFieldChange} onFileSelect={handleFileSelect} />
+                <BoxerAdditionalDetails
+                  formData={formData}
+                  files={files}
+                  onChange={handleFieldChange}
+                  onFileSelect={handleFileSelect}
+                />
               )}
-              {role === 'Coach' && (
-                <CoachAdditionalDetails formData={formData} files={files} onChange={handleFieldChange} onFileSelect={handleFileSelect} />
-              )}
-              {role === 'Academy' && <AcademyAdditionalDetails formData={formData} onChange={handleFieldChange} />}
 
-              {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+              {role === 'Coach' && (
+                <CoachAdditionalDetails
+                  formData={formData}
+                  files={files}
+                  onChange={handleFieldChange}
+                  onFileSelect={handleFileSelect}
+                />
+              )}
+
+              {role === 'Academy' && (
+                <AcademyAdditionalDetails
+                  formData={formData}
+                  onChange={handleFieldChange}
+                />
+              )}
+
+              {error && (
+                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                  {error}
+                </p>
+              )}
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={() => { setError(''); setStep(1); }}
+                  onClick={() => {
+                    setError('');
+                    setStep(1);
+                  }}
                   className="w-full rounded-xl py-3 text-sm font-semibold"
-                  style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid rgba(220,38,38,0.12)' }}
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#64748B',
+                    border:
+                      '1px solid rgba(220,38,38,0.12)',
+                  }}
                 >
                   Back
                 </button>
-                <button type="submit" disabled={loading} className="btn-gold w-full rounded-xl py-3 text-sm font-semibold">
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-gold w-full rounded-xl py-3 text-sm font-semibold"
+                >
                   Continue
                 </button>
               </div>
@@ -971,16 +1948,35 @@ export default function RegisterPage() {
                 description={`We sent a one-time password to ${email}. Verify it before creating your account.`}
               />
 
-              <div className="rounded-2xl border p-4" style={{ borderColor: 'rgba(220,38,38,0.18)', background: '#F8FAFC' }}>
+              <div
+                className="rounded-2xl border p-4"
+                style={{
+                  borderColor:
+                    'rgba(220,38,38,0.18)',
+                  background: '#F8FAFC',
+                }}
+              >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="flex-1">
-                    <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
-                      Enter 6-digit OTP<span style={{ color: '#DC2626' }}> *</span>
+                    <label
+                      className="mb-1.5 block text-xs font-semibold"
+                      style={{ color: '#94A3B8' }}
+                    >
+                      Enter 6-digit OTP
+                      <span style={{ color: '#DC2626' }}>
+                        {' '}
+                        *
+                      </span>
                     </label>
+
                     <input
                       value={otp}
                       onChange={(e) => {
-                        setOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
+                        setOtp(
+                          e.target.value
+                            .replace(/\D/g, '')
+                            .slice(0, 6)
+                        );
                         setOtpVerified(false);
                       }}
                       inputMode="numeric"
@@ -990,38 +1986,75 @@ export default function RegisterPage() {
                       style={inputStyle}
                     />
                   </div>
+
                   <button
                     type="button"
                     onClick={handleVerifyOtp}
-                    disabled={loading || otpVerified}
+                    disabled={
+                      loading || otpVerified
+                    }
                     className="rounded-xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{ background: otpVerified ? '#166534' : '#F1F5F9', color: otpVerified ? '#FFFFFF' : '#1E293B', border: '1px solid rgba(220,38,38,0.16)' }}
+                    style={{
+                      background: otpVerified
+                        ? '#166534'
+                        : '#F1F5F9',
+                      color: otpVerified
+                        ? '#FFFFFF'
+                        : '#1E293B',
+                      border:
+                        '1px solid rgba(220,38,38,0.16)',
+                    }}
                   >
-                    {otpVerified ? 'Verified ✓' : loading ? 'Checking...' : 'Verify OTP'}
+                    {otpVerified
+                      ? 'Verified ✓'
+                      : loading
+                        ? 'Checking...'
+                        : 'Verify OTP'}
                   </button>
                 </div>
               </div>
 
-              <Review role={role} formData={formData} files={files} />
+              <Review
+                role={role}
+                formData={formData}
+                files={files}
+              />
 
-              {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+              {error && (
+                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                  {error}
+                </p>
+              )}
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={() => { setError(''); setStep(2); }}
+                  onClick={() => {
+                    setError('');
+                    setStep(2);
+                  }}
                   className="w-full rounded-xl py-3 text-sm font-semibold"
-                  style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid rgba(220,38,38,0.12)' }}
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#64748B',
+                    border:
+                      '1px solid rgba(220,38,38,0.12)',
+                  }}
                 >
                   Back
                 </button>
+
                 <button
                   type="button"
                   onClick={handleSubmitRegistration}
-                  disabled={loading || !otpVerified}
+                  disabled={
+                    loading || !otpVerified
+                  }
                   className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loading ? 'Creating Account...' : roleLabel}
+                  {loading
+                    ? 'Creating Account...'
+                    : roleLabel}
                 </button>
               </div>
             </div>
@@ -1029,109 +2062,502 @@ export default function RegisterPage() {
 
           {step === 4 && (
             <div className="space-y-5">
-              {paymentDone ? (
-                <div className="space-y-3 py-6 text-center">
-                  <div className="text-5xl">✅</div>
-                  <p className="text-lg font-bold" style={{ color: '#4ADE80' }}>Payment Successful!</p>
-                  <p className="text-sm" style={{ color: '#94A3B8' }}>Registration complete. Redirecting to login...</p>
-                </div>
-              ) : (
+              {paymentDone &&
+              membershipInfo &&
+              paymentInfo ? (
                 <>
-                  <div className="py-2 text-center">
-                    <div className="mb-2 text-4xl">🥊</div>
-                    <p className="text-lg font-bold" style={{ color: '#1E293B' }}>1-Year Membership Fee</p>
-                    <p className="mt-1 text-sm" style={{ color: '#94A3B8' }}>Pay once to activate your membership for 12 months.</p>
+                  <div className="py-4 text-center">
+                    <div className="mb-3 text-5xl">
+                      ✅
+                    </div>
+
+                    <p
+                      className="text-xl font-bold"
+                      style={{ color: '#166534' }}
+                    >
+                      Membership Activated!
+                    </p>
+
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: '#64748B' }}
+                    >
+                      Your Mumbai Boxing Association
+                      membership is now active.
+                    </p>
                   </div>
 
-                  {/* Membership Card */}
                   <div
-                    className="rounded-2xl p-5 space-y-4"
-                    style={{ background: 'linear-gradient(135deg,#1E293B 0%,#0F172A 100%)', border: '1px solid rgba(220,38,38,0.3)' }}
+                    className="rounded-2xl p-5"
+                    style={{
+                      background:
+                        'linear-gradient(135deg,#1E293B 0%,#0F172A 100%)',
+                      border:
+                        '1px solid rgba(220,38,38,0.3)',
+                    }}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#DC2626' }}>Mumbai Boxing Association</span>
                       <span
-                        className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                        style={{ background: 'rgba(220,38,38,0.2)', color: '#EF4444' }}
+                        className="text-xs font-bold uppercase tracking-widest"
+                        style={{ color: '#DC2626' }}
                       >
-                        1 Year
+                        Mumbai Boxing Association
+                      </span>
+
+                      <span
+                        className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase"
+                        style={{
+                          background:
+                            'rgba(34,197,94,0.15)',
+                          color: '#4ADE80',
+                        }}
+                      >
+                        ACTIVE
                       </span>
                     </div>
 
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: '#64748B' }}>Member</p>
-                      <p className="text-base font-bold" style={{ color: '#F1F5F9' }}>{formData.name || email}</p>
-                      <p className="text-xs capitalize mt-0.5" style={{ color: '#94A3B8' }}>{registeredUser?.role}</p>
+                    <div className="mt-5">
+                      <p
+                        className="text-[10px] uppercase tracking-wider"
+                        style={{ color: '#64748B' }}
+                      >
+                        Member
+                      </p>
+
+                      <p
+                        className="mt-1 text-lg font-bold"
+                        style={{ color: '#F1F5F9' }}
+                      >
+                        {formData.name || email}
+                      </p>
+
+                      <p
+                        className="mt-1 text-xs capitalize"
+                        style={{ color: '#94A3B8' }}
+                      >
+                        {membershipInfo.role}
+                      </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 pt-1 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+                    <div
+                      className="mt-5 grid grid-cols-2 gap-4 border-t pt-4"
+                      style={{
+                        borderColor:
+                          'rgba(255,255,255,0.08)',
+                      }}
+                    >
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748B' }}>Valid From</p>
-                        <p className="text-xs font-semibold mt-0.5" style={{ color: '#F1F5F9' }}>
-                          {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <p
+                          className="text-[10px] uppercase tracking-wider"
+                          style={{
+                            color: '#64748B',
+                          }}
+                        >
+                          Membership ID
                         </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748B' }}>Valid Until</p>
-                        <p className="text-xs font-semibold mt-0.5" style={{ color: '#4ADE80' }}>
-                          {new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="flex items-end justify-between pt-1 border-t" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748B' }}>Membership Fee</p>
-                        <p className="text-2xl font-extrabold mt-0.5" style={{ color: '#DC2626' }}>₹{fee}</p>
+                        <p
+                          className="mt-1 text-sm font-bold"
+                          style={{
+                            color: '#F1F5F9',
+                          }}
+                        >
+                          {membershipInfo.membershipId}
+                        </p>
                       </div>
-                      <p className="text-[10px]" style={{ color: '#475569' }}>{email}</p>
+
+                      <div>
+                        <p
+                          className="text-[10px] uppercase tracking-wider"
+                          style={{
+                            color: '#64748B',
+                          }}
+                        >
+                          Invoice
+                        </p>
+
+                        <p
+                          className="mt-1 break-all text-sm font-bold"
+                          style={{
+                            color: '#F1F5F9',
+                          }}
+                        >
+                          {paymentInfo.invoiceNumber}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p
+                          className="text-[10px] uppercase tracking-wider"
+                          style={{
+                            color: '#64748B',
+                          }}
+                        >
+                          Valid From
+                        </p>
+
+                        <p
+                          className="mt-1 text-xs font-semibold"
+                          style={{
+                            color: '#F1F5F9',
+                          }}
+                        >
+                          {formatShortDate(
+                            membershipInfo.validFrom
+                          )}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p
+                          className="text-[10px] uppercase tracking-wider"
+                          style={{
+                            color: '#64748B',
+                          }}
+                        >
+                          Valid Until
+                        </p>
+
+                        <p
+                          className="mt-1 text-xs font-semibold"
+                          style={{
+                            color: '#4ADE80',
+                          }}
+                        >
+                          {formatShortDate(
+                            membershipInfo.expiry
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* What's included */}
-                  <div className="rounded-xl border px-4 py-3 space-y-2" style={{ borderColor: 'rgba(220,38,38,0.12)', background: '#F8FAFC' }}>
-                    <p className="text-xs font-semibold" style={{ color: '#1E293B' }}>Membership includes</p>
-                    {(registeredUser?.role === 'boxer'
-                      ? ['Official MBA membership card', 'Tournament participation eligibility', 'Rankings & performance tracking', 'Medical record management']
-                      : registeredUser?.role === 'coach'
-                      ? ['Official MBA coach certification', 'Access to coach dashboard', 'Manage boxer profiles', 'Tournament management access']
-                      : ['Official MBA academy registration', 'List boxers & coaches under academy', 'Academy dashboard access', 'Tournament & event participation']
-                    ).map((item) => (
-                      <div key={item} className="flex items-center gap-2">
-                        <span style={{ color: '#DC2626' }}>✓</span>
-                        <span className="text-xs" style={{ color: '#64748B' }}>{item}</span>
-                      </div>
-                    ))}
+                  <div
+                    className="rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor:
+                        'rgba(220,38,38,0.12)',
+                      background: '#F8FAFC',
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="text-xs"
+                        style={{ color: '#64748B' }}
+                      >
+                        Payment
+                      </span>
+
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: '#166534' }}
+                      >
+                        ₹
+                        {paymentInfo.amount.toLocaleString(
+                          'en-IN'
+                        )}{' '}
+                        Paid
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between">
+                      <span
+                        className="text-xs"
+                        style={{ color: '#64748B' }}
+                      >
+                        Method
+                      </span>
+
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: '#1E293B' }}
+                      >
+                        {paymentInfo.method}
+                      </span>
+                    </div>
                   </div>
 
-                  {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        downloadMembershipCard(
+                          membershipInfo,
+                          paymentInfo,
+                          formData.name || '',
+                          email
+                        )
+                      }
+                      className="w-full rounded-xl py-3 text-sm font-semibold"
+                      style={{
+                        background: '#F1F5F9',
+                        color: '#1E293B',
+                        border:
+                          '1px solid rgba(220,38,38,0.16)',
+                      }}
+                    >
+                      Download Membership Card
+                    </button>
 
-                  <button onClick={handlePayment} disabled={loading} className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:opacity-60">
-                    {loading ? 'Opening Payment...' : `Pay ₹${fee} & Activate Membership`}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        downloadInvoice(
+                          membershipInfo,
+                          paymentInfo,
+                          formData.name || '',
+                          email
+                        )
+                      }
+                      className="w-full rounded-xl py-3 text-sm font-semibold"
+                      style={{
+                        background: '#F1F5F9',
+                        color: '#1E293B',
+                        border:
+                          '1px solid rgba(220,38,38,0.16)',
+                      }}
+                    >
+                      Download Invoice
+                    </button>
+                  </div>
 
                   <button
                     type="button"
-                    onClick={() => router.push('/login')}
-                    className="w-full rounded-xl py-3 text-sm"
-                    style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid rgba(220,38,38,0.12)' }}
+                    onClick={() =>
+                      router.push('/login')
+                    }
+                    className="btn-gold w-full rounded-xl py-3 text-sm font-semibold"
                   >
-                    Skip for now (Pay later)
+                    Continue to Login
                   </button>
+                </>
+              ) : (
+                <>
+                  <div className="py-2 text-center">
+                    <div className="mb-2 text-4xl">
+                      🥊
+                    </div>
+
+                    <p
+                      className="text-lg font-bold"
+                      style={{ color: '#1E293B' }}
+                    >
+                      1-Year Membership Fee
+                    </p>
+
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: '#64748B' }}
+                    >
+                      Complete payment to activate your
+                      membership.
+                    </p>
+                  </div>
+
+                  <div
+                    className="rounded-2xl p-5"
+                    style={{
+                      background:
+                        'linear-gradient(135deg,#1E293B 0%,#0F172A 100%)',
+                      border:
+                        '1px solid rgba(220,38,38,0.3)',
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="text-xs font-bold uppercase tracking-widest"
+                        style={{ color: '#DC2626' }}
+                      >
+                        Mumbai Boxing Association
+                      </span>
+
+                      <span
+                        className="rounded-full px-2.5 py-1 text-[10px] font-bold"
+                        style={{
+                          background:
+                            'rgba(220,38,38,0.2)',
+                          color: '#EF4444',
+                        }}
+                      >
+                        1 YEAR
+                      </span>
+                    </div>
+
+                    <div className="mt-5">
+                      <p
+                        className="text-[10px] uppercase tracking-wider"
+                        style={{ color: '#64748B' }}
+                      >
+                        Member
+                      </p>
+
+                      <p
+                        className="mt-1 text-base font-bold"
+                        style={{ color: '#F1F5F9' }}
+                      >
+                        {formData.name || email}
+                      </p>
+
+                      <p
+                        className="mt-1 text-xs capitalize"
+                        style={{ color: '#94A3B8' }}
+                      >
+                        {registeredUser?.role}
+                      </p>
+                    </div>
+
+                    <div
+                      className="mt-5 flex items-end justify-between border-t pt-4"
+                      style={{
+                        borderColor:
+                          'rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <div>
+                        <p
+                          className="text-[10px] uppercase tracking-wider"
+                          style={{
+                            color: '#64748B',
+                          }}
+                        >
+                          Membership Fee
+                        </p>
+
+                        <p
+                          className="mt-1 text-2xl font-extrabold"
+                          style={{
+                            color: '#DC2626',
+                          }}
+                        >
+                          ₹{fee}
+                        </p>
+                      </div>
+
+                      <p
+                        className="text-[10px]"
+                        style={{ color: '#64748B' }}
+                      >
+                        {email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="rounded-xl border px-4 py-3"
+                    style={{
+                      borderColor:
+                        'rgba(220,38,38,0.18)',
+                      background: '#FEF2F2',
+                    }}
+                  >
+                    <p
+                      className="text-xs font-semibold"
+                      style={{ color: '#991B1B' }}
+                    >
+                      Payment is required
+                    </p>
+
+                    <p
+                      className="mt-1 text-[11px] leading-5"
+                      style={{ color: '#7F1D1D' }}
+                    >
+                      Your membership will remain pending
+                      until the membership fee is successfully
+                      paid and verified.
+                    </p>
+                  </div>
+
+                  {error && (
+                    <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-500">
+                      {error}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handlePayment}
+                    disabled={loading}
+                    className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading
+                      ? 'Opening Payment...'
+                      : `Pay ₹${fee} & Activate Membership`}
+                  </button>
+
+                  {process.env.NODE_ENV !==
+                    'production' && (
+                    <div
+                      className="rounded-xl border p-3"
+                      style={{
+                        borderColor:
+                          'rgba(245,158,11,0.3)',
+                        background: '#FFFBEB',
+                      }}
+                    >
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-wider"
+                        style={{
+                          color: '#92400E',
+                        }}
+                      >
+                        Development Only
+                      </p>
+
+                      <p
+                        className="mt-1 text-[11px]"
+                        style={{
+                          color: '#92400E',
+                        }}
+                      >
+                        Developer bypass is available only
+                        during local development and is
+                        disabled in production.
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={
+                          handleDeveloperBypass
+                        }
+                        disabled={loading}
+                        className="mt-3 w-full rounded-xl py-2.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                        style={{
+                          background: '#FEF3C7',
+                          color: '#92400E',
+                          border:
+                            '1px solid rgba(245,158,11,0.35)',
+                        }}
+                      >
+                        {loading
+                          ? 'Activating...'
+                          : 'Developer Bypass — Test Membership'}
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
           )}
 
-          <p className="mt-6 text-center text-xs" style={{ color: '#64748B' }}>
+          <p
+            className="mt-6 text-center text-xs"
+            style={{ color: '#64748B' }}
+          >
             Already have an account?{' '}
-            <Link href="/login" style={{ color: '#DC2626' }} className="font-semibold hover:underline">
+            <Link
+              href="/login"
+              style={{ color: '#DC2626' }}
+              className="font-semibold hover:underline"
+            >
               Sign in here
             </Link>
           </p>
         </div>
 
-        <p className="mt-6 text-center text-xs" style={{ color: '#94A3B8' }}>
+        <p
+          className="mt-6 text-center text-xs"
+          style={{ color: '#94A3B8' }}
+        >
           © 2025 Mumbai Boxing Association. All rights reserved.
         </p>
       </div>
