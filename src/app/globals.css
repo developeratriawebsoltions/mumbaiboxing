@@ -5,25 +5,25 @@
    ========================================================= */
 
 :root {
-  --background: #070D14;
-  --background-secondary: #080d17;
-  --surface: #0c1320;
-  --surface-light: #111a29;
+  --background: #f7f8fa;
+  --background-secondary: #ffffff;
+  --surface: #ffffff;
+  --surface-light: #f8fafc;
 
-  --foreground: #f7f8fa;
-  --foreground-muted: #9ca6b5;
-  --foreground-dim: #687386;
+  --foreground: #0f172a;
+  --foreground-muted: #64748b;
+  --foreground-dim: #94a3b8;
 
   --primary: #ed1c24;
   --primary-dark: #b90f16;
   --primary-light: #ff3b42;
 
-  --border: rgba(255, 255, 255, 0.09);
-  --border-red: rgba(237, 28, 36, 0.35);
+  --border: rgba(15, 23, 42, 0.08);
+  --border-red: rgba(237, 28, 36, 0.25);
 
-  --shadow-red: 0 0 40px rgba(237, 28, 36, 0.12);
+  --shadow-red: 0 0 40px rgba(237, 28, 36, 0.08);
 
-  --container: 2400px;
+  --container: 1440px;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -43,27 +43,16 @@
 
 html {
   scroll-behavior: smooth;
-  background: var(--background);
+  background: #f7f8fa;
 }
 
 body {
   margin: 0;
   padding: 0;
 
-  background:
-    radial-gradient(
-      circle at 15% 10%,
-      rgba(237, 28, 36, 0.055),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 85% 30%,
-      rgba(255, 255, 255, 0.025),
-      transparent 30%
-    ),
-    var(--background);
+  background: #f7f8fa;
 
-  color: var(--foreground);
+  color: #0f172a;
 
   font-family:
     Inter,
@@ -82,7 +71,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 /* =========================================================
    SELECTION
    ========================================================= */
@@ -97,7 +85,6 @@ body {
    ========================================================= */
 
 a {
-  color: inherit;
   text-decoration: none;
 }
 
@@ -499,11 +486,11 @@ video {
    ========================================================= */
 
 .footer-link {
-  color: #475569;
+  color: #64748b;
 }
 
 .footer-link:hover {
-  color: #fff;
+  color: #0f172a;
 }
 
 /* =========================================================
@@ -970,13 +957,16 @@ video {
   width: 8px;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+
 ::-webkit-scrollbar-track {
-  background: #05080f;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #242c38;
-
+  background: #cbd5e1;
   border-radius: 999px;
 }
 
@@ -984,11 +974,9 @@ video {
   background: var(--primary);
 }
 
-/* Firefox */
-
 html {
   scrollbar-width: thin;
-  scrollbar-color: #242c38 #05080f;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
 /* =========================================================

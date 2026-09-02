@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 
-type DocumentWithUser = Prisma.DocumentGetPayload<{
+type DocumentWithUser = Prisma.documentGetPayload<{
   include: {
     user: {
       select: {

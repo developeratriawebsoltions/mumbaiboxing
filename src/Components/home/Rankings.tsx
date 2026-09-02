@@ -1,138 +1,350 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  MapPin,
+  Trophy,
+} from "lucide-react";
 import LiveTournament from "./LiveTournament";
 
-const data: Record<string, { rank: number; name: string; state: string; pts: number }[]> = {
+const data: Record<
+  string,
+  {
+    rank: number;
+    name: string;
+    state: string;
+    pts: number;
+  }[]
+> = {
   SENIOR: [
-    { rank: 1, name: "Vikas Patil",    state: "Maharashtra", pts: 980 },
-    { rank: 2, name: "Arjun Kumar",    state: "Rajasthan",   pts: 920 },
-    { rank: 3, name: "Sameer Khan",    state: "Uttar Pradesh", pts: 870 },
-    { rank: 4, name: "Rohit Sharma",   state: "Delhi",       pts: 780 },
-    { rank: 5, name: "Imran Shaikh",   state: "Maharashtra", pts: 710 },
+    {
+      rank: 1,
+      name: "Vikas Patil",
+      state: "Maharashtra",
+      pts: 980,
+    },
+    {
+      rank: 2,
+      name: "Arjun Kumar",
+      state: "Rajasthan",
+      pts: 920,
+    },
+    {
+      rank: 3,
+      name: "Sameer Khan",
+      state: "Uttar Pradesh",
+      pts: 870,
+    },
+    {
+      rank: 4,
+      name: "Rohit Sharma",
+      state: "Delhi",
+      pts: 780,
+    },
+    {
+      rank: 5,
+      name: "Imran Shaikh",
+      state: "Maharashtra",
+      pts: 710,
+    },
   ],
+
   YOUTH: [
-    { rank: 1, name: "Rahul Desai",    state: "Maharashtra", pts: 860 },
-    { rank: 2, name: "Karan Mehta",    state: "Gujarat",     pts: 810 },
-    { rank: 3, name: "Dev Yadav",      state: "UP",          pts: 760 },
-    { rank: 4, name: "Nikhil More",    state: "Maharashtra", pts: 700 },
-    { rank: 5, name: "Aditya Nair",    state: "Kerala",      pts: 650 },
+    {
+      rank: 1,
+      name: "Rahul Desai",
+      state: "Maharashtra",
+      pts: 860,
+    },
+    {
+      rank: 2,
+      name: "Karan Mehta",
+      state: "Gujarat",
+      pts: 810,
+    },
+    {
+      rank: 3,
+      name: "Dev Yadav",
+      state: "UP",
+      pts: 760,
+    },
+    {
+      rank: 4,
+      name: "Nikhil More",
+      state: "Maharashtra",
+      pts: 700,
+    },
+    {
+      rank: 5,
+      name: "Aditya Nair",
+      state: "Kerala",
+      pts: 650,
+    },
   ],
+
   WOMEN: [
-    { rank: 1, name: "Pooja Desai",    state: "Maharashtra", pts: 940 },
-    { rank: 2, name: "Sneha Kulkarni", state: "Maharashtra", pts: 890 },
-    { rank: 3, name: "Priya Singh",    state: "Delhi",       pts: 820 },
-    { rank: 4, name: "Anita Rao",      state: "Karnataka",   pts: 760 },
-    { rank: 5, name: "Meena Patil",    state: "Maharashtra", pts: 700 },
+    {
+      rank: 1,
+      name: "Pooja Desai",
+      state: "Maharashtra",
+      pts: 940,
+    },
+    {
+      rank: 2,
+      name: "Sneha Kulkarni",
+      state: "Maharashtra",
+      pts: 890,
+    },
+    {
+      rank: 3,
+      name: "Priya Singh",
+      state: "Delhi",
+      pts: 820,
+    },
+    {
+      rank: 4,
+      name: "Anita Rao",
+      state: "Karnataka",
+      pts: 760,
+    },
+    {
+      rank: 5,
+      name: "Meena Patil",
+      state: "Maharashtra",
+      pts: 700,
+    },
   ],
 };
 
-const rankColors: Record<number, { bg: string; text: string }> = {
-  1: { bg: "rgba(234,179,8,0.15)",  text: "#FBBF24" },
-  2: { bg: "rgba(148,163,184,0.15)", text: "#94A3B8" },
-  3: { bg: "rgba(180,83,9,0.15)",   text: "#F97316" },
+const rankStyles: Record<
+  number,
+  {
+    bg: string;
+    text: string;
+  }
+> = {
+  1: {
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+  },
+  2: {
+    bg: "bg-slate-100",
+    text: "text-slate-500",
+  },
+  3: {
+    bg: "bg-orange-50",
+    text: "text-orange-600",
+  },
 };
 
 export default function Rankings() {
-  const [tab, setTab] = useState<"SENIOR" | "YOUTH" | "WOMEN">("SENIOR");
+  const [tab, setTab] = useState<
+    "SENIOR" | "YOUTH" | "WOMEN"
+  >("SENIOR");
+
   const rows = data[tab];
   const maxPts = rows[0].pts;
 
   return (
-    <section className="py-16" style={{ background: "#070D14" }}>
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <section
+      id="rankings"
+      className="w-full overflow-hidden bg-white"
+    >
+      <div className="mx-auto w-full max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
-          {/* ── Rankings panel ── */}
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}
+        {/* =====================================================
+            SECTION HEADER
+        ===================================================== */}
+        <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between lg:mb-14">
+
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <span className="h-[2px] w-8 bg-red-600" />
+
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-600">
+                Performance
+              </p>
+            </div>
+
+            <h2 className="text-4xl font-black leading-[1.02] tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-6xl xl:text-[68px]">
+              TOP
+              <span className="text-red-600">
+                {" "}RANKINGS
+              </span>
+            </h2>
+          </div>
+
+          <Link
+            href="/dashboard/ranking"
+            className="group inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[11px] font-bold uppercase tracking-[0.12em] !text-slate-600 transition-all duration-200 hover:border-red-100 hover:bg-red-50 hover:!text-red-600"
           >
+            View Full Rankings
+
+            <ArrowRight
+              size={15}
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            />
+          </Link>
+        </div>
+
+        {/* =====================================================
+            TWO COLUMN CONTENT
+        ===================================================== */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.08fr_0.92fr] xl:gap-6">
+
+          {/* ===================================================
+              RANKING PANEL
+          =================================================== */}
+          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_15px_45px_rgba(15,23,42,0.06)]">
+
             {/* Header */}
-            <div
-              className="flex items-center justify-between px-5 py-4"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#DC2626" }}>
-                  Leaderboard
-                </p>
-                <h2 className="text-lg font-extrabold text-white">Top Rankings</h2>
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 sm:px-6 lg:px-7">
+
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50">
+                  <BarChart3
+                    size={19}
+                    strokeWidth={1.8}
+                    className="text-red-600"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                    Leaderboard
+                  </p>
+
+                  <h3 className="mt-0.5 text-base font-bold text-slate-950 sm:text-lg">
+                    Current Rankings
+                  </h3>
+                </div>
               </div>
-              <Link href="/dashboard/ranking" className="text-xs font-semibold" style={{ color: "#DC2626" }}>
-                VIEW FULL RANKINGS →
-              </Link>
+
+              <Trophy
+                size={19}
+                className="text-slate-300"
+              />
             </div>
 
             {/* Tabs */}
-            <div className="flex px-5 pt-4 gap-2">
-              {(["SENIOR", "YOUTH", "WOMEN"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className="text-[11px] font-bold px-4 py-1.5 rounded-full transition-all"
-                  style={
-                    tab === t
-                      ? { background: "#DC2626", color: "#fff" }
-                      : { background: "rgba(255,255,255,0.06)", color: "#6b7280" }
-                  }
-                >
-                  {t}
-                </button>
-              ))}
+            <div className="flex gap-2 overflow-x-auto px-5 pt-5 sm:px-6 lg:px-7">
+              {(
+                ["SENIOR", "YOUTH", "WOMEN"] as const
+              ).map((category) => {
+                const active = tab === category;
+
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setTab(category)}
+                    className={`shrink-0 rounded-full px-4 py-2 text-[10px] font-bold tracking-[0.08em] transition-all duration-200 ${
+                      active
+                        ? "bg-red-600 !text-white shadow-sm"
+                        : "bg-slate-100 !text-slate-500 hover:bg-slate-200 hover:!text-slate-700"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Rows */}
-            <div className="px-5 py-4 space-y-3">
-              {rows.map((r) => {
-                const badge = rankColors[r.rank];
+            {/* Ranking Rows */}
+            <div className="space-y-2 px-5 py-5 sm:px-6 lg:px-7">
+
+              {rows.map((row) => {
+                const badge = rankStyles[row.rank];
+
                 return (
-                  <div key={r.rank} className="flex items-center gap-3">
+                  <div
+                    key={row.rank}
+                    className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition-all duration-200 hover:border-slate-100 hover:bg-slate-50 sm:gap-4 sm:p-3.5"
+                  >
+
                     {/* Rank */}
                     <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0"
-                      style={badge
-                        ? { background: badge.bg, color: badge.text }
-                        : { background: "rgba(255,255,255,0.06)", color: "#94A3B8" }}
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
+                        badge
+                          ? `${badge.bg} ${badge.text}`
+                          : "bg-slate-100 text-slate-400"
+                      }`}
                     >
-                      {String(r.rank).padStart(2, "0")}
+                      {String(row.rank).padStart(2, "0")}
                     </div>
 
                     {/* Avatar */}
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={{ background: "rgba(220,38,38,0.15)", color: "#DC2626" }}
-                    >
-                      {r.name.charAt(0)}
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-black text-red-600">
+                      {row.name.charAt(0)}
                     </div>
 
-                    {/* Name + bar */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-bold text-white truncate">{r.name}</p>
-                        <span className="text-xs font-extrabold ml-2 flex-shrink-0" style={{ color: "#EF4444" }}>
-                          {r.pts} <span className="text-[10px] font-normal" style={{ color: "#6b7280" }}>pts</span>
+                    {/* Name + Progress */}
+                    <div className="min-w-0 flex-1">
+
+                      <div className="mb-1 flex items-center justify-between gap-3">
+                        <p className="truncate text-sm font-bold text-slate-900">
+                          {row.name}
+                        </p>
+
+                        <span className="shrink-0 text-xs font-black text-red-600">
+                          {row.pts}
+                          <span className="ml-1 text-[9px] font-medium text-slate-400">
+                            pts
+                          </span>
                         </span>
                       </div>
-                      <p className="text-[10px] mb-1" style={{ color: "#6b7280" }}>{r.state}</p>
-                      <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
+
+                      <div className="mb-2 flex items-center gap-1.5">
+                        <MapPin
+                          size={11}
+                          className="shrink-0 text-slate-300"
+                        />
+
+                        <p className="truncate text-[10px] text-slate-400">
+                          {row.state}
+                        </p>
+                      </div>
+
+                      <div className="h-1 overflow-hidden rounded-full bg-slate-100">
                         <div
-                          className="h-full rounded-full"
+                          className="h-full rounded-full bg-red-600 transition-all duration-500"
                           style={{
-                            width: `${(r.pts / maxPts) * 100}%`,
-                            background: "linear-gradient(90deg,#DC2626,#EF4444)",
+                            width: `${(row.pts / maxPts) * 100}%`,
                           }}
                         />
                       </div>
+
                     </div>
                   </div>
                 );
               })}
+
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6 lg:px-7">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                  Category
+                </span>
+
+                <span className="text-xs font-bold text-slate-700">
+                  {tab}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* ── Live Tournament panel ── */}
-          <LiveTournament />
+          {/* ===================================================
+              LIVE TOURNAMENT
+          =================================================== */}
+          <div className="min-w-0">
+            <LiveTournament />
+          </div>
+
         </div>
       </div>
     </section>

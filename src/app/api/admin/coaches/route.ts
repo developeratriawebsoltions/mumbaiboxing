@@ -3,19 +3,50 @@ import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 
 export async function GET(req: NextRequest) {
-  const payload = await verifyToken(req.cookies.get("mba_token")?.value ?? "");
-  if (!payload || payload.role !== "superadmin")
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const token = req.cookies.get("mba_token")?.value ?? "";
 
-  const coaches = await prisma.coach.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: {
-        include: { documents: { select: { id: true, label: true, filePath: true, fileType: true } } },
+    const payload = await verifyToken(token);
+
+    if (!payload || payload.role !== "superadmin") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const coaches = await prisma.coach.findMany({
+      orderBy: {
+        createdAt: "desc",
       },
-      academy: { select: { name: true } },
-    },
-  });
+      include: {
+        user: {
+          include: {
+            document: {
+              select: {
+                id: true,
+                label: true,
+                filePath: true,
+                fileType: true,
+              },
+            },
+          },
+        },
+        academy: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
 
-  return NextResponse.json(coaches);
+    return NextResponse.json(coaches);
+  } catch (error) {
+    console.error("Admin coaches API error:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch coaches" },
+      { status: 500 }
+    );
+  }
 }

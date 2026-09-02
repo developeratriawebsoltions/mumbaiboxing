@@ -1,146 +1,267 @@
 "use client";
+
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-
-const links = [
-  { label: "Home",        href: "/" },
-  { label: "About",       href: "#about" },
-  { label: "Tournaments", href: "/events" },
-  { label: "Rankings",    href: "/dashboard/ranking" },
-  { label: "Academies",   href: "#academies" },
-  { label: "News",        href: "#news" },
-  { label: "Contact",     href: "#contact" },
-];
-
-type AuthUser = { email: string; role: string } | null;
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import {
+  ArrowRight,
+  Grid2X2,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<AuthUser>(null);
-  const [checked, setChecked] = useState(false);
-  const router = useRouter();
+  const pathname = usePathname();
+
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => { if (d?.role) setUser({ email: d.email, role: d.role }); })
-      .catch(() => {})
-      .finally(() => setChecked(true));
+    async function fetchUser() {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user || data);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
-    setOpen(false);
-    router.push("/");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      window.location.href = "/";
+    } catch {
+      window.location.href = "/";
+    }
   }
 
-  const dashboardHref = user?.role === "superadmin" ? "/dashboard/admin/boxers" : "/dashboard";
+  const navLinks = [
+    { label: "Home", href: "/" },
+    { label: "About", href: "#about" },
+    { label: "Tournaments", href: "/events" },
+    { label: "Rankings", href: "#rankings" },
+    { label: "Academies", href: "#academies" },
+    { label: "News", href: "#news" },
+    { label: "Contact", href: "#contact" },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    if (href.startsWith("#")) {
+      return false;
+    }
+
+    return pathname.startsWith(href);
+  };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50 border-b border-white/10"
-      style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(10px)" }}>
-      <div className="container mx-auto flex h-16 items-center justify-between px-6">
+    <header className="relative z-[100] w-full border-b border-slate-200 bg-white">
+      <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-6 lg:px-10">
 
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-sm flex items-center justify-center font-display text-lg text-white"
-            style={{ background: "linear-gradient(135deg,#EF4444,#991B1B)", border: "1px solid rgba(255,255,255,0.15)" }}>
-            🥊
+        {/* =====================================================
+            LOGO
+        ===================================================== */}
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-3"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-sm font-black text-white shadow-sm">
+            MB
           </div>
-          <div className="leading-tight">
-            <div className="font-display text-base tracking-widest text-white">
-              MUMBAI <span style={{ color: "#EF4444" }}>BOXING</span>
+
+          <div className="leading-none">
+            <div className="text-[16px] font-extrabold tracking-[0.08em] text-slate-950">
+              MUMBAI{" "}
+              <span className="text-red-600">
+                BOXING
+              </span>
             </div>
-            <div className="text-[9px] tracking-[0.25em] text-slate-400">ASSOCIATION</div>
+
+            <div className="mt-1 text-[8px] font-semibold tracking-[0.28em] text-slate-500">
+              ASSOCIATION
+            </div>
           </div>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href}
-              className="text-sm text-slate-300 hover:text-[#EF4444] px-4 py-2 rounded-lg hover:bg-white/5 transition-all duration-200">
-              {l.label}
-            </Link>
-          ))}
+        {/* =====================================================
+            DESKTOP NAVIGATION
+        ===================================================== */}
+        <nav className="hidden items-center gap-7 lg:flex">
+          {navLinks.map((link) => {
+            const active = isActive(link.href);
+
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`group relative flex h-[76px] items-center text-[13px] font-medium transition-colors duration-200 ${
+                  active
+                    ? "!text-red-600"
+                    : "!text-slate-600 hover:!text-red-600"
+                }`}
+              >
+                {link.label}
+
+                {/* Active + Hover underline */}
+                <span
+                  className={`absolute bottom-0 left-1/2 h-[2px] -translate-x-1/2 rounded-full bg-red-600 transition-all duration-200 ${
+                    active
+                      ? "w-8 opacity-100"
+                      : "w-0 opacity-0 group-hover:w-8 group-hover:opacity-100"
+                  }`}
+                />
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          {!checked ? (
-            <div className="w-32 h-9 rounded animate-pulse" style={{ background: "rgba(255,255,255,0.05)" }} />
-          ) : user ? (
+        {/* =====================================================
+            DESKTOP ACTIONS
+        ===================================================== */}
+        <div className="hidden items-center gap-3 lg:flex">
+          {!loading && user ? (
             <>
-              <Link href={dashboardHref} className="text-sm text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-all">
+              <Link
+                href="/dashboard"
+                className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-5 text-sm font-medium !text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50"
+              >
+                <Grid2X2 size={15} />
                 Dashboard
               </Link>
-              <button onClick={handleLogout} className="text-sm bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded font-semibold transition-all">
+
+              <button
+                onClick={handleLogout}
+                className="flex h-10 items-center gap-2 rounded-full bg-red-600 px-5 text-sm font-semibold !text-white shadow-sm transition-all duration-200 hover:bg-red-700 hover:shadow-md"
+              >
+                <LogOut size={15} />
                 Logout
               </button>
             </>
-          ) : (
-            <Link href="/register"
-              className="text-sm font-bold text-white px-5 py-2.5 rounded transition-all"
-              style={{ background: "#DC2626" }}>
-              Register / Login
-            </Link>
-          )}
+          ) : !loading ? (
+            <>
+              <Link
+                href="/login"
+                className="flex h-10 items-center rounded-full px-4 text-sm font-medium !text-slate-600 transition-colors hover:!text-red-600"
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/register"
+                className="flex h-10 items-center gap-2 rounded-full bg-red-600 px-5 text-sm font-semibold !text-white shadow-sm transition-all duration-200 hover:bg-red-700 hover:shadow-md"
+              >
+                Register
+                <ArrowRight size={15} />
+              </Link>
+            </>
+          ) : null}
         </div>
 
-        {/* Mobile toggle */}
-        <button className="md:hidden text-slate-300 hover:text-[#EF4444] transition-colors" onClick={() => setOpen(!open)}>
-          {open ? <X size={22} /> : <Menu size={22} />}
+        {/* =====================================================
+            MOBILE MENU BUTTON
+        ===================================================== */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 !text-slate-700 lg:hidden"
+          aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? (
+            <X size={21} />
+          ) : (
+            <Menu size={21} />
+          )}
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden border-t border-white/5 px-6 py-4 space-y-1"
-          style={{ background: "#0F172B" }}>
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-              className="block text-sm text-slate-300 hover:text-[#EF4444] px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all">
-              {l.label}
-            </Link>
-          ))}
+      {/* =======================================================
+          MOBILE MENU
+      ======================================================= */}
+      {mobileOpen && (
+        <div className="border-t border-slate-200 bg-white lg:hidden">
+          <div className="mx-auto max-w-[1440px] px-6 py-5">
 
-          <div className="pt-3 flex flex-col gap-2">
-            {user ? (
-              <>
-                <div className="flex items-center gap-3 px-3 py-2">
-                  <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                    {user.email.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm text-white font-medium">{user.email.split("@")[0]}</p>
-                    <p className="text-xs text-slate-400 capitalize">{user.role}</p>
-                  </div>
-                </div>
-                <Link href={dashboardHref} onClick={() => setOpen(false)}
-                  className="btn-gold block text-center text-sm px-5 py-2.5 rounded-xl">
-                  Go to Dashboard
+            <nav className="flex flex-col">
+              {navLinks.map((link) => {
+                const active = isActive(link.href);
+
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`border-b border-slate-100 py-3.5 text-sm font-medium transition-colors ${
+                      active
+                        ? "!text-red-600"
+                        : "!text-slate-600 hover:!text-red-600"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Mobile Actions */}
+            {!loading && user ? (
+              <div className="mt-5 flex gap-3">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 py-3 text-sm font-medium !text-slate-700"
+                >
+                  <Grid2X2 size={15} />
+                  Dashboard
                 </Link>
-                <button onClick={handleLogout}
-                  className="block w-full text-center text-sm px-5 py-2.5 rounded-xl text-red-400 hover:bg-white/5 transition-all">
+
+                <button
+                  onClick={handleLogout}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-3 text-sm font-semibold !text-white"
+                >
+                  <LogOut size={15} />
                   Logout
                 </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" onClick={() => setOpen(false)}
-                  className="btn-ghost block text-center text-sm px-5 py-2.5 rounded-xl">
+              </div>
+            ) : !loading ? (
+              <div className="mt-5 flex gap-3">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex flex-1 items-center justify-center rounded-lg border border-slate-200 py-3 text-sm font-medium !text-slate-700"
+                >
                   Login
                 </Link>
-                <Link href="/register" onClick={() => setOpen(false)}
-                  className="btn-gold block text-center text-sm px-5 py-2.5 rounded-xl">
-                  Register Now
+
+                <Link
+                  href="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex flex-1 items-center justify-center rounded-lg bg-red-600 py-3 text-sm font-semibold !text-white"
+                >
+                  Register
                 </Link>
-              </>
-            )}
+              </div>
+            ) : null}
           </div>
         </div>
       )}

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   if (!tournament) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
   if (tournament.status === "completed") return NextResponse.json({ error: "Tournament is closed" }, { status: 400 });
 
-  const existing = await prisma.tournamentEntry.findFirst({
+  const existing = await prisma.tournamententry.findFirst({
     where: { tournamentId, boxerId: boxer.id },
   });
   if (existing) return NextResponse.json({ error: "Already registered" }, { status: 400 });

@@ -3,20 +3,44 @@ import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 
 export async function GET(req: NextRequest) {
-  const payload = await verifyToken(req.cookies.get("mba_token")?.value ?? "");
-  if (!payload || payload.role !== "superadmin")
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const token = req.cookies.get("mba_token")?.value ?? "";
+    const payload = await verifyToken(token);
 
-  const academies = await prisma.academy.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: {
-        include: { documents: { select: { id: true, label: true, filePath: true, fileType: true } } },
+    if (!payload || payload.role !== "superadmin") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const academies = await prisma.academy.findMany({
+      orderBy: {
+        createdAt: "desc",
       },
-      boxers: { select: { id: true } },
-      coaches: { select: { id: true } },
-    },
-  });
+      include: {
+        user: {
+          include: {
+            document: {
+              select: {
+                id: true,
+                label: true,
+                filePath: true,
+                fileType: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-  return NextResponse.json(academies);
+    return NextResponse.json(academies);
+  } catch (error) {
+    console.error("Admin academies API error:", error);
+
+    return NextResponse.json(
+      { error: "Failed to fetch academies" },
+      { status: 500 }
+    );
+  }
 }

@@ -7,7 +7,170 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
+model academy {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @unique(map: "Academy_userId_key")
+  name             String
+  address          String?
+  phone            String?
+  membershipExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  user             user      @relation(fields: [userId], references: [id], map: "Academy_userId_fkey")
+  boxer            boxer[]
+  coach            coach[]
+  payment          payment[]
+}
+
+model boxer {
+  id               Int               @id @default(autoincrement())
+  userId           Int               @unique(map: "Boxer_userId_key")
+  name             String
+  dob              DateTime?
+  weight           String?
+  ageGroup         String?
+  academyId        Int?
+  rank             Int?
+  membershipExpiry DateTime?
+  createdAt        DateTime          @default(now())
+  academy          academy?          @relation(fields: [academyId], references: [id], map: "Boxer_academyId_fkey")
+  user             user              @relation(fields: [userId], references: [id], map: "Boxer_userId_fkey")
+  certificate      certificate[]
+  medical          medical?
+  payment          payment[]
+  tournamententry  tournamententry[]
+
+  @@index([academyId], map: "Boxer_academyId_fkey")
+}
+
+model certificate {
+  id       Int      @id @default(autoincrement())
+  boxerId  Int?
+  coachId  Int?
+  type     String
+  event    String
+  issuedAt DateTime @default(now())
+  qrStatus String   @default("verified")
+  boxer    boxer?   @relation(fields: [boxerId], references: [id], map: "Certificate_boxerId_fkey")
+  coach    coach?   @relation(fields: [coachId], references: [id], map: "Certificate_coachId_fkey")
+
+  @@index([boxerId], map: "Certificate_boxerId_fkey")
+  @@index([coachId], map: "Certificate_coachId_fkey")
+}
+
+model coach {
+  id               Int           @id @default(autoincrement())
+  userId           Int           @unique(map: "Coach_userId_key")
+  name             String
+  phone            String?
+  academyId        Int?
+  membershipExpiry DateTime?
+  createdAt        DateTime      @default(now())
+  certificate      certificate[]
+  academy          academy?      @relation(fields: [academyId], references: [id], map: "Coach_academyId_fkey")
+  user             user          @relation(fields: [userId], references: [id], map: "Coach_userId_fkey")
+  payment          payment[]
+
+  @@index([academyId], map: "Coach_academyId_fkey")
+}
+
+model document {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  label     String
+  filePath  String
+  fileType  String
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], map: "Document_userId_fkey")
+
+  @@unique([userId, label], map: "Document_userId_label_key")
+}
+
+model medical {
+  id            Int       @id @default(autoincrement())
+  boxerId       Int       @unique(map: "Medical_boxerId_key")
+  fitnessStatus String    @default("Valid")
+  expiryDate    DateTime?
+  injury        String?   @default("None")
+  eligible      Boolean   @default(true)
+  updatedAt     DateTime
+  createdAt     DateTime  @default(now())
+  boxer         boxer     @relation(fields: [boxerId], references: [id], map: "Medical_boxerId_fkey")
+}
+
+model payment {
+  id               Int       @id @default(autoincrement())
+  boxerId          Int?
+  coachId          Int?
+  academyId        Int?
+  type             String
+  amount           Int
+  method           String?
+  status           String    @default("Pending")
+  membershipExpiry DateTime?
+  createdAt        DateTime  @default(now())
+
+  razorpayOrderId   String? @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+  isDeveloperBypass Boolean @default(false)
+  invoiceNumber     String? @unique
+
+  academy academy? @relation(fields: [academyId], references: [id], map: "Payment_academyId_fkey")
+  boxer   boxer?   @relation(fields: [boxerId], references: [id], map: "Payment_boxerId_fkey")
+  coach   coach?   @relation(fields: [coachId], references: [id], map: "Payment_coachId_fkey")
+
+  @@index([academyId], map: "Payment_academyId_fkey")
+  @@index([boxerId], map: "Payment_boxerId_fkey")
+  @@index([coachId], map: "Payment_coachId_fkey")
+}
+
+model tournament {
+  id              Int               @id @default(autoincrement())
+  name            String
+  location        String?
+  startDate       DateTime?
+  endDate         DateTime?
+  weightClass     String?
+  status          String            @default("upcoming")
+  entryFee        Int?              @default(500)
+  createdAt       DateTime          @default(now())
+  tournamententry tournamententry[]
+}
+
+model tournamententry {
+  id           Int        @id @default(autoincrement())
+  tournamentId Int
+  boxerId      Int
+  createdAt    DateTime   @default(now())
+  boxer        boxer      @relation(fields: [boxerId], references: [id], map: "TournamentEntry_boxerId_fkey")
+  tournament   tournament @relation(fields: [tournamentId], references: [id], map: "TournamentEntry_tournamentId_fkey")
+
+  @@index([boxerId], map: "TournamentEntry_boxerId_fkey")
+  @@index([tournamentId], map: "TournamentEntry_tournamentId_fkey")
+}
+
+model user {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique(map: "User_email_key")
+  password  String
+  role      user_role
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+
+  registrationStatus    String    @default("PAYMENT_PENDING")
+  membershipId          String?   @unique
+  membershipValidFrom   DateTime?
+  membershipExpiry      DateTime?
+  membershipActivatedAt DateTime?
+
+  academy  academy?
+  boxer    boxer?
+  coach    coach?
+  document document[]
+  notifications notification[]
+}
+
+enum user_role {
   boxer
   coach
   academy
@@ -16,138 +179,18 @@ enum Role {
   taluka
   superadmin
 }
-
-model User {
+model notification {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  role      Role
+  userId    Int
+  title     String
+  message   String
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  boxer       Boxer?
-  coach       Coach?
-  academy     Academy?
-  documents   Document[]
-}
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model Boxer {
-  id               Int       @id @default(autoincrement())
-  userId           Int       @unique
-  user             User      @relation(fields: [userId], references: [id])
-  name             String
-  dob              DateTime?
-  weight           String?
-  ageGroup         String?
-  academyId        Int?
-  academy          Academy?  @relation(fields: [academyId], references: [id])
-  rank             Int?
-  membershipExpiry DateTime?
-  createdAt        DateTime  @default(now())
-  medical           Medical?
-  certificates      Certificate[]
-  payments          Payment[]
-  tournamentEntries TournamentEntry[]
-}
-
-model Coach {
-  id               Int       @id @default(autoincrement())
-  userId           Int       @unique
-  user             User      @relation(fields: [userId], references: [id])
-  name             String
-  phone            String?
-  academyId        Int?
-  academy          Academy?  @relation(fields: [academyId], references: [id])
-  membershipExpiry DateTime?
-  createdAt        DateTime  @default(now())
-  certificates Certificate[]
-  payments     Payment[]
-}
-
-model Academy {
-  id               Int       @id @default(autoincrement())
-  userId           Int       @unique
-  user             User      @relation(fields: [userId], references: [id])
-  name             String
-  address          String?
-  phone            String?
-  membershipExpiry DateTime?
-  boxers           Boxer[]
-  coaches          Coach[]
-  createdAt        DateTime  @default(now())
-  payments         Payment[]
-}
-
-model Tournament {
-  id          Int      @id @default(autoincrement())
-  name        String
-  location    String?
-  startDate   DateTime?
-  endDate     DateTime?
-  weightClass String?
-  status      String   @default("upcoming")
-  entryFee    Int?     @default(500)
-  createdAt   DateTime @default(now())
-  entries     TournamentEntry[]
-}
-
-model TournamentEntry {
-  id           Int        @id @default(autoincrement())
-  tournamentId Int
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  boxerId      Int
-  boxer        Boxer      @relation(fields: [boxerId], references: [id])
-  createdAt    DateTime   @default(now())
-}
-
-model Medical {
-  id          Int      @id @default(autoincrement())
-  boxerId     Int      @unique
-  boxer       Boxer    @relation(fields: [boxerId], references: [id])
-  fitnessStatus String @default("Valid")  // Valid | Expired | Expiring Soon
-  expiryDate  DateTime?
-  injury      String?  @default("None")
-  eligible    Boolean  @default(true)
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
-}
-
-model Certificate {
-  id        Int      @id @default(autoincrement())
-  boxerId   Int?
-  boxer     Boxer?   @relation(fields: [boxerId], references: [id])
-  coachId   Int?
-  coach     Coach?   @relation(fields: [coachId], references: [id])
-  type      String
-  event     String
-  issuedAt  DateTime @default(now())
-  qrStatus  String   @default("verified")
-}
-
-model Payment {
-  id        Int      @id @default(autoincrement())
-  boxerId   Int?
-  boxer     Boxer?   @relation(fields: [boxerId], references: [id])
-  coachId   Int?
-  coach     Coach?   @relation(fields: [coachId], references: [id])
-  academyId Int?
-  academy   Academy? @relation(fields: [academyId], references: [id])
-  type      String
-  amount    Int
-  method    String?
-  status    String   @default("Pending")
-  membershipExpiry DateTime?
-  createdAt DateTime @default(now())
-}
-
-model Document {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  label     String
-  filePath  String
-  fileType  String
-  createdAt DateTime @default(now())
-
-  @@unique([userId, label])
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
 }

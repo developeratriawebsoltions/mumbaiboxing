@@ -10,18 +10,33 @@ import Footer from "@/Components/footer/Footer";
 
 export default function Home() {
   return (
-    <>
-      <div className="relative">
-        <Navbar />
-        <Hero />
-      </div>
+    <main className="min-h-screen bg-[#f7f8fa] text-slate-950">
+      {/* Navigation */}
+      <Navbar />
+
+      {/* Hero */}
+      <Hero />
+
+      {/* Statistics */}
       <Stats />
+
+      {/* About Association */}
       <About />
+
+      {/* Services */}
       <Services />
+
+      {/* Rankings */}
       <Rankings />
+
+      {/* Upcoming Tournaments */}
       <UpcomingTournaments />
+
+      {/* Notices */}
       <Notices />
+
+      {/* Footer / Contact */}
       <Footer />
-    </>
+    </main>
   );
 }

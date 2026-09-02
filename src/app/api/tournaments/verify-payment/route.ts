@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (!tournament) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
 
   await prisma.$transaction([
-    prisma.tournamentEntry.create({ data: { tournamentId, boxerId: boxer.id } }),
+    prisma.tournamententry.create({ data: { tournamentId, boxerId: boxer.id } }),
     prisma.payment.create({
       data: {
         boxerId: boxer.id,
