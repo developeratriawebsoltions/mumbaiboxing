@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 
@@ -35,6 +36,8 @@ type Doc = {
   label: string;
   filePath: string;
   fileType: string;
+  status: string;
+  rejectionReason: string | null;
   createdAt: string;
 };
 
@@ -49,6 +52,38 @@ type Boxer = {
   academy: {
     name: string;
   } | null;
+
+  medical: {
+    id: number;
+    fitnessStatus: string;
+    expiryDate: string | null;
+    injury: string | null;
+    eligible: boolean;
+    updatedAt: string;
+    createdAt: string;
+  } | null;
+
+  certificates: {
+    id: number;
+    type: string;
+    event: string;
+    issuedAt: string;
+    qrStatus: string;
+  }[];
+
+  tournamentEntries: {
+    id: number;
+    createdAt: string;
+    tournament: {
+      id: number;
+      name: string;
+      location: string | null;
+      startDate: string;
+      endDate: string;
+      weightClass: string | null;
+      status: string;
+    } | null;
+  }[];
 
   user: {
     email: string;
@@ -215,7 +250,7 @@ const greeting = useMemo(() => {
      DOWNLOAD ID CARD
      ========================================================= */
 
-  const downloadIdCard = () => {
+  const downloadIdCard = async () => {
     if (!boxer) return;
 
     if (!boxer.user.membershipId) {
@@ -263,6 +298,19 @@ const greeting = useMemo(() => {
 
       const membershipId =
         boxer.user.membershipId;
+
+      const verificationUrl = `${window.location.origin}/verify/boxer/${encodeURIComponent(
+        membershipId
+      )}`;
+
+      const qrDataUrl = await QRCode.toDataURL(
+        verificationUrl,
+        {
+          errorCorrectionLevel: "M",
+          margin: 1,
+          width: 180,
+        }
+      );
 
       const doc = new jsPDF({
         orientation: "landscape",
@@ -741,6 +789,41 @@ const greeting = useMemo(() => {
         formatCardDate(expiry),
         50,
         47.5
+      );
+
+      /* =====================================================
+         QR VERIFICATION CODE
+         ===================================================== */
+
+      doc.setFillColor(248, 250, 252);
+
+      doc.roundedRect(
+        64,
+        27,
+        17,
+        17,
+        2,
+        2,
+        "F"
+      );
+
+      doc.addImage(
+        qrDataUrl,
+        "PNG",
+        65,
+        28,
+        15,
+        15
+      );
+
+      doc.setTextColor(100, 116, 139);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(3.2);
+      doc.text(
+        "SCAN TO VERIFY",
+        72.5,
+        46.5,
+        { align: "center" }
       );
 
       /* =====================================================
@@ -1371,7 +1454,7 @@ const greeting = useMemo(() => {
               <StatCard
                 icon={Trophy}
                 iconClass="bg-emerald-50 text-emerald-600"
-                title="—"
+                title={`${boxer.tournamentEntries?.length ?? 0}`}
                 label="Tournament Entries"
                 sub="View activity"
                 subClass="text-emerald-600"
@@ -1397,7 +1480,7 @@ const greeting = useMemo(() => {
               <StatCard
                 icon={Award}
                 iconClass="bg-violet-50 text-violet-600"
-                title="—"
+                title={`${boxer.certificates?.length ?? 0}`}
                 label="Certificates"
                 sub="View certificates"
                 subClass="text-violet-600"
@@ -1658,32 +1741,56 @@ const greeting = useMemo(() => {
                               )}
                             </p>
 
-                            <div
-                              className="
-                                flex
-                                items-center
-                                gap-1.5
-                                mt-3
-                              "
-                            >
+                            {(() => {
+  const status = (doc.status || "Pending").toLowerCase();
 
-                              <CheckCircle2
-                                size={16}
-                                strokeWidth={2}
-                                className="text-emerald-600"
-                              />
+  const isApproved =
+    status === "approved";
 
-                              <span
-                                className="
-                                  text-xs
-                                  font-medium
-                                  text-emerald-600
-                                "
-                              >
-                                Uploaded
-                              </span>
+  const isRejected =
+    status === "rejected";
 
-                            </div>
+  return (
+    <div className="mt-3">
+      <div className="flex items-center gap-1.5">
+        <CheckCircle2
+          size={16}
+          strokeWidth={2}
+          className={
+            isApproved
+              ? "text-emerald-600"
+              : isRejected
+              ? "text-red-600"
+              : "text-amber-500"
+          }
+        />
+
+        <span
+          className={`text-xs font-semibold ${
+            isApproved
+              ? "text-emerald-600"
+              : isRejected
+              ? "text-red-600"
+              : "text-amber-600"
+          }`}
+        >
+          {isApproved
+            ? "Approved"
+            : isRejected
+            ? "Rejected"
+            : "Pending"}
+        </span>
+      </div>
+
+      {isRejected &&
+        doc.rejectionReason && (
+          <p className="mt-2 text-xs leading-5 text-red-500">
+            {doc.rejectionReason}
+          </p>
+        )}
+    </div>
+  );
+})()}
 
                             <p
                               className="
@@ -1715,6 +1822,1125 @@ const greeting = useMemo(() => {
 
               )}
 
+            </section>
+
+            {/* =================================================
+                TOURNAMENT HISTORY
+                ================================================= */}
+
+            <section
+              className="
+                bg-white
+                rounded-2xl
+                border
+                border-slate-100
+                shadow-sm
+                p-5
+                sm:p-6
+              "
+            >
+              <div
+                className="
+                  flex
+                  flex-col
+                  sm:flex-row
+                  sm:items-center
+                  sm:justify-between
+                  gap-4
+                  mb-6
+                "
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      rounded-xl
+                      bg-emerald-50
+                      text-emerald-600
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <Trophy
+                      size={21}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div>
+                    <h2
+                      className="
+                        text-2xl
+                        font-bold
+                        text-[#0b1729]
+                      "
+                    >
+                      Tournament History
+                    </h2>
+
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Your tournament participation and registrations
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    text-sm
+                    font-semibold
+                    text-slate-500
+                  "
+                >
+                  <Trophy
+                    size={16}
+                    className="text-emerald-600"
+                    strokeWidth={1.8}
+                  />
+                  {boxer.tournamentEntries?.length ?? 0}{" "}
+                  {(
+                    boxer.tournamentEntries?.length ?? 0
+                  ) === 1
+                    ? "Entry"
+                    : "Entries"}
+                </div>
+              </div>
+
+              {(boxer.tournamentEntries ?? []).length === 0 ? (
+                <div
+                  className="
+                    rounded-xl
+                    border
+                    border-dashed
+                    border-slate-200
+                    p-10
+                    sm:p-12
+                    text-center
+                  "
+                >
+                  <div
+                    className="
+                      w-16
+                      h-16
+                      mx-auto
+                      rounded-2xl
+                      bg-emerald-50
+                      text-emerald-500
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <Trophy
+                      size={32}
+                      strokeWidth={1.5}
+                    />
+                  </div>
+
+                  <p className="mt-4 font-semibold text-slate-700">
+                    No tournament entries yet
+                  </p>
+
+                  <p className="text-sm text-slate-400 mt-1">
+                    Your tournament registrations will appear here.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop / tablet table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <div className="min-w-[760px] overflow-hidden rounded-xl border border-slate-100">
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-100">
+                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                              Tournament
+                            </th>
+
+                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                              Date
+                            </th>
+
+                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                              Location
+                            </th>
+
+                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                              Weight Class
+                            </th>
+
+                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                              Status
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-slate-100">
+                          {(boxer.tournamentEntries ?? []).map(
+                            (entry) => {
+                              const tournament =
+                                entry.tournament;
+
+                              if (!tournament) {
+                                return (
+                                  <tr key={entry.id}>
+                                    <td
+                                      colSpan={5}
+                                      className="px-5 py-5 text-sm text-slate-500"
+                                    >
+                                      Tournament details are unavailable
+                                      for this entry.
+                                    </td>
+                                  </tr>
+                                );
+                              }
+
+                              const status =
+                                (
+                                  tournament.status ||
+                                  "upcoming"
+                                ).toLowerCase();
+
+                              const statusConfig =
+                                status === "completed"
+                                  ? {
+                                      label: "Completed",
+                                      className:
+                                        "bg-emerald-50 text-emerald-700 border-emerald-100",
+                                    }
+                                  : status === "ongoing"
+                                  ? {
+                                      label: "Ongoing",
+                                      className:
+                                        "bg-red-50 text-red-700 border-red-100",
+                                    }
+                                  : status === "open"
+                                  ? {
+                                      label: "Open",
+                                      className:
+                                        "bg-blue-50 text-blue-700 border-blue-100",
+                                    }
+                                  : status === "cancelled"
+                                  ? {
+                                      label: "Cancelled",
+                                      className:
+                                        "bg-slate-100 text-slate-600 border-slate-200",
+                                    }
+                                  : {
+                                      label: "Upcoming",
+                                      className:
+                                        "bg-amber-50 text-amber-700 border-amber-100",
+                                    };
+
+                              const startDate =
+                                formatDate(
+                                  tournament.startDate
+                                );
+
+                              const endDate =
+                                formatDate(
+                                  tournament.endDate
+                                );
+
+                              const dateLabel =
+                                startDate !== endDate
+                                  ? `${startDate} – ${endDate}`
+                                  : startDate;
+
+                              return (
+                                <tr
+                                  key={entry.id}
+                                  className="hover:bg-slate-50/70 transition-colors"
+                                >
+                                  <td className="px-5 py-5">
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className="
+                                          w-10
+                                          h-10
+                                          rounded-xl
+                                          bg-emerald-50
+                                          text-emerald-600
+                                          flex
+                                          items-center
+                                          justify-center
+                                          shrink-0
+                                        "
+                                      >
+                                        <Trophy
+                                          size={18}
+                                          strokeWidth={1.8}
+                                        />
+                                      </div>
+
+                                      <div className="min-w-0">
+                                        <p className="font-semibold text-slate-900 break-words">
+                                          {tournament.name}
+                                        </p>
+
+                                        <p className="text-xs text-slate-400 mt-1">
+                                          Entry #{entry.id}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  <td className="px-5 py-5">
+                                    <div className="flex items-start gap-2">
+                                      <CalendarDays
+                                        size={16}
+                                        className="mt-0.5 text-slate-400 shrink-0"
+                                        strokeWidth={1.8}
+                                      />
+
+                                      <span className="text-sm text-slate-700 whitespace-nowrap">
+                                        {dateLabel}
+                                      </span>
+                                    </div>
+                                  </td>
+
+                                  <td className="px-5 py-5">
+                                    <span className="text-sm text-slate-700">
+                                      {tournament.location || "—"}
+                                    </span>
+                                  </td>
+
+                                  <td className="px-5 py-5">
+                                    <span className="text-sm font-medium text-slate-700">
+                                      {tournament.weightClass || "—"}
+                                    </span>
+                                  </td>
+
+                                  <td className="px-5 py-5">
+                                    <span
+                                      className={`
+                                        inline-flex
+                                        items-center
+                                        rounded-full
+                                        border
+                                        px-3
+                                        py-1.5
+                                        text-xs
+                                        font-semibold
+                                        ${statusConfig.className}
+                                      `}
+                                    >
+                                      {statusConfig.label}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            }
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className="md:hidden space-y-4">
+                    {(boxer.tournamentEntries ?? []).map(
+                      (entry) => {
+                        const tournament =
+                          entry.tournament;
+
+                        if (!tournament) {
+                          return (
+                            <div
+                              key={entry.id}
+                              className="
+                                rounded-xl
+                                border
+                                border-slate-100
+                                bg-slate-50
+                                p-4
+                              "
+                            >
+                              <p className="text-sm text-slate-500">
+                                Tournament details are unavailable for
+                                this entry.
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        const status =
+                          (
+                            tournament.status ||
+                            "upcoming"
+                          ).toLowerCase();
+
+                        const statusConfig =
+                          status === "completed"
+                            ? {
+                                label: "Completed",
+                                className:
+                                  "bg-emerald-50 text-emerald-700 border-emerald-100",
+                              }
+                            : status === "ongoing"
+                            ? {
+                                label: "Ongoing",
+                                className:
+                                  "bg-red-50 text-red-700 border-red-100",
+                              }
+                            : status === "open"
+                            ? {
+                                label: "Open",
+                                className:
+                                  "bg-blue-50 text-blue-700 border-blue-100",
+                              }
+                            : status === "cancelled"
+                            ? {
+                                label: "Cancelled",
+                                className:
+                                  "bg-slate-100 text-slate-600 border-slate-200",
+                              }
+                            : {
+                                label: "Upcoming",
+                                className:
+                                  "bg-amber-50 text-amber-700 border-amber-100",
+                              };
+
+                        const startDate =
+                          formatDate(
+                            tournament.startDate
+                          );
+
+                        const endDate =
+                          formatDate(
+                            tournament.endDate
+                          );
+
+                        const dateLabel =
+                          startDate !== endDate
+                            ? `${startDate} – ${endDate}`
+                            : startDate;
+
+                        return (
+                          <div
+                            key={entry.id}
+                            className="
+                              rounded-xl
+                              border
+                              border-slate-100
+                              bg-white
+                              p-4
+                              shadow-sm
+                            "
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div
+                                  className="
+                                    w-10
+                                    h-10
+                                    rounded-xl
+                                    bg-emerald-50
+                                    text-emerald-600
+                                    flex
+                                    items-center
+                                    justify-center
+                                    shrink-0
+                                  "
+                                >
+                                  <Trophy
+                                    size={18}
+                                    strokeWidth={1.8}
+                                  />
+                                </div>
+
+                                <div className="min-w-0">
+                                  <h3 className="font-semibold text-slate-900 break-words">
+                                    {tournament.name}
+                                  </h3>
+
+                                  <p className="text-xs text-slate-400 mt-1">
+                                    Entry #{entry.id}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <span
+                                className={`
+                                  inline-flex
+                                  shrink-0
+                                  items-center
+                                  rounded-full
+                                  border
+                                  px-2.5
+                                  py-1
+                                  text-[11px]
+                                  font-semibold
+                                  ${statusConfig.className}
+                                `}
+                              >
+                                {statusConfig.label}
+                              </span>
+                            </div>
+
+                            <div className="mt-5 grid grid-cols-1 gap-3">
+                              <div className="flex items-start gap-2">
+                                <CalendarDays
+                                  size={16}
+                                  className="mt-0.5 text-slate-400 shrink-0"
+                                  strokeWidth={1.8}
+                                />
+
+                                <div>
+                                  <p className="text-xs text-slate-400">
+                                    Date
+                                  </p>
+
+                                  <p className="text-sm font-medium text-slate-700 mt-0.5">
+                                    {dateLabel}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div>
+                                <p className="text-xs text-slate-400">
+                                  Location
+                                </p>
+
+                                <p className="text-sm font-medium text-slate-700 mt-0.5 break-words">
+                                  {tournament.location || "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs text-slate-400">
+                                  Weight Class
+                                </p>
+
+                                <p className="text-sm font-medium text-slate-700 mt-0.5">
+                                  {tournament.weightClass || "—"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
+
+            {/* =================================================
+                CERTIFICATES HISTORY
+                ================================================= */}
+
+            <section
+              className="
+                bg-white
+                rounded-2xl
+                border
+                border-slate-100
+                shadow-sm
+                p-5
+                sm:p-6
+              "
+            >
+
+              <div
+                className="
+                  flex
+                  flex-col
+                  sm:flex-row
+                  sm:items-center
+                  sm:justify-between
+                  gap-4
+                  mb-5
+                "
+              >
+
+                <div className="flex items-center gap-3">
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      rounded-xl
+                      bg-violet-50
+                      text-violet-600
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <Award
+                      size={21}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div>
+                    <h2
+                      className="
+                        text-2xl
+                        font-bold
+                        text-[#0b1729]
+                      "
+                    >
+                      Certificates History
+                    </h2>
+
+                    <p className="text-sm text-slate-400 mt-1">
+                      Certificates issued for your boxing achievements
+                    </p>
+                  </div>
+                </div>
+
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-violet-50
+                    px-3
+                    py-1.5
+                    text-xs
+                    font-semibold
+                    text-violet-600
+                    w-fit
+                  "
+                >
+                  {boxer.certificates?.length ?? 0} Certificate
+                  {(boxer.certificates?.length ?? 0) === 1 ? "" : "s"}
+                </span>
+
+              </div>
+
+              {(boxer.certificates ?? []).length === 0 ? (
+                <div
+                  className="
+                    rounded-xl
+                    border
+                    border-dashed
+                    border-slate-200
+                    p-10
+                    sm:p-12
+                    text-center
+                  "
+                >
+                  <div
+                    className="
+                      w-16
+                      h-16
+                      mx-auto
+                      rounded-2xl
+                      bg-violet-50
+                      text-violet-300
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <Award
+                      size={32}
+                      strokeWidth={1.5}
+                    />
+                  </div>
+
+                  <p className="mt-4 font-semibold text-slate-700">
+                    No certificates issued yet
+                  </p>
+
+                  <p className="text-sm text-slate-400 mt-1">
+                    Your certificates will appear here once they are issued.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full min-w-[720px]">
+                      <thead>
+                        <tr className="border-b border-slate-100 text-left">
+                          <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Certificate
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Event
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Issued On
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            QR Status
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {(boxer.certificates ?? []).map((certificate) => {
+                          const qrStatus = (certificate.qrStatus || "Pending").toLowerCase();
+                          const isActive =
+                            qrStatus === "active" ||
+                            qrStatus === "verified" ||
+                            qrStatus === "valid";
+
+                          return (
+                            <tr
+                              key={certificate.id}
+                              className="border-b border-slate-50 last:border-b-0"
+                            >
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className="
+                                      w-10
+                                      h-10
+                                      rounded-xl
+                                      bg-violet-50
+                                      text-violet-600
+                                      flex
+                                      items-center
+                                      justify-center
+                                      shrink-0
+                                    "
+                                  >
+                                    <Award
+                                      size={18}
+                                      strokeWidth={1.8}
+                                    />
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-slate-900 break-words">
+                                      {certificate.type || "Certificate"}
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-0.5">
+                                      Certificate #{certificate.id}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="px-4 py-4">
+                                <p className="text-sm font-medium text-slate-700">
+                                  {certificate.event || "—"}
+                                </p>
+                              </td>
+
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                                  <CalendarDays
+                                    size={16}
+                                    className="text-slate-400 shrink-0"
+                                    strokeWidth={1.8}
+                                  />
+                                  {formatDate(certificate.issuedAt)}
+                                </div>
+                              </td>
+
+                              <td className="px-4 py-4">
+                                <span
+                                  className={`
+                                    inline-flex
+                                    items-center
+                                    gap-1.5
+                                    rounded-full
+                                    border
+                                    px-2.5
+                                    py-1
+                                    text-xs
+                                    font-semibold
+                                    ${
+                                      isActive
+                                        ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+                                        : "border-amber-200 bg-amber-50 text-amber-600"
+                                    }
+                                  `}
+                                >
+                                  <CheckCircle2
+                                    size={14}
+                                    strokeWidth={2}
+                                  />
+                                  {isActive
+                                    ? "Verified"
+                                    : certificate.qrStatus || "Pending"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile */}
+                  <div className="md:hidden space-y-3">
+                    {(boxer.certificates ?? []).map((certificate) => {
+                      const qrStatus = (certificate.qrStatus || "Pending").toLowerCase();
+                      const isActive =
+                        qrStatus === "active" ||
+                        qrStatus === "verified" ||
+                        qrStatus === "valid";
+
+                      return (
+                        <div
+                          key={certificate.id}
+                          className="
+                            rounded-xl
+                            border
+                            border-slate-100
+                            bg-white
+                            p-4
+                          "
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div
+                                className="
+                                  w-10
+                                  h-10
+                                  rounded-xl
+                                  bg-violet-50
+                                  text-violet-600
+                                  flex
+                                  items-center
+                                  justify-center
+                                  shrink-0
+                                "
+                              >
+                                <Award
+                                  size={18}
+                                  strokeWidth={1.8}
+                                />
+                              </div>
+
+                              <div className="min-w-0">
+                                <p className="font-semibold text-slate-900 break-words">
+                                  {certificate.type || "Certificate"}
+                                </p>
+                                <p className="text-xs text-slate-400 mt-1">
+                                  Certificate #{certificate.id}
+                                </p>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`
+                                inline-flex
+                                shrink-0
+                                rounded-full
+                                border
+                                px-2.5
+                                py-1
+                                text-[11px]
+                                font-semibold
+                                ${
+                                  isActive
+                                    ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+                                    : "border-amber-200 bg-amber-50 text-amber-600"
+                                }
+                              `}
+                            >
+                              {isActive
+                                ? "Verified"
+                                : certificate.qrStatus || "Pending"}
+                            </span>
+                          </div>
+
+                          <div className="mt-4 grid grid-cols-1 gap-3">
+                            <div>
+                              <p className="text-xs text-slate-400">
+                                Event
+                              </p>
+                              <p className="text-sm font-medium text-slate-700 mt-0.5 break-words">
+                                {certificate.event || "—"}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <CalendarDays
+                                size={16}
+                                className="text-slate-400 shrink-0"
+                                strokeWidth={1.8}
+                              />
+                              <div>
+                                <p className="text-xs text-slate-400">
+                                  Issued On
+                                </p>
+                                <p className="text-sm font-medium text-slate-700 mt-0.5">
+                                  {formatDate(certificate.issuedAt)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </section>
+
+            {/* =================================================
+                MEDICAL RECORDS
+                ================================================= */}
+
+            <section
+              className="
+                bg-white
+                rounded-2xl
+                border
+                border-slate-100
+                shadow-sm
+                p-5
+                sm:p-6
+              "
+            >
+              <div
+                className="
+                  flex
+                  flex-col
+                  sm:flex-row
+                  sm:items-center
+                  sm:justify-between
+                  gap-4
+                  mb-5
+                "
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="
+                      w-10
+                      h-10
+                      rounded-xl
+                      bg-rose-50
+                      text-rose-600
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                    "
+                  >
+                    <HeartPulse
+                      size={21}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+                  <div>
+                    <h2
+                      className="
+                        text-2xl
+                        font-bold
+                        text-[#0b1729]
+                      "
+                    >
+                      Medical Records
+                    </h2>
+
+                    <p className="text-sm text-slate-400 mt-1">
+                      Your fitness and medical eligibility information
+                    </p>
+                  </div>
+                </div>
+
+                {boxer.medical && (
+                  <span
+                    className={`
+                      inline-flex
+                      items-center
+                      justify-center
+                      rounded-full
+                      px-3
+                      py-1.5
+                      text-xs
+                      font-semibold
+                      w-fit
+                      ${
+                        boxer.medical.eligible
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-red-50 text-red-600"
+                      }
+                    `}
+                  >
+                    {boxer.medical.eligible
+                      ? "Eligible for Boxing"
+                      : "Not Eligible"}
+                  </span>
+                )}
+              </div>
+
+              {!boxer.medical ? (
+                <div
+                  className="
+                    rounded-xl
+                    border
+                    border-dashed
+                    border-slate-200
+                    p-10
+                    sm:p-12
+                    text-center
+                  "
+                >
+                  <div
+                    className="
+                      w-16
+                      h-16
+                      mx-auto
+                      rounded-2xl
+                      bg-rose-50
+                      text-rose-300
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <HeartPulse
+                      size={32}
+                      strokeWidth={1.5}
+                    />
+                  </div>
+
+                  <p className="mt-4 font-semibold text-slate-700">
+                    No medical record available
+                  </p>
+
+                  <p className="text-sm text-slate-400 mt-1">
+                    Your fitness and medical information will appear here once it is added.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-slate-100
+                      bg-slate-50/60
+                      p-5
+                    "
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Fitness Status
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-2">
+                      <CheckCircle2
+                        size={19}
+                        strokeWidth={2}
+                        className={
+                          boxer.medical.fitnessStatus
+                            .toLowerCase()
+                            .includes("valid")
+                            ? "text-emerald-600"
+                            : "text-red-600"
+                        }
+                      />
+
+                      <p
+                        className={`
+                          text-lg
+                          font-bold
+                          ${
+                            boxer.medical.fitnessStatus
+                              .toLowerCase()
+                              .includes("valid")
+                              ? "text-emerald-600"
+                              : "text-red-600"
+                          }
+                        `}
+                      >
+                        {boxer.medical.fitnessStatus || "—"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-slate-100
+                      bg-slate-50/60
+                      p-5
+                    "
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Fitness Expiry
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-2">
+                      <CalendarDays
+                        size={19}
+                        strokeWidth={1.8}
+                        className="text-slate-400 shrink-0"
+                      />
+
+                      <p className="text-base font-bold text-slate-800">
+                        {formatDate(boxer.medical.expiryDate)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-slate-100
+                      bg-slate-50/60
+                      p-5
+                    "
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Injury
+                    </p>
+
+                    <div className="mt-3 flex items-start gap-2">
+                      <HeartPulse
+                        size={19}
+                        strokeWidth={1.8}
+                        className={
+                          boxer.medical.injury &&
+                          boxer.medical.injury.toLowerCase() !== "none"
+                            ? "text-amber-600"
+                            : "text-emerald-600"
+                        }
+                      />
+
+                      <p className="text-base font-bold text-slate-800 break-words">
+                        {boxer.medical.injury || "None"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-slate-100
+                      bg-slate-50/60
+                      p-5
+                    "
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Last Updated
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-2">
+                      <CalendarDays
+                        size={19}
+                        strokeWidth={1.8}
+                        className="text-slate-400 shrink-0"
+                      />
+
+                      <p className="text-base font-bold text-slate-800">
+                        {formatDate(boxer.medical.updatedAt)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
 
           </>
