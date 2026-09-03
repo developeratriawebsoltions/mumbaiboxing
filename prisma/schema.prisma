@@ -26,12 +26,22 @@ model boxer {
   userId           Int               @unique(map: "Boxer_userId_key")
   name             String
   dob              DateTime?
+  gender           String?
+  phone            String?
+  address          String?
+  city             String?
+  state            String?
+  pincode          String?
+  photo            String?
+  category         String?
   weight           String?
+  weightCategory   String?
   ageGroup         String?
   academyId        Int?
   rank             Int?
   membershipExpiry DateTime?
   createdAt        DateTime          @default(now())
+
   academy          academy?          @relation(fields: [academyId], references: [id], map: "Boxer_academyId_fkey")
   user             user              @relation(fields: [userId], references: [id], map: "Boxer_userId_fkey")
   certificate      certificate[]
@@ -74,13 +84,16 @@ model coach {
 }
 
 model document {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  label     String
-  filePath  String
-  fileType  String
-  createdAt DateTime @default(now())
-  user      user     @relation(fields: [userId], references: [id], map: "Document_userId_fkey")
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  label           String
+  filePath        String
+  fileType        String
+  status          String   @default("Pending")
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+
+  user user @relation(fields: [userId], references: [id], map: "Document_userId_fkey")
 
   @@unique([userId, label], map: "Document_userId_label_key")
 }
