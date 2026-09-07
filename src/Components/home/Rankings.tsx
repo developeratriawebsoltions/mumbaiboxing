@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,113 +10,37 @@ import {
 } from "lucide-react";
 import LiveTournament from "./LiveTournament";
 
-const data: Record<
-  string,
-  {
-    rank: number;
+type Ranking = {
+  rank: number;
+  boxerId: number;
+  name: string;
+  membershipId: string | null;
+  gender: string | null;
+  category: string | null;
+  weight: string | null;
+  weightCategory: string | null;
+  ageGroup: string | null;
+  academy: {
+    id: number;
     name: string;
-    state: string;
-    pts: number;
-  }[]
-> = {
-  SENIOR: [
-    {
-      rank: 1,
-      name: "Vikas Patil",
-      state: "Maharashtra",
-      pts: 980,
-    },
-    {
-      rank: 2,
-      name: "Arjun Kumar",
-      state: "Rajasthan",
-      pts: 920,
-    },
-    {
-      rank: 3,
-      name: "Sameer Khan",
-      state: "Uttar Pradesh",
-      pts: 870,
-    },
-    {
-      rank: 4,
-      name: "Rohit Sharma",
-      state: "Delhi",
-      pts: 780,
-    },
-    {
-      rank: 5,
-      name: "Imran Shaikh",
-      state: "Maharashtra",
-      pts: 710,
-    },
-  ],
+  } | null;
+  points: number;
+  tournaments: number;
+  medals: {
+    gold: number;
+    silver: number;
+    bronze: number;
+  };
+  latestTournamentDate: string | null;
+};
 
-  YOUTH: [
-    {
-      rank: 1,
-      name: "Rahul Desai",
-      state: "Maharashtra",
-      pts: 860,
-    },
-    {
-      rank: 2,
-      name: "Karan Mehta",
-      state: "Gujarat",
-      pts: 810,
-    },
-    {
-      rank: 3,
-      name: "Dev Yadav",
-      state: "UP",
-      pts: 760,
-    },
-    {
-      rank: 4,
-      name: "Nikhil More",
-      state: "Maharashtra",
-      pts: 700,
-    },
-    {
-      rank: 5,
-      name: "Aditya Nair",
-      state: "Kerala",
-      pts: 650,
-    },
-  ],
-
-  WOMEN: [
-    {
-      rank: 1,
-      name: "Pooja Desai",
-      state: "Maharashtra",
-      pts: 940,
-    },
-    {
-      rank: 2,
-      name: "Sneha Kulkarni",
-      state: "Maharashtra",
-      pts: 890,
-    },
-    {
-      rank: 3,
-      name: "Priya Singh",
-      state: "Delhi",
-      pts: 820,
-    },
-    {
-      rank: 4,
-      name: "Anita Rao",
-      state: "Karnataka",
-      pts: 760,
-    },
-    {
-      rank: 5,
-      name: "Meena Patil",
-      state: "Maharashtra",
-      pts: 700,
-    },
-  ],
+type RankingsResponse = {
+  success: boolean;
+  season: number | null;
+  rankingType: string;
+  count: number;
+  rankings: Ranking[];
+  error?: string;
 };
 
 const rankStyles: Record<
@@ -140,13 +64,130 @@ const rankStyles: Record<
   },
 };
 
+const tabs = [
+  {
+    label: "SENIOR",
+    value: "Senior",
+  },
+  {
+    label: "YOUTH",
+    value: "Youth",
+  },
+  {
+    label: "WOMEN",
+    value: "Women",
+  },
+] as const;
+
 export default function Rankings() {
   const [tab, setTab] = useState<
     "SENIOR" | "YOUTH" | "WOMEN"
   >("SENIOR");
 
-  const rows = data[tab];
-  const maxPts = rows[0].pts;
+  const [rankings, setRankings] = useState<Ranking[]>([]);
+  const [season, setSeason] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /*
+   * ----------------------------------------------------------
+   * LOAD LIVE RANKINGS
+   * ----------------------------------------------------------
+   *
+   * The homepage uses the same ranking API as the
+   * dashboard ranking page.
+   */
+  useEffect(() => {
+    async function loadRankings() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch("/api/rankings", {
+          cache: "no-store",
+        });
+
+        const data: RankingsResponse =
+          await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data?.error || "Failed to load rankings."
+          );
+        }
+
+        setRankings(
+          Array.isArray(data.rankings)
+            ? data.rankings
+            : []
+        );
+
+        setSeason(data.season ?? null);
+      } catch (err) {
+        console.error("Homepage rankings error:", err);
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load rankings."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadRankings();
+  }, []);
+
+  /*
+   * ----------------------------------------------------------
+   * FILTER BY CATEGORY
+   * ----------------------------------------------------------
+   */
+  const rows = useMemo(() => {
+    const selectedCategory =
+      tabs.find((item) => item.label === tab)?.value;
+
+    if (!selectedCategory) {
+      return rankings;
+    }
+
+    return rankings.filter((ranking) => {
+      const category =
+        ranking.category?.trim().toLowerCase();
+
+      const ageGroup =
+        ranking.ageGroup?.trim().toLowerCase();
+
+      const selected =
+        selectedCategory.toLowerCase();
+
+      /*
+       * Support both category and ageGroup data.
+       *
+       * Example:
+       * category = "Elite"
+       * ageGroup = "Senior"
+       */
+      return (
+        category === selected ||
+        ageGroup === selected
+      );
+    });
+  }, [rankings, tab]);
+
+  /*
+   * Homepage shows top 5.
+   */
+  const displayRows = rows.slice(0, 5);
+
+  const maxPts =
+    displayRows.length > 0
+      ? Math.max(
+          ...displayRows.map((row) => row.points),
+          1
+        )
+      : 1;
 
   return (
     <section
@@ -231,23 +272,24 @@ export default function Rankings() {
 
             {/* Tabs */}
             <div className="flex gap-2 overflow-x-auto px-5 pt-5 sm:px-6 lg:px-7">
-              {(
-                ["SENIOR", "YOUTH", "WOMEN"] as const
-              ).map((category) => {
-                const active = tab === category;
+              {tabs.map((category) => {
+                const active =
+                  tab === category.label;
 
                 return (
                   <button
-                    key={category}
+                    key={category.label}
                     type="button"
-                    onClick={() => setTab(category)}
+                    onClick={() =>
+                      setTab(category.label)
+                    }
                     className={`shrink-0 rounded-full px-4 py-2 text-[10px] font-bold tracking-[0.08em] transition-all duration-200 ${
                       active
                         ? "bg-red-600 !text-white shadow-sm"
                         : "bg-slate-100 !text-slate-500 hover:bg-slate-200 hover:!text-slate-700"
                     }`}
                   >
-                    {category}
+                    {category.label}
                   </button>
                 );
               })}
@@ -256,71 +298,127 @@ export default function Rankings() {
             {/* Ranking Rows */}
             <div className="space-y-2 px-5 py-5 sm:px-6 lg:px-7">
 
-              {rows.map((row) => {
-                const badge = rankStyles[row.rank];
+              {loading ? (
+                <div className="space-y-3 py-3">
+                  {[1, 2, 3, 4, 5].map(
+                    (item) => (
+                      <div
+                        key={item}
+                        className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4 animate-pulse"
+                      >
+                        <div className="h-9 w-9 rounded-full bg-slate-100" />
 
-                return (
-                  <div
-                    key={row.rank}
-                    className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition-all duration-200 hover:border-slate-100 hover:bg-slate-50 sm:gap-4 sm:p-3.5"
-                  >
+                        <div className="h-9 w-9 rounded-full bg-slate-100" />
 
-                    {/* Rank */}
+                        <div className="flex-1">
+                          <div className="h-3 w-32 rounded bg-slate-100" />
+                          <div className="mt-2 h-2 w-20 rounded bg-slate-100" />
+                          <div className="mt-2 h-1 w-full rounded bg-slate-100" />
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              ) : error ? (
+                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-6 text-center">
+                  <p className="text-sm font-medium text-red-600">
+                    Unable to load rankings.
+                  </p>
+                </div>
+              ) : displayRows.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-5 py-10 text-center">
+                  <Trophy
+                    size={30}
+                    className="mx-auto text-slate-300"
+                  />
+
+                  <p className="mt-3 text-sm font-semibold text-slate-600">
+                    No rankings available
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    Verified tournament results will appear here.
+                  </p>
+                </div>
+              ) : (
+                displayRows.map((row) => {
+                  const badge =
+                    rankStyles[row.rank];
+
+                  return (
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
-                        badge
-                          ? `${badge.bg} ${badge.text}`
-                          : "bg-slate-100 text-slate-400"
-                      }`}
+                      key={row.boxerId}
+                      className="group flex items-center gap-3 rounded-2xl border border-transparent p-3 transition-all duration-200 hover:border-slate-100 hover:bg-slate-50 sm:gap-4 sm:p-3.5"
                     >
-                      {String(row.rank).padStart(2, "0")}
-                    </div>
 
-                    {/* Avatar */}
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-black text-red-600">
-                      {row.name.charAt(0)}
-                    </div>
+                      {/* Rank */}
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
+                          badge
+                            ? `${badge.bg} ${badge.text}`
+                            : "bg-slate-100 text-slate-400"
+                        }`}
+                      >
+                        {String(row.rank).padStart(
+                          2,
+                          "0"
+                        )}
+                      </div>
 
-                    {/* Name + Progress */}
-                    <div className="min-w-0 flex-1">
+                      {/* Avatar */}
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-black text-red-600">
+                        {row.name
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
 
-                      <div className="mb-1 flex items-center justify-between gap-3">
-                        <p className="truncate text-sm font-bold text-slate-900">
-                          {row.name}
-                        </p>
+                      {/* Name + Progress */}
+                      <div className="min-w-0 flex-1">
 
-                        <span className="shrink-0 text-xs font-black text-red-600">
-                          {row.pts}
-                          <span className="ml-1 text-[9px] font-medium text-slate-400">
-                            pts
+                        <div className="mb-1 flex items-center justify-between gap-3">
+                          <p className="truncate text-sm font-bold text-slate-900">
+                            {row.name}
+                          </p>
+
+                          <span className="shrink-0 text-xs font-black text-red-600">
+                            {row.points}
+
+                            <span className="ml-1 text-[9px] font-medium text-slate-400">
+                              pts
+                            </span>
                           </span>
-                        </span>
+                        </div>
+
+                        <div className="mb-2 flex items-center gap-1.5">
+                          <MapPin
+                            size={11}
+                            className="shrink-0 text-slate-300"
+                          />
+
+                          <p className="truncate text-[10px] text-slate-400">
+                            {row.academy?.name ||
+                              "Mumbai Boxing Association"}
+                          </p>
+                        </div>
+
+                        <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className="h-full rounded-full bg-red-600 transition-all duration-500"
+                            style={{
+                              width: `${
+                                (row.points /
+                                  maxPts) *
+                                100
+                              }%`,
+                            }}
+                          />
+                        </div>
+
                       </div>
-
-                      <div className="mb-2 flex items-center gap-1.5">
-                        <MapPin
-                          size={11}
-                          className="shrink-0 text-slate-300"
-                        />
-
-                        <p className="truncate text-[10px] text-slate-400">
-                          {row.state}
-                        </p>
-                      </div>
-
-                      <div className="h-1 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-red-600 transition-all duration-500"
-                          style={{
-                            width: `${(row.pts / maxPts) * 100}%`,
-                          }}
-                        />
-                      </div>
-
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
 
             </div>
 
@@ -328,7 +426,9 @@ export default function Rankings() {
             <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6 lg:px-7">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
-                  Category
+                  {season
+                    ? `Season ${season}`
+                    : "Current Season"}
                 </span>
 
                 <span className="text-xs font-bold text-slate-700">

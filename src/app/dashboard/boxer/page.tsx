@@ -1,25 +1,26 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import {
   Award,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
+  Clock3,
   CreditCard,
   Download,
   FileText,
+  Upload,
   FolderOpen,
   HeartPulse,
   IndianRupee,
+  Plus,
   ShieldCheck,
   Trophy,
   UserRound,
+  X,
+  XCircle,
 } from "lucide-react";
 
 import jsPDF from "jspdf";
@@ -38,6 +39,26 @@ type Doc = {
   fileType: string;
   status: string;
   rejectionReason: string | null;
+  createdAt: string;
+};
+
+type TournamentHistory = {
+  id: number;
+  tournamentName: string;
+  location: string | null;
+  tournamentDate: string | null;
+  tournamentType: string | null;
+  weightCategory: string | null;
+  result: string | null;
+  medal: string | null;
+  position: number | null;
+  coachName: string | null;
+  notes: string | null;
+  documentPath: string | null;
+  documentName: string | null;
+  status: string;
+  rejectionReason: string | null;
+  reviewedAt: string | null;
   createdAt: string;
 };
 
@@ -105,18 +126,44 @@ type Boxer = {
    ========================================================= */
 
 export default function BoxerDashboard() {
-  const [boxer, setBoxer] =
-    useState<Boxer | null>(null);
+  const [boxer, setBoxer] = useState<Boxer | null>(null);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [downloadingCard, setDownloadingCard] =
-    useState(false);
+  const [downloadingCard, setDownloadingCard] = useState(false);
 
+  const [tournamentHistory, setTournamentHistory] = useState<
+    TournamentHistory[]
+  >([]);
+
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  const [showHistoryForm, setShowHistoryForm] = useState(false);
+
+  const [historySubmitting, setHistorySubmitting] = useState(false);
+
+  const [historyError, setHistoryError] = useState("");
+
+  const [historySuccess, setHistorySuccess] = useState("");
+
+  const [historyForm, setHistoryForm] = useState({
+    tournamentName: "",
+    location: "",
+    tournamentDate: "",
+    tournamentType: "",
+    weightCategory: "",
+    result: "",
+    medal: "NONE",
+    position: "",
+    coachName: "",
+    notes: "",
+    documentPath: "",
+    documentName: "",
+  });
+
+  const [historyDocument, setHistoryDocument] = useState<File | null>(null);
   /* =======================================================
      LOAD PROFILE
      ======================================================= */
@@ -127,27 +174,20 @@ export default function BoxerDashboard() {
         setLoading(true);
         setError("");
 
-        const response =
-          await fetch("/api/boxer", {
-            cache: "no-store",
-          });
+        const response = await fetch("/api/boxer", {
+          cache: "no-store",
+        });
 
-        const data =
-          await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(
-            data?.error ||
-              "Failed to load profile."
-          );
+          throw new Error(data?.error || "Failed to load profile.");
         }
 
         setBoxer(data);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load profile."
+          err instanceof Error ? err.message : "Failed to load profile.",
         );
       } finally {
         setLoading(false);
@@ -158,12 +198,47 @@ export default function BoxerDashboard() {
   }, []);
 
   /* =========================================================
+     LOAD TOURNAMENT HISTORY
+     ========================================================= */
+
+  useEffect(() => {
+    async function loadTournamentHistory() {
+      try {
+        setHistoryLoading(true);
+        setHistoryError("");
+
+        const response = await fetch("/api/boxer/tournament-history", {
+          cache: "no-store",
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data?.message || "Failed to load tournament history.",
+          );
+        }
+
+        setTournamentHistory(Array.isArray(data?.history) ? data.history : []);
+      } catch (err) {
+        setHistoryError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load tournament history.",
+        );
+      } finally {
+        setHistoryLoading(false);
+      }
+    }
+
+    loadTournamentHistory();
+  }, []);
+
+  /* =========================================================
      DATE HELPERS
      ========================================================= */
 
-  const formatDate = (
-    value: string | null
-  ) => {
+  const formatDate = (value: string | null) => {
     if (!value) return "—";
 
     const date = new Date(value);
@@ -172,37 +247,29 @@ export default function BoxerDashboard() {
       return "—";
     }
 
-    return date.toLocaleDateString(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }
-    );
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
-  const formatCardDate = (
-  date: Date
-) => {
-  return date.toLocaleDateString(
-    "en-IN",
-    {
+  const formatCardDate = (date: Date) => {
+    return date.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    }
-  );
-};
+    });
+  };
 
-const greeting = useMemo(() => {
-  const hour = new Date().getHours();
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
 
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  if (hour < 21) return "Good evening";
-  return "Good night";
-}, []);
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    if (hour < 21) return "Good evening";
+    return "Good night";
+  }, []);
 
   /* =========================================================
      BOXER ID
@@ -211,10 +278,8 @@ const greeting = useMemo(() => {
   const boxerId = useMemo(() => {
     if (!boxer) return "—";
 
-    return `MBA-BXR-${new Date(
-      boxer.user.createdAt
-    ).getFullYear()}-${String(
-      boxer.id
+    return `MBA-BXR-${new Date(boxer.user.createdAt).getFullYear()}-${String(
+      boxer.id,
     ).padStart(4, "0")}`;
   }, [boxer]);
 
@@ -225,24 +290,16 @@ const greeting = useMemo(() => {
   const passportPhoto = useMemo(() => {
     if (!boxer) return null;
 
-    const documents =
-      boxer.user.documents ?? [];
+    const documents = boxer.user.documents ?? [];
 
-    const photo =
-      documents.find((doc) => {
-        const label =
-          doc.label.toLowerCase();
+    const photo = documents.find((doc) => {
+      const label = doc.label.toLowerCase();
 
-        return (
-          label.includes("passport") &&
-          label.includes("photo")
-        );
-      });
+      return label.includes("passport") && label.includes("photo");
+    });
 
     return photo
-      ? `/api/file?path=${encodeURIComponent(
-          photo.filePath
-        )}`
+      ? `/api/file?path=${encodeURIComponent(photo.filePath)}`
       : null;
   }, [boxer]);
 
@@ -254,9 +311,7 @@ const greeting = useMemo(() => {
     if (!boxer) return;
 
     if (!boxer.user.membershipId) {
-      setError(
-        "Membership ID is not available yet."
-      );
+      setError("Membership ID is not available yet.");
 
       return;
     }
@@ -265,52 +320,36 @@ const greeting = useMemo(() => {
       setDownloadingCard(true);
       setError("");
 
-      const validFrom =
-        boxer.user.membershipValidFrom
-          ? new Date(
-              boxer.user.membershipValidFrom
-            )
-          : null;
+      const validFrom = boxer.user.membershipValidFrom
+        ? new Date(boxer.user.membershipValidFrom)
+        : null;
 
-      const expiry =
-        boxer.user.membershipExpiry
-          ? new Date(
-              boxer.user.membershipExpiry
-            )
-          : null;
+      const expiry = boxer.user.membershipExpiry
+        ? new Date(boxer.user.membershipExpiry)
+        : null;
 
       if (
         !validFrom ||
-        Number.isNaN(
-          validFrom.getTime()
-        ) ||
+        Number.isNaN(validFrom.getTime()) ||
         !expiry ||
-        Number.isNaN(
-          expiry.getTime()
-        )
+        Number.isNaN(expiry.getTime())
       ) {
-        setError(
-          "Membership validity dates are not available."
-        );
+        setError("Membership validity dates are not available.");
 
         return;
       }
 
-      const membershipId =
-        boxer.user.membershipId;
+      const membershipId = boxer.user.membershipId;
 
       const verificationUrl = `${window.location.origin}/verify/boxer/${encodeURIComponent(
-        membershipId
+        membershipId,
       )}`;
 
-      const qrDataUrl = await QRCode.toDataURL(
-        verificationUrl,
-        {
-          errorCorrectionLevel: "M",
-          margin: 1,
-          width: 180,
-        }
-      );
+      const qrDataUrl = await QRCode.toDataURL(verificationUrl, {
+        errorCorrectionLevel: "M",
+        margin: 1,
+        width: 180,
+      });
 
       const doc = new jsPDF({
         orientation: "landscape",
@@ -322,474 +361,215 @@ const greeting = useMemo(() => {
          CARD
          ===================================================== */
 
-      doc.setFillColor(
-        255,
-        255,
-        255
-      );
+      doc.setFillColor(255, 255, 255);
 
-      doc.roundedRect(
-        2,
-        2,
-        82,
-        50,
-        3,
-        3,
-        "F"
-      );
+      doc.roundedRect(2, 2, 82, 50, 3, 3, "F");
 
-      doc.setDrawColor(
-        220,
-        38,
-        38
-      );
+      doc.setDrawColor(220, 38, 38);
 
       doc.setLineWidth(0.5);
 
-      doc.roundedRect(
-        2,
-        2,
-        82,
-        50,
-        3,
-        3,
-        "S"
-      );
+      doc.roundedRect(2, 2, 82, 50, 3, 3, "S");
 
       /* =====================================================
          HEADER
          ===================================================== */
 
-      doc.setFillColor(
-        220,
-        38,
-        38
-      );
+      doc.setFillColor(220, 38, 38);
 
-      doc.roundedRect(
-        2,
-        2,
-        82,
-        13,
-        3,
-        3,
-        "F"
-      );
+      doc.roundedRect(2, 2, 82, 13, 3, 3, "F");
 
-      doc.rect(
-        2,
-        9,
-        82,
-        6,
-        "F"
-      );
+      doc.rect(2, 9, 82, 6, "F");
 
       /* MBA badge */
 
-      doc.setFillColor(
-        255,
-        255,
-        255
-      );
+      doc.setFillColor(255, 255, 255);
 
-      doc.circle(
-        9,
-        8,
-        4,
-        "F"
-      );
+      doc.circle(9, 8, 4, "F");
 
-      doc.setTextColor(
-        220,
-        38,
-        38
-      );
+      doc.setTextColor(220, 38, 38);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(4.5);
 
-      doc.text(
-        "MBA",
-        9,
-        9.5,
-        {
-          align: "center",
-        }
-      );
+      doc.text("MBA", 9, 9.5, {
+        align: "center",
+      });
 
       /* Header text */
 
-      doc.setTextColor(
-        255,
-        255,
-        255
-      );
+      doc.setTextColor(255, 255, 255);
 
       doc.setFontSize(5);
 
-      doc.text(
-        "MUMBAI BOXING ASSOCIATION",
-        16,
-        7.5
-      );
+      doc.text("MUMBAI BOXING ASSOCIATION", 16, 7.5);
 
       doc.setFontSize(3.8);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
-      doc.text(
-        "OFFICIAL MEMBERSHIP CARD",
-        16,
-        11
-      );
+      doc.text("OFFICIAL MEMBERSHIP CARD", 16, 11);
 
       /* =====================================================
          MEMBER INITIAL
          ===================================================== */
 
-      doc.setFillColor(
-        254,
-        226,
-        226
-      );
+      doc.setFillColor(254, 226, 226);
 
-      doc.circle(
-        11,
-        24,
-        6.5,
-        "F"
-      );
+      doc.circle(11, 24, 6.5, "F");
 
-      doc.setTextColor(
-        220,
-        38,
-        38
-      );
+      doc.setTextColor(220, 38, 38);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(10);
 
-      doc.text(
-        boxer.name
-          .charAt(0)
-          .toUpperCase(),
-        11,
-        27.2,
-        {
-          align: "center",
-        }
-      );
+      doc.text(boxer.name.charAt(0).toUpperCase(), 11, 27.2, {
+        align: "center",
+      });
 
       /* =====================================================
          NAME
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "MEMBER NAME",
-        21,
-        19
-      );
+      doc.text("MEMBER NAME", 21, 19);
 
-      doc.setTextColor(
-        15,
-        23,
-        42
-      );
+      doc.setTextColor(15, 23, 42);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(6.5);
 
-      const nameLines =
-        doc.splitTextToSize(
-          boxer.name,
-          27
-        );
+      const nameLines = doc.splitTextToSize(boxer.name, 27);
 
-      doc.text(
-        nameLines.slice(0, 2),
-        21,
-        22.5
-      );
+      doc.text(nameLines.slice(0, 2), 21, 22.5);
 
       /* =====================================================
          MEMBERSHIP ID
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "MEMBERSHIP ID",
-        21,
-        29
-      );
+      doc.text("MEMBERSHIP ID", 21, 29);
 
-      doc.setTextColor(
-        15,
-        23,
-        42
-      );
+      doc.setTextColor(15, 23, 42);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(5.5);
 
-      doc.text(
-        membershipId,
-        21,
-        32.5
-      );
+      doc.text(membershipId, 21, 32.5);
 
       /* =====================================================
          BOXER ID
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "BOXER ID",
-        21,
-        37
-      );
+      doc.text("BOXER ID", 21, 37);
 
-      doc.setTextColor(
-        15,
-        23,
-        42
-      );
+      doc.setTextColor(15, 23, 42);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(5);
 
-      doc.text(
-        boxerId,
-        21,
-        40.5
-      );
+      doc.text(boxerId, 21, 40.5);
 
       /* =====================================================
          CATEGORY
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "CATEGORY",
-        50,
-        19
-      );
+      doc.text("CATEGORY", 50, 19);
 
-      doc.setTextColor(
-        15,
-        23,
-        42
-      );
+      doc.setTextColor(15, 23, 42);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(5.5);
 
-      doc.text(
-        "BOXER",
-        50,
-        22.5
-      );
+      doc.text("BOXER", 50, 22.5);
 
       /* =====================================================
          WEIGHT
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "WEIGHT CATEGORY",
-        50,
-        28
-      );
+      doc.text("WEIGHT CATEGORY", 50, 28);
 
-      doc.setTextColor(
-        15,
-        23,
-        42
-      );
+      doc.setTextColor(15, 23, 42);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(5);
 
-      doc.text(
-        boxer.weight || "—",
-        50,
-        31.5
-      );
+      doc.text(boxer.weight || "—", 50, 31.5);
 
       /* =====================================================
          VALID FROM
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "VALID FROM",
-        50,
-        37
-      );
+      doc.text("VALID FROM", 50, 37);
 
-      doc.setTextColor(
-        15,
-        23,
-        42
-      );
+      doc.setTextColor(15, 23, 42);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(5);
 
-      doc.text(
-        formatCardDate(validFrom),
-        50,
-        40.5
-      );
+      doc.text(formatCardDate(validFrom), 50, 40.5);
 
       /* =====================================================
          VALID UNTIL
          ===================================================== */
 
-      doc.setTextColor(
-        100,
-        116,
-        139
-      );
+      doc.setTextColor(100, 116, 139);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(4);
 
-      doc.text(
-        "VALID UNTIL",
-        50,
-        44
-      );
+      doc.text("VALID UNTIL", 50, 44);
 
-      doc.setTextColor(
-        22,
-        163,
-        74
-      );
+      doc.setTextColor(22, 163, 74);
 
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
+      doc.setFont("helvetica", "bold");
 
       doc.setFontSize(5);
 
-      doc.text(
-        formatCardDate(expiry),
-        50,
-        47.5
-      );
+      doc.text(formatCardDate(expiry), 50, 47.5);
 
       /* =====================================================
          QR VERIFICATION CODE
@@ -797,114 +577,177 @@ const greeting = useMemo(() => {
 
       doc.setFillColor(248, 250, 252);
 
-      doc.roundedRect(
-        64,
-        27,
-        17,
-        17,
-        2,
-        2,
-        "F"
-      );
+      doc.roundedRect(64, 27, 17, 17, 2, 2, "F");
 
-      doc.addImage(
-        qrDataUrl,
-        "PNG",
-        65,
-        28,
-        15,
-        15
-      );
+      doc.addImage(qrDataUrl, "PNG", 65, 28, 15, 15);
 
       doc.setTextColor(100, 116, 139);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(3.2);
-      doc.text(
-        "SCAN TO VERIFY",
-        72.5,
-        46.5,
-        { align: "center" }
-      );
+      doc.text("SCAN TO VERIFY", 72.5, 46.5, { align: "center" });
 
       /* =====================================================
          ACTIVE BADGE
          ===================================================== */
 
-      doc.setFillColor(
-        220,
-        252,
-        231
-      );
+      doc.setFillColor(220, 252, 231);
 
-      doc.roundedRect(
-        69,
-        19,
-        11,
-        5,
-        2,
-        2,
-        "F"
-      );
+      doc.roundedRect(69, 19, 11, 5, 2, 2, "F");
 
-      doc.setTextColor(
-        22,
-        101,
-        52
-      );
+      doc.setTextColor(22, 101, 52);
 
       doc.setFontSize(3.7);
 
-      doc.text(
-        "ACTIVE",
-        74.5,
-        22.2,
-        {
-          align: "center",
-        }
-      );
+      doc.text("ACTIVE", 74.5, 22.2, {
+        align: "center",
+      });
 
       /* =====================================================
          FOOTER
          ===================================================== */
 
-      doc.setTextColor(
-        148,
-        163,
-        184
-      );
+      doc.setTextColor(148, 163, 184);
 
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
+      doc.setFont("helvetica", "normal");
 
       doc.setFontSize(3.2);
 
-      doc.text(
-        "Mumbai Boxing Association",
-        43,
-        50,
-        {
-          align: "center",
-        }
-      );
+      doc.text("Mumbai Boxing Association", 43, 50, {
+        align: "center",
+      });
 
-      doc.save(
-        `${membershipId}-membership-card.pdf`
-      );
+      doc.save(`${membershipId}-membership-card.pdf`);
     } catch (err) {
-      console.error(
-        "ID card generation error:",
-        err
-      );
+      console.error("ID card generation error:", err);
 
-      setError(
-        "Unable to generate ID card."
-      );
+      setError("Unable to generate ID card.");
     } finally {
       setDownloadingCard(false);
     }
   };
+
+  /* =========================================================
+     SUBMIT TOURNAMENT HISTORY
+     ========================================================= */
+
+  async function submitTournamentHistory(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    try {
+      setHistorySubmitting(true);
+      setHistoryError("");
+      setHistorySuccess("");
+
+      if (!historyForm.tournamentName.trim()) {
+        setHistoryError("Tournament name is required.");
+        return;
+      }
+
+      if (!historyForm.tournamentDate) {
+        setHistoryError("Tournament date is required.");
+        return;
+      }
+
+      let documentPath: string | null = null;
+      let documentName: string | null = null;
+
+      /* =====================================================
+         OPTIONAL SUPPORTING DOCUMENT UPLOAD
+         ===================================================== */
+
+      if (historyDocument) {
+        const uploadForm = new FormData();
+        uploadForm.append("file", historyDocument);
+
+        const uploadResponse = await fetch(
+          "/api/boxer/tournament-history/upload",
+          {
+            method: "POST",
+            body: uploadForm,
+          },
+        );
+
+        const uploadData = await uploadResponse.json();
+
+        if (!uploadResponse.ok || !uploadData.success) {
+          throw new Error(
+            uploadData?.message || "Failed to upload supporting document.",
+          );
+        }
+
+        documentPath = uploadData.filePath;
+        documentName = uploadData.fileName;
+      }
+
+      /* =====================================================
+         CREATE TOURNAMENT HISTORY RECORD
+         ===================================================== */
+
+      const response = await fetch("/api/boxer/tournament-history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tournamentName: historyForm.tournamentName.trim(),
+          location: historyForm.location.trim() || null,
+          tournamentDate: historyForm.tournamentDate,
+          tournamentType: historyForm.tournamentType.trim() || null,
+          weightCategory: historyForm.weightCategory.trim() || null,
+          result: historyForm.result.trim() || null,
+          medal: historyForm.medal,
+          position:
+            historyForm.position.trim() === ""
+              ? null
+              : Number(historyForm.position),
+          coachName: historyForm.coachName.trim() || null,
+          notes: historyForm.notes.trim() || null,
+          documentPath,
+          documentName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message || "Failed to submit tournament history.",
+        );
+      }
+
+      setTournamentHistory((current) => [data.history, ...current]);
+
+      setHistoryForm({
+        tournamentName: "",
+        location: "",
+        tournamentDate: "",
+        tournamentType: "",
+        weightCategory: "",
+        result: "",
+        medal: "NONE",
+        position: "",
+        coachName: "",
+        notes: "",
+        documentPath: "",
+        documentName: "",
+      });
+
+      setHistoryDocument(null);
+
+      setShowHistoryForm(false);
+      setHistorySuccess(
+  "Tournament record submitted successfully. It is now pending verification."
+);
+    } catch (err) {
+      setHistoryError(
+        err instanceof Error
+          ? err.message
+          : "Failed to submit tournament history.",
+      );
+    } finally {
+      setHistorySubmitting(false);
+    }
+  }
 
   /* =========================================================
      LOADING
@@ -915,7 +758,6 @@ const greeting = useMemo(() => {
       <DashboardLayout role="boxer">
         <div className="min-h-[70vh] flex items-center justify-center">
           <div className="text-center">
-
             <div
               className="
                 w-10
@@ -932,7 +774,6 @@ const greeting = useMemo(() => {
             <p className="mt-4 text-sm text-slate-500">
               Loading your dashboard...
             </p>
-
           </div>
         </div>
       </DashboardLayout>
@@ -945,9 +786,7 @@ const greeting = useMemo(() => {
 
   return (
     <DashboardLayout role="boxer">
-
       <div className="max-w-[1500px] mx-auto space-y-7 text-slate-900">
-
         {/* ==================================================
             GREETING
             ================================================== */}
@@ -963,24 +802,21 @@ const greeting = useMemo(() => {
           "
         >
           <div>
-
             <h1
-  className="
+              className="
     text-3xl
     sm:text-[38px]
     font-extrabold
     tracking-tight
     text-[#0b1729]
   "
->
-  {greeting},{" "}
-  {boxer?.name?.split(" ")[0] || "Member"}
-</h1>
+            >
+              {greeting}, {boxer?.name?.split(" ")[0] || "Member"}
+            </h1>
 
             <p className="mt-1 text-[16px] text-slate-500">
               Here&apos;s your membership overview
             </p>
-
           </div>
         </div>
 
@@ -1007,7 +843,6 @@ const greeting = useMemo(() => {
 
         {boxer && (
           <>
-
             {/* =================================================
                 PROFILE + MEMBERSHIP
                 ================================================= */}
@@ -1020,7 +855,6 @@ const greeting = useMemo(() => {
                 gap-5
               "
             >
-
               {/* =================================================
                   PROFILE
                   ================================================= */}
@@ -1036,7 +870,6 @@ const greeting = useMemo(() => {
                   sm:p-7
                 "
               >
-
                 <div
                   className="
                     flex
@@ -1045,11 +878,9 @@ const greeting = useMemo(() => {
                     gap-6
                   "
                 >
-
                   {/* Avatar */}
 
                   <div className="relative shrink-0">
-
                     {passportPhoto ? (
                       <img
                         src={passportPhoto}
@@ -1079,10 +910,7 @@ const greeting = useMemo(() => {
                           text-red-600
                         "
                       >
-                        <UserRound
-                          size={58}
-                          strokeWidth={1.5}
-                        />
+                        <UserRound size={58} strokeWidth={1.5} />
                       </div>
                     )}
 
@@ -1099,13 +927,11 @@ const greeting = useMemo(() => {
                         border-white
                       "
                     />
-
                   </div>
 
                   {/* Details */}
 
                   <div className="flex-1 min-w-0">
-
                     <div
                       className="
                         flex
@@ -1114,7 +940,6 @@ const greeting = useMemo(() => {
                         gap-3
                       "
                     >
-
                       <h2
                         className="
                           text-3xl
@@ -1140,14 +965,9 @@ const greeting = useMemo(() => {
                           font-semibold
                         "
                       >
-                        <CheckCircle2
-                          size={15}
-                          strokeWidth={2}
-                        />
-
+                        <CheckCircle2 size={15} strokeWidth={2} />
                         ACTIVE
                       </span>
-
                     </div>
 
                     <div className="h-px bg-slate-100 my-5" />
@@ -1161,56 +981,29 @@ const greeting = useMemo(() => {
                         gap-x-5
                       "
                     >
-
-                      <Info
-                        label="Boxer ID"
-                        value={boxerId}
-                      />
+                      <Info label="Boxer ID" value={boxerId} />
 
                       <Info
                         label="Date of Birth"
-                        value={formatDate(
-                          boxer.dob
-                        )}
+                        value={formatDate(boxer.dob)}
                       />
 
                       <Info
                         label="Weight Category"
-                        value={
-                          boxer.weight ||
-                          "—"
-                        }
+                        value={boxer.weight || "—"}
                       />
 
-                      <Info
-                        label="Age Group"
-                        value={
-                          boxer.ageGroup ||
-                          "—"
-                        }
-                      />
+                      <Info label="Age Group" value={boxer.ageGroup || "—"} />
 
                       <Info
                         label="Academy"
-                        value={
-                          boxer.academy?.name ||
-                          "—"
-                        }
+                        value={boxer.academy?.name || "—"}
                       />
 
-                      <Info
-                        label="Email"
-                        value={
-                          boxer.user.email
-                        }
-                      />
-
+                      <Info label="Email" value={boxer.user.email} />
                     </div>
-
                   </div>
-
                 </div>
-
               </div>
 
               {/* =================================================
@@ -1227,7 +1020,6 @@ const greeting = useMemo(() => {
                   overflow-hidden
                 "
               >
-
                 <div
                   className="
                     bg-gradient-to-br
@@ -1240,7 +1032,6 @@ const greeting = useMemo(() => {
                     overflow-hidden
                   "
                 >
-
                   <div
                     className="
                       absolute
@@ -1261,10 +1052,7 @@ const greeting = useMemo(() => {
                       opacity-10
                     "
                   >
-                    <ShieldCheck
-                      size={72}
-                      strokeWidth={1.2}
-                    />
+                    <ShieldCheck size={72} strokeWidth={1.2} />
                   </div>
 
                   <div
@@ -1275,7 +1063,6 @@ const greeting = useMemo(() => {
                       relative
                     "
                   >
-
                     <div
                       className="
                         w-14
@@ -1296,7 +1083,6 @@ const greeting = useMemo(() => {
                     </div>
 
                     <div>
-
                       <p
                         className="
                           text-sm
@@ -1317,18 +1103,13 @@ const greeting = useMemo(() => {
                           break-all
                         "
                       >
-                        {boxer.user.membershipId ||
-                          "—"}
+                        {boxer.user.membershipId || "—"}
                       </p>
-
                     </div>
-
                   </div>
-
                 </div>
 
                 <div className="p-6">
-
                   <div
                     className="
                       grid
@@ -1337,60 +1118,41 @@ const greeting = useMemo(() => {
                       divide-slate-200
                     "
                   >
-
                     <div className="pr-4">
-
                       <p className="text-sm text-slate-500 flex items-center gap-2">
                         <CalendarDays
                           size={16}
                           strokeWidth={1.8}
                           className="text-slate-400"
                         />
-
                         Valid From
                       </p>
 
                       <p className="font-semibold text-slate-900 mt-2">
-                        {formatDate(
-                          boxer.user
-                            .membershipValidFrom
-                        )}
+                        {formatDate(boxer.user.membershipValidFrom)}
                       </p>
-
                     </div>
 
                     <div className="pl-5">
-
                       <p className="text-sm text-slate-500 flex items-center gap-2">
                         <CalendarDays
                           size={16}
                           strokeWidth={1.8}
                           className="text-slate-400"
                         />
-
                         Valid Until
                       </p>
 
                       <p className="font-semibold text-emerald-600 mt-2">
-                        {formatDate(
-                          boxer.user
-                            .membershipExpiry
-                        )}
+                        {formatDate(boxer.user.membershipExpiry)}
                       </p>
-
                     </div>
-
                   </div>
 
                   <button
                     type="button"
-                    onClick={
-                      downloadIdCard
-                    }
-                    disabled={
-                      downloadingCard ||
-                      !boxer.user.membershipId
-                    }
+                    onClick={downloadIdCard}
+                    disabled={downloadingCard || !boxer.user.membershipId}
                     className="
                       mt-7
                       w-full
@@ -1410,22 +1172,12 @@ const greeting = useMemo(() => {
                       transition-colors
                     "
                   >
+                    <Download size={20} strokeWidth={2} />
 
-                    <Download
-                      size={20}
-                      strokeWidth={2}
-                    />
-
-                    {downloadingCard
-                      ? "Generating..."
-                      : "Download ID Card"}
-
+                    {downloadingCard ? "Generating..." : "Download ID Card"}
                   </button>
-
                 </div>
-
               </div>
-
             </div>
 
             {/* =================================================
@@ -1441,7 +1193,6 @@ const greeting = useMemo(() => {
                 gap-4
               "
             >
-
               <StatCard
                 icon={FolderOpen}
                 iconClass="bg-blue-50 text-blue-600"
@@ -1463,11 +1214,7 @@ const greeting = useMemo(() => {
               <StatCard
                 icon={IndianRupee}
                 iconClass="bg-amber-50 text-amber-600"
-                title={
-                  boxer.user.membershipId
-                    ? "Paid"
-                    : "Pending"
-                }
+                title={boxer.user.membershipId ? "Paid" : "Pending"}
                 label="Membership Fee"
                 sub={
                   boxer.user.membershipId
@@ -1485,7 +1232,6 @@ const greeting = useMemo(() => {
                 sub="View certificates"
                 subClass="text-violet-600"
               />
-
             </div>
 
             {/* =================================================
@@ -1503,7 +1249,6 @@ const greeting = useMemo(() => {
                 sm:p-6
               "
             >
-
               <div
                 className="
                   flex
@@ -1513,9 +1258,7 @@ const greeting = useMemo(() => {
                   mb-5
                 "
               >
-
                 <div className="flex items-center gap-3">
-
                   <div
                     className="
                       w-10
@@ -1528,10 +1271,7 @@ const greeting = useMemo(() => {
                       justify-center
                     "
                   >
-                    <FolderOpen
-                      size={21}
-                      strokeWidth={1.8}
-                    />
+                    <FolderOpen size={21} strokeWidth={1.8} />
                   </div>
 
                   <h2
@@ -1543,7 +1283,6 @@ const greeting = useMemo(() => {
                   >
                     My Documents
                   </h2>
-
                 </div>
 
                 <a
@@ -1561,18 +1300,11 @@ const greeting = useMemo(() => {
                   "
                 >
                   View All Documents
-
-                  <ArrowRight
-                    size={17}
-                    strokeWidth={2}
-                  />
+                  <ArrowRight size={17} strokeWidth={2} />
                 </a>
-
               </div>
 
-              {(boxer.user.documents ?? [])
-                .length === 0 ? (
-
+              {(boxer.user.documents ?? []).length === 0 ? (
                 <div
                   className="
                     rounded-xl
@@ -1583,7 +1315,6 @@ const greeting = useMemo(() => {
                     text-center
                   "
                 >
-
                   <div
                     className="
                       w-16
@@ -1597,10 +1328,7 @@ const greeting = useMemo(() => {
                       justify-center
                     "
                   >
-                    <FileText
-                      size={32}
-                      strokeWidth={1.5}
-                    />
+                    <FileText size={32} strokeWidth={1.5} />
                   </div>
 
                   <p className="mt-4 font-semibold text-slate-700">
@@ -1610,11 +1338,8 @@ const greeting = useMemo(() => {
                   <p className="text-sm text-slate-400 mt-1">
                     Your uploaded documents will appear here.
                   </p>
-
                 </div>
-
               ) : (
-
                 <div
                   className="
                     grid
@@ -1625,22 +1350,18 @@ const greeting = useMemo(() => {
                     gap-4
                   "
                 >
+                  {(boxer.user.documents ?? []).map((doc) => {
+                    const fileUrl = `/api/file?path=${encodeURIComponent(
+                      doc.filePath,
+                    )}`;
 
-                  {(boxer.user.documents ?? [])
-                    .map((doc) => {
-
-                      const fileUrl =
-                        `/api/file?path=${encodeURIComponent(
-                          doc.filePath
-                        )}`;
-
-                      return (
-                        <a
-                          key={doc.id}
-                          href={fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="
+                    return (
+                      <a
+                        key={doc.id}
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="
                             group
                             rounded-xl
                             border
@@ -1651,12 +1372,11 @@ const greeting = useMemo(() => {
                             hover:-translate-y-0.5
                             transition-all
                           "
-                        >
+                      >
+                        {/* Preview */}
 
-                          {/* Preview */}
-
-                          <div
-                            className="
+                        <div
+                          className="
                               h-40
                               bg-slate-50
                               flex
@@ -1664,37 +1384,31 @@ const greeting = useMemo(() => {
                               justify-center
                               overflow-hidden
                             "
-                          >
-
-                            {doc.fileType ===
-                            "image" ? (
-
-                              <img
-                                src={fileUrl}
-                                alt={doc.label}
-                                className="
+                        >
+                          {doc.fileType === "image" ? (
+                            <img
+                              src={fileUrl}
+                              alt={doc.label}
+                              className="
                                   w-full
                                   h-full
                                   object-contain
                                   group-hover:scale-[1.02]
                                   transition-transform
                                 "
-                              />
-
-                            ) : (
-
-                              <div
-                                className="
+                            />
+                          ) : (
+                            <div
+                              className="
                                   text-center
                                   flex
                                   flex-col
                                   items-center
                                   justify-center
                                 "
-                              >
-
-                                <div
-                                  className="
+                            >
+                              <div
+                                className="
                                     w-16
                                     h-16
                                     rounded-2xl
@@ -1705,28 +1419,22 @@ const greeting = useMemo(() => {
                                     items-center
                                     justify-center
                                   "
-                                >
-                                  <FileText
-                                    size={34}
-                                    strokeWidth={1.5}
-                                  />
-                                </div>
-
-                                <p className="text-xs text-slate-400 mt-2">
-                                  Document
-                                </p>
-
+                              >
+                                <FileText size={34} strokeWidth={1.5} />
                               </div>
-                            )}
 
-                          </div>
+                              <p className="text-xs text-slate-400 mt-2">
+                                Document
+                              </p>
+                            </div>
+                          )}
+                        </div>
 
-                          {/* Information */}
+                        {/* Information */}
 
-                          <div className="p-4">
-
-                            <p
-                              className="
+                        <div className="p-4">
+                          <p
+                            className="
                                 font-semibold
                                 text-sm
                                 text-slate-900
@@ -1734,66 +1442,62 @@ const greeting = useMemo(() => {
                                 break-words
                                 capitalize
                               "
-                            >
-                              {doc.label.replace(
-                                /-/g,
-                                " "
-                              )}
-                            </p>
+                          >
+                            {doc.label.replace(/-/g, " ")}
+                          </p>
 
-                            {(() => {
-  const status = (doc.status || "Pending").toLowerCase();
+                          {(() => {
+                            const status = (
+                              doc.status || "Pending"
+                            ).toLowerCase();
 
-  const isApproved =
-    status === "approved";
+                            const isApproved = status === "approved";
 
-  const isRejected =
-    status === "rejected";
+                            const isRejected = status === "rejected";
 
-  return (
-    <div className="mt-3">
-      <div className="flex items-center gap-1.5">
-        <CheckCircle2
-          size={16}
-          strokeWidth={2}
-          className={
-            isApproved
-              ? "text-emerald-600"
-              : isRejected
-              ? "text-red-600"
-              : "text-amber-500"
-          }
-        />
+                            return (
+                              <div className="mt-3">
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle2
+                                    size={16}
+                                    strokeWidth={2}
+                                    className={
+                                      isApproved
+                                        ? "text-emerald-600"
+                                        : isRejected
+                                          ? "text-red-600"
+                                          : "text-amber-500"
+                                    }
+                                  />
 
-        <span
-          className={`text-xs font-semibold ${
-            isApproved
-              ? "text-emerald-600"
-              : isRejected
-              ? "text-red-600"
-              : "text-amber-600"
-          }`}
-        >
-          {isApproved
-            ? "Approved"
-            : isRejected
-            ? "Rejected"
-            : "Pending"}
-        </span>
-      </div>
+                                  <span
+                                    className={`text-xs font-semibold ${
+                                      isApproved
+                                        ? "text-emerald-600"
+                                        : isRejected
+                                          ? "text-red-600"
+                                          : "text-amber-600"
+                                    }`}
+                                  >
+                                    {isApproved
+                                      ? "Approved"
+                                      : isRejected
+                                        ? "Rejected"
+                                        : "Pending"}
+                                  </span>
+                                </div>
 
-      {isRejected &&
-        doc.rejectionReason && (
-          <p className="mt-2 text-xs leading-5 text-red-500">
-            {doc.rejectionReason}
-          </p>
-        )}
-    </div>
-  );
-})()}
+                                {isRejected && doc.rejectionReason && (
+                                  <p className="mt-2 text-xs leading-5 text-red-500">
+                                    {doc.rejectionReason}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })()}
 
-                            <p
-                              className="
+                          <p
+                            className="
                                 mt-4
                                 text-sm
                                 font-semibold
@@ -1803,29 +1507,20 @@ const greeting = useMemo(() => {
                                 items-center
                                 gap-1.5
                               "
-                            >
-                              View Document
-
-                              <ArrowRight
-                                size={16}
-                                strokeWidth={2}
-                              />
-                            </p>
-
-                          </div>
-
-                        </a>
-                      );
-                    })}
-
+                          >
+                            View Document
+                            <ArrowRight size={16} strokeWidth={2} />
+                          </p>
+                        </div>
+                      </a>
+                    );
+                  })}
                 </div>
-
               )}
-
             </section>
 
             {/* =================================================
-                TOURNAMENT HISTORY
+                TOURNAMENTS
                 ================================================= */}
 
             <section
@@ -1843,9 +1538,9 @@ const greeting = useMemo(() => {
                 className="
                   flex
                   flex-col
-                  sm:flex-row
-                  sm:items-center
-                  sm:justify-between
+                  lg:flex-row
+                  lg:items-center
+                  lg:justify-between
                   gap-4
                   mb-6
                 "
@@ -1864,10 +1559,7 @@ const greeting = useMemo(() => {
                       shrink-0
                     "
                   >
-                    <Trophy
-                      size={21}
-                      strokeWidth={1.8}
-                    />
+                    <Trophy size={21} strokeWidth={1.8} />
                   </div>
 
                   <div>
@@ -1878,113 +1570,192 @@ const greeting = useMemo(() => {
                         text-[#0b1729]
                       "
                     >
-                      Tournament History
+                      Tournaments
                     </h2>
 
                     <p className="text-sm text-slate-500 mt-0.5">
-                      Your tournament participation and registrations
+                      Upcoming registrations and your verified tournament
+                      achievements
                     </p>
                   </div>
                 </div>
 
-                <div
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHistoryError("");
+                    setHistorySuccess("");
+                    setShowHistoryForm(true);
+                  }}
                   className="
                     inline-flex
                     items-center
+                    justify-center
                     gap-2
+                    rounded-xl
+                    bg-[#ed1c24]
+                    hover:bg-[#d71920]
+                    px-4
+                    py-2.5
                     text-sm
-                    font-semibold
-                    text-slate-500
+                    font-bold
+                    text-white
+                    transition-colors
+                    shadow-sm
+                    w-full
+                    sm:w-auto
                   "
                 >
-                  <Trophy
-                    size={16}
-                    className="text-emerald-600"
-                    strokeWidth={1.8}
-                  />
-                  {boxer.tournamentEntries?.length ?? 0}{" "}
-                  {(
-                    boxer.tournamentEntries?.length ?? 0
-                  ) === 1
-                    ? "Entry"
-                    : "Entries"}
-                </div>
+                  <Plus size={18} strokeWidth={2.2} />
+                  Add Previous Tournament
+                </button>
               </div>
 
-              {(boxer.tournamentEntries ?? []).length === 0 ? (
+              {historySuccess && (
                 <div
                   className="
+                    mb-5
                     rounded-xl
                     border
-                    border-dashed
-                    border-slate-200
-                    p-10
-                    sm:p-12
-                    text-center
+                    border-emerald-200
+                    bg-emerald-50
+                    px-4
+                    py-3
+                    text-sm
+                    font-medium
+                    text-emerald-700
                   "
                 >
-                  <div
-                    className="
-                      w-16
-                      h-16
-                      mx-auto
-                      rounded-2xl
-                      bg-emerald-50
-                      text-emerald-500
-                      flex
-                      items-center
-                      justify-center
-                    "
-                  >
-                    <Trophy
-                      size={32}
-                      strokeWidth={1.5}
-                    />
+                  {historySuccess}
+                </div>
+              )}
+
+              {historyError && (
+                <div
+                  className="
+                    mb-5
+                    rounded-xl
+                    border
+                    border-red-200
+                    bg-red-50
+                    px-4
+                    py-3
+                    text-sm
+                    font-medium
+                    text-red-600
+                  "
+                >
+                  {historyError}
+                </div>
+              )}
+
+              {/* =================================================
+                  UPCOMING TOURNAMENTS
+                  ================================================= */}
+
+              <div>
+                <div
+                  className="
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                    mb-4
+                  "
+                >
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Upcoming Tournaments
+                    </h3>
+                    <p className="text-sm text-slate-400 mt-0.5">
+                      Tournaments you are registered for
+                    </p>
                   </div>
 
-                  <p className="mt-4 font-semibold text-slate-700">
-                    No tournament entries yet
-                  </p>
-
-                  <p className="text-sm text-slate-400 mt-1">
-                    Your tournament registrations will appear here.
-                  </p>
+                  <span
+                    className="
+                      inline-flex
+                      items-center
+                      gap-1.5
+                      rounded-full
+                      bg-emerald-50
+                      px-3
+                      py-1.5
+                      text-xs
+                      font-bold
+                      text-emerald-700
+                    "
+                  >
+                    <Trophy size={14} />
+                    {boxer.tournamentEntries?.length ?? 0}
+                  </span>
                 </div>
-              ) : (
-                <>
-                  {/* Desktop / tablet table */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <div className="min-w-[760px] overflow-hidden rounded-xl border border-slate-100">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-100">
-                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Tournament
-                            </th>
 
-                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Date
-                            </th>
+                {(boxer.tournamentEntries ?? []).length === 0 ? (
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-dashed
+                      border-slate-200
+                      bg-slate-50/50
+                      p-8
+                      text-center
+                    "
+                  >
+                    <div
+                      className="
+                        w-14
+                        h-14
+                        mx-auto
+                        rounded-2xl
+                        bg-emerald-50
+                        text-emerald-500
+                        flex
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <Trophy size={28} strokeWidth={1.5} />
+                    </div>
 
-                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Location
-                            </th>
+                    <p className="mt-4 font-semibold text-slate-700">
+                      No upcoming tournament registrations
+                    </p>
 
-                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Weight Class
-                            </th>
+                    <p className="text-sm text-slate-400 mt-1">
+                      Your tournament registrations will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Desktop */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <div className="overflow-hidden rounded-xl border border-slate-100">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-100">
+                              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                Tournament
+                              </th>
+                              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                Date
+                              </th>
+                              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                Location
+                              </th>
+                              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                Weight Class
+                              </th>
+                              <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
 
-                            <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                              Status
-                            </th>
-                          </tr>
-                        </thead>
-
-                        <tbody className="divide-y divide-slate-100">
-                          {(boxer.tournamentEntries ?? []).map(
-                            (entry) => {
-                              const tournament =
-                                entry.tournament;
+                          <tbody className="divide-y divide-slate-100">
+                            {(boxer.tournamentEntries ?? []).map((entry) => {
+                              const tournament = entry.tournament;
 
                               if (!tournament) {
                                 return (
@@ -1993,18 +1764,16 @@ const greeting = useMemo(() => {
                                       colSpan={5}
                                       className="px-5 py-5 text-sm text-slate-500"
                                     >
-                                      Tournament details are unavailable
-                                      for this entry.
+                                      Tournament details are unavailable for
+                                      this entry.
                                     </td>
                                   </tr>
                                 );
                               }
 
-                              const status =
-                                (
-                                  tournament.status ||
-                                  "upcoming"
-                                ).toLowerCase();
+                              const status = (
+                                tournament.status || "upcoming"
+                              ).toLowerCase();
 
                               const statusConfig =
                                 status === "completed"
@@ -2014,38 +1783,34 @@ const greeting = useMemo(() => {
                                         "bg-emerald-50 text-emerald-700 border-emerald-100",
                                     }
                                   : status === "ongoing"
-                                  ? {
-                                      label: "Ongoing",
-                                      className:
-                                        "bg-red-50 text-red-700 border-red-100",
-                                    }
-                                  : status === "open"
-                                  ? {
-                                      label: "Open",
-                                      className:
-                                        "bg-blue-50 text-blue-700 border-blue-100",
-                                    }
-                                  : status === "cancelled"
-                                  ? {
-                                      label: "Cancelled",
-                                      className:
-                                        "bg-slate-100 text-slate-600 border-slate-200",
-                                    }
-                                  : {
-                                      label: "Upcoming",
-                                      className:
-                                        "bg-amber-50 text-amber-700 border-amber-100",
-                                    };
+                                    ? {
+                                        label: "Ongoing",
+                                        className:
+                                          "bg-red-50 text-red-700 border-red-100",
+                                      }
+                                    : status === "open"
+                                      ? {
+                                          label: "Open",
+                                          className:
+                                            "bg-blue-50 text-blue-700 border-blue-100",
+                                        }
+                                      : status === "cancelled"
+                                        ? {
+                                            label: "Cancelled",
+                                            className:
+                                              "bg-slate-100 text-slate-600 border-slate-200",
+                                          }
+                                        : {
+                                            label: "Upcoming",
+                                            className:
+                                              "bg-amber-50 text-amber-700 border-amber-100",
+                                          };
 
-                              const startDate =
-                                formatDate(
-                                  tournament.startDate
-                                );
+                              const startDate = formatDate(
+                                tournament.startDate,
+                              );
 
-                              const endDate =
-                                formatDate(
-                                  tournament.endDate
-                                );
+                              const endDate = formatDate(tournament.endDate);
 
                               const dateLabel =
                                 startDate !== endDate
@@ -2061,21 +1826,18 @@ const greeting = useMemo(() => {
                                     <div className="flex items-center gap-3">
                                       <div
                                         className="
-                                          w-10
-                                          h-10
-                                          rounded-xl
-                                          bg-emerald-50
-                                          text-emerald-600
-                                          flex
-                                          items-center
-                                          justify-center
-                                          shrink-0
-                                        "
+                                            w-10
+                                            h-10
+                                            rounded-xl
+                                            bg-emerald-50
+                                            text-emerald-600
+                                            flex
+                                            items-center
+                                            justify-center
+                                            shrink-0
+                                          "
                                       >
-                                        <Trophy
-                                          size={18}
-                                          strokeWidth={1.8}
-                                        />
+                                        <Trophy size={18} strokeWidth={1.8} />
                                       </div>
 
                                       <div className="min-w-0">
@@ -2119,61 +1881,56 @@ const greeting = useMemo(() => {
                                   <td className="px-5 py-5">
                                     <span
                                       className={`
-                                        inline-flex
-                                        items-center
-                                        rounded-full
-                                        border
-                                        px-3
-                                        py-1.5
-                                        text-xs
-                                        font-semibold
-                                        ${statusConfig.className}
-                                      `}
+                                          inline-flex
+                                          items-center
+                                          rounded-full
+                                          border
+                                          px-3
+                                          py-1.5
+                                          text-xs
+                                          font-semibold
+                                          ${statusConfig.className}
+                                        `}
                                     >
                                       {statusConfig.label}
                                     </span>
                                   </td>
                                 </tr>
                               );
-                            }
-                          )}
-                        </tbody>
-                      </table>
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Mobile cards */}
-                  <div className="md:hidden space-y-4">
-                    {(boxer.tournamentEntries ?? []).map(
-                      (entry) => {
-                        const tournament =
-                          entry.tournament;
+                    {/* Mobile */}
+                    <div className="md:hidden space-y-4">
+                      {(boxer.tournamentEntries ?? []).map((entry) => {
+                        const tournament = entry.tournament;
 
                         if (!tournament) {
                           return (
                             <div
                               key={entry.id}
                               className="
-                                rounded-xl
-                                border
-                                border-slate-100
-                                bg-slate-50
-                                p-4
-                              "
+                                  rounded-xl
+                                  border
+                                  border-slate-100
+                                  bg-slate-50
+                                  p-4
+                                "
                             >
                               <p className="text-sm text-slate-500">
-                                Tournament details are unavailable for
-                                this entry.
+                                Tournament details are unavailable for this
+                                entry.
                               </p>
                             </div>
                           );
                         }
 
-                        const status =
-                          (
-                            tournament.status ||
-                            "upcoming"
-                          ).toLowerCase();
+                        const status = (
+                          tournament.status || "upcoming"
+                        ).toLowerCase();
 
                         const statusConfig =
                           status === "completed"
@@ -2183,38 +1940,32 @@ const greeting = useMemo(() => {
                                   "bg-emerald-50 text-emerald-700 border-emerald-100",
                               }
                             : status === "ongoing"
-                            ? {
-                                label: "Ongoing",
-                                className:
-                                  "bg-red-50 text-red-700 border-red-100",
-                              }
-                            : status === "open"
-                            ? {
-                                label: "Open",
-                                className:
-                                  "bg-blue-50 text-blue-700 border-blue-100",
-                              }
-                            : status === "cancelled"
-                            ? {
-                                label: "Cancelled",
-                                className:
-                                  "bg-slate-100 text-slate-600 border-slate-200",
-                              }
-                            : {
-                                label: "Upcoming",
-                                className:
-                                  "bg-amber-50 text-amber-700 border-amber-100",
-                              };
+                              ? {
+                                  label: "Ongoing",
+                                  className:
+                                    "bg-red-50 text-red-700 border-red-100",
+                                }
+                              : status === "open"
+                                ? {
+                                    label: "Open",
+                                    className:
+                                      "bg-blue-50 text-blue-700 border-blue-100",
+                                  }
+                                : status === "cancelled"
+                                  ? {
+                                      label: "Cancelled",
+                                      className:
+                                        "bg-slate-100 text-slate-600 border-slate-200",
+                                    }
+                                  : {
+                                      label: "Upcoming",
+                                      className:
+                                        "bg-amber-50 text-amber-700 border-amber-100",
+                                    };
 
-                        const startDate =
-                          formatDate(
-                            tournament.startDate
-                          );
+                        const startDate = formatDate(tournament.startDate);
 
-                        const endDate =
-                          formatDate(
-                            tournament.endDate
-                          );
+                        const endDate = formatDate(tournament.endDate);
 
                         const dateLabel =
                           startDate !== endDate
@@ -2225,33 +1976,30 @@ const greeting = useMemo(() => {
                           <div
                             key={entry.id}
                             className="
-                              rounded-xl
-                              border
-                              border-slate-100
-                              bg-white
-                              p-4
-                              shadow-sm
-                            "
+                                rounded-xl
+                                border
+                                border-slate-100
+                                bg-white
+                                p-4
+                                shadow-sm
+                              "
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-3 min-w-0">
                                 <div
                                   className="
-                                    w-10
-                                    h-10
-                                    rounded-xl
-                                    bg-emerald-50
-                                    text-emerald-600
-                                    flex
-                                    items-center
-                                    justify-center
-                                    shrink-0
-                                  "
+                                      w-10
+                                      h-10
+                                      rounded-xl
+                                      bg-emerald-50
+                                      text-emerald-600
+                                      flex
+                                      items-center
+                                      justify-center
+                                      shrink-0
+                                    "
                                 >
-                                  <Trophy
-                                    size={18}
-                                    strokeWidth={1.8}
-                                  />
+                                  <Trophy size={18} strokeWidth={1.8} />
                                 </div>
 
                                 <div className="min-w-0">
@@ -2267,17 +2015,17 @@ const greeting = useMemo(() => {
 
                               <span
                                 className={`
-                                  inline-flex
-                                  shrink-0
-                                  items-center
-                                  rounded-full
-                                  border
-                                  px-2.5
-                                  py-1
-                                  text-[11px]
-                                  font-semibold
-                                  ${statusConfig.className}
-                                `}
+                                    inline-flex
+                                    shrink-0
+                                    items-center
+                                    rounded-full
+                                    border
+                                    px-2.5
+                                    py-1
+                                    text-[11px]
+                                    font-semibold
+                                    ${statusConfig.className}
+                                  `}
                               >
                                 {statusConfig.label}
                               </span>
@@ -2292,9 +2040,7 @@ const greeting = useMemo(() => {
                                 />
 
                                 <div>
-                                  <p className="text-xs text-slate-400">
-                                    Date
-                                  </p>
+                                  <p className="text-xs text-slate-400">Date</p>
 
                                   <p className="text-sm font-medium text-slate-700 mt-0.5">
                                     {dateLabel}
@@ -2324,12 +2070,1006 @@ const greeting = useMemo(() => {
                             </div>
                           </div>
                         );
-                      }
-                    )}
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="my-8 h-px bg-slate-100" />
+
+              {/* =================================================
+                  TOURNAMENTS PLAYED
+                  ================================================= */}
+
+              <div>
+                <div
+                  className="
+                    flex
+                    flex-col
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
+                    gap-3
+                    mb-4
+                  "
+                >
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Tournaments Played
+                    </h3>
+                    <p className="text-sm text-slate-400 mt-0.5">
+                      Previous tournaments submitted for verification
+                    </p>
                   </div>
-                </>
-              )}
+
+                  <span
+                    className="
+                      inline-flex
+                      items-center
+                      gap-1.5
+                      rounded-full
+                      bg-slate-100
+                      px-3
+                      py-1.5
+                      text-xs
+                      font-bold
+                      text-slate-600
+                      w-fit
+                    "
+                  >
+                    <Award size={14} />
+                    {tournamentHistory.length}{" "}
+                    {tournamentHistory.length === 1 ? "Record" : "Records"}
+                  </span>
+                </div>
+
+                {historyLoading ? (
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-slate-100
+                      bg-slate-50
+                      p-8
+                      text-center
+                    "
+                  >
+                    <div
+                      className="
+                        w-8
+                        h-8
+                        border-4
+                        border-slate-200
+                        border-t-red-600
+                        rounded-full
+                        animate-spin
+                        mx-auto
+                      "
+                    />
+
+                    <p className="mt-3 text-sm text-slate-500">
+                      Loading tournament history...
+                    </p>
+                  </div>
+                ) : tournamentHistory.length === 0 ? (
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      border-dashed
+                      border-slate-200
+                      bg-slate-50/50
+                      p-8
+                      text-center
+                    "
+                  >
+                    <div
+                      className="
+                        w-14
+                        h-14
+                        mx-auto
+                        rounded-2xl
+                        bg-violet-50
+                        text-violet-500
+                        flex
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <Award size={28} strokeWidth={1.5} />
+                    </div>
+
+                    <p className="mt-4 font-semibold text-slate-700">
+                      No previous tournaments submitted
+                    </p>
+
+                    <p className="text-sm text-slate-400 mt-1">
+                      Add tournaments you played in the past for Super Admin
+                      verification.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHistoryError("");
+                        setHistorySuccess("");
+                        setShowHistoryForm(true);
+                      }}
+                      className="
+                        mt-5
+                        inline-flex
+                        items-center
+                        gap-2
+                        rounded-xl
+                        border
+                        border-red-200
+                        bg-red-50
+                        px-4
+                        py-2.5
+                        text-sm
+                        font-bold
+                        text-red-600
+                        hover:bg-red-100
+                        transition-colors
+                      "
+                    >
+                      <Plus size={17} />
+                      Add Previous Tournament
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {tournamentHistory.map((history) => {
+                      const status = (
+                        history.status || "PENDING_REVIEW"
+                      ).toUpperCase();
+
+                      const statusConfig =
+                        status === "APPROVED"
+                          ? {
+                              label: "Approved",
+                              icon: CheckCircle2,
+                              className:
+                                "bg-emerald-50 text-emerald-700 border-emerald-100",
+                            }
+                          : status === "REJECTED"
+                            ? {
+                                label: "Rejected",
+                                icon: XCircle,
+                                className:
+                                  "bg-red-50 text-red-700 border-red-100",
+                              }
+                            : {
+                                label: "Pending Review",
+                                icon: Clock3,
+                                className:
+                                  "bg-amber-50 text-amber-700 border-amber-100",
+                              };
+
+                      const StatusIcon = statusConfig.icon;
+
+                      const medal = (history.medal || "NONE").toUpperCase();
+
+                      const medalLabel =
+                        medal === "GOLD"
+                          ? "Gold"
+                          : medal === "SILVER"
+                            ? "Silver"
+                            : medal === "BRONZE"
+                              ? "Bronze"
+                              : "No Medal";
+
+                      return (
+                        <div
+                          key={history.id}
+                          className="
+                            rounded-xl
+                            border
+                            border-slate-100
+                            bg-white
+                            p-4
+                            sm:p-5
+                            shadow-sm
+                          "
+                        >
+                          <div
+                            className="
+                              flex
+                              flex-col
+                              lg:flex-row
+                              lg:items-start
+                              lg:justify-between
+                              gap-4
+                            "
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-start gap-3">
+                                <div
+                                  className="
+                                    w-11
+                                    h-11
+                                    rounded-xl
+                                    bg-violet-50
+                                    text-violet-600
+                                    flex
+                                    items-center
+                                    justify-center
+                                    shrink-0
+                                  "
+                                >
+                                  <Trophy size={20} strokeWidth={1.8} />
+                                </div>
+
+                                <div className="min-w-0">
+                                  <h4 className="font-bold text-slate-900 break-words">
+                                    {history.tournamentName}
+                                  </h4>
+
+                                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                                    {history.tournamentDate && (
+                                      <span className="inline-flex items-center gap-1">
+                                        <CalendarDays size={13} />
+                                        {formatDate(history.tournamentDate)}
+                                      </span>
+                                    )}
+
+                                    {history.location && (
+                                      <span>{history.location}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`
+                                inline-flex
+                                items-center
+                                gap-1.5
+                                rounded-full
+                                border
+                                px-3
+                                py-1.5
+                                text-xs
+                                font-bold
+                                w-fit
+                                ${statusConfig.className}
+                              `}
+                            >
+                              <StatusIcon size={14} />
+                              {statusConfig.label}
+                            </span>
+                          </div>
+
+                          <div
+                            className="
+                              mt-5
+                              grid
+                              grid-cols-2
+                              sm:grid-cols-3
+                              lg:grid-cols-5
+                              gap-4
+                              border-t
+                              border-slate-100
+                              pt-4
+                            "
+                          >
+                            <div>
+                              <p className="text-xs text-slate-400">
+                                Tournament Type
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700">
+                                {history.tournamentType || "—"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">
+                                Weight Category
+                              </p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700">
+                                {history.weightCategory || "—"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">Result</p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700">
+                                {history.result || "—"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">Medal</p>
+                              <p
+                                className={`mt-1 text-sm font-bold ${
+                                  medal === "GOLD"
+                                    ? "text-amber-600"
+                                    : medal === "SILVER"
+                                      ? "text-slate-500"
+                                      : medal === "BRONZE"
+                                        ? "text-orange-600"
+                                        : "text-slate-700"
+                                }`}
+                              >
+                                {medalLabel}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs text-slate-400">Position</p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700">
+                                {history.position
+                                  ? `#${history.position}`
+                                  : "—"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {(history.coachName || history.notes) && (
+                            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {history.coachName && (
+                                <div>
+                                  <p className="text-xs text-slate-400">
+                                    Coach
+                                  </p>
+                                  <p className="mt-1 text-sm font-medium text-slate-700">
+                                    {history.coachName}
+                                  </p>
+                                </div>
+                              )}
+
+                              {history.notes && (
+                                <div>
+                                  <p className="text-xs text-slate-400">
+                                    Notes
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-600 leading-6">
+                                    {history.notes}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {status === "REJECTED" && history.rejectionReason && (
+                            <div
+                              className="
+                                  mt-4
+                                  rounded-xl
+                                  border
+                                  border-red-100
+                                  bg-red-50
+                                  px-4
+                                  py-3
+                                "
+                            >
+                              <p className="text-xs font-bold uppercase tracking-wide text-red-500">
+                                Rejection Reason
+                              </p>
+
+                              <p className="mt-1 text-sm text-red-700 leading-6">
+                                {history.rejectionReason}
+                              </p>
+                            </div>
+                          )}
+
+                          {status === "APPROVED" && history.reviewedAt && (
+                            <p className="mt-4 text-xs text-slate-400">
+                              Verified on {formatDate(history.reviewedAt)}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </section>
+
+            {/* =================================================
+                ADD PREVIOUS TOURNAMENT MODAL
+                ================================================= */}
+
+            {showHistoryForm && (
+              <div
+                className="
+                  fixed
+                  inset-0
+                  z-[100]
+                  bg-slate-900/50
+                  backdrop-blur-sm
+                  p-4
+                  sm:p-6
+                  flex
+                  items-center
+                  justify-center
+                "
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) {
+                    setShowHistoryForm(false);
+                  }
+                }}
+              >
+                <div
+                  className="
+                    w-full
+                    max-w-3xl
+                    max-h-[92vh]
+                    overflow-y-auto
+                    rounded-2xl
+                    bg-white
+                    shadow-2xl
+                  "
+                >
+                  <div
+                    className="
+                      sticky
+                      top-0
+                      z-10
+                      flex
+                      items-center
+                      justify-between
+                      gap-4
+                      border-b
+                      border-slate-100
+                      bg-white
+                      px-5
+                      py-4
+                      sm:px-6
+                    "
+                  >
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900">
+                        Add Previous Tournament
+                      </h3>
+                      <p className="mt-0.5 text-sm text-slate-400">
+                        Submit your past tournament record for verification.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowHistoryForm(false)}
+                      className="
+                        w-9
+                        h-9
+                        rounded-lg
+                        bg-slate-100
+                        text-slate-500
+                        hover:bg-slate-200
+                        flex
+                        items-center
+                        justify-center
+                        transition-colors
+                      "
+                      aria-label="Close"
+                    >
+                      <X size={19} />
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={submitTournamentHistory}
+                    className="p-5 sm:p-6"
+                  >
+                    <div
+                      className="
+                        rounded-xl
+                        border
+                        border-blue-100
+                        bg-blue-50
+                        px-4
+                        py-3
+                        text-sm
+                        leading-6
+                        text-blue-700
+                      "
+                    >
+                      After submission, your record will remain{" "}
+                      <strong>Pending Review</strong> until it has been verified
+                      by the association.
+                    </div>
+
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Tournament Name *
+                        </label>
+
+                        <input
+                          type="text"
+                          required
+                          value={historyForm.tournamentName}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              tournamentName: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. Maharashtra State Boxing Championship"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Tournament Date *
+                        </label>
+
+                        <input
+                          type="date"
+                          required
+                          value={historyForm.tournamentDate}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              tournamentDate: event.target.value,
+                            }))
+                          }
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Location
+                        </label>
+
+                        <input
+                          type="text"
+                          value={historyForm.location}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              location: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. Mumbai"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Tournament Type
+                        </label>
+
+                        <input
+                          type="text"
+                          value={historyForm.tournamentType}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              tournamentType: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. State Championship"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Weight Category
+                        </label>
+
+                        <input
+                          type="text"
+                          value={historyForm.weightCategory}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              weightCategory: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. 60 KG"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Result
+                        </label>
+
+                        <input
+                          type="text"
+                          value={historyForm.result}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              result: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. Winner / Quarter Finalist"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Medal
+                        </label>
+
+                        <select
+                          value={historyForm.medal}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              medal: event.target.value,
+                            }))
+                          }
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        >
+                          <option value="NONE">No Medal</option>
+                          <option value="GOLD">Gold</option>
+                          <option value="SILVER">Silver</option>
+                          <option value="BRONZE">Bronze</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Position
+                        </label>
+
+                        <input
+                          type="number"
+                          min="1"
+                          value={historyForm.position}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              position: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. 1"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Coach Name
+                        </label>
+
+                        <input
+                          type="text"
+                          value={historyForm.coachName}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              coachName: event.target.value,
+                            }))
+                          }
+                          placeholder="e.g. Rahul Sharma"
+                          className="
+                            w-full
+                            h-12
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+
+                      {/* Supporting document */}
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Supporting Document
+                        </label>
+
+                        <label
+                          htmlFor="tournament-supporting-document"
+                          className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-6 text-center transition hover:border-red-300 hover:bg-red-50/40"
+                        >
+                          <Upload size={24} className="text-red-500" />
+
+                          <span className="mt-2 text-sm font-semibold text-slate-700">
+                            {historyDocument
+                              ? historyDocument.name
+                              : "Upload tournament certificate or result proof"}
+                          </span>
+
+                          <span className="mt-1 text-xs text-slate-400">
+                            PDF, JPG, JPEG or PNG · Maximum 5 MB · Optional
+                          </span>
+                        </label>
+
+                        <input
+                          id="tournament-supporting-document"
+                          type="file"
+                          accept="application/pdf,image/jpeg,image/png"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0] || null;
+
+                            if (!file) {
+                              setHistoryDocument(null);
+                              return;
+                            }
+
+                            const allowedTypes = [
+                              "application/pdf",
+                              "image/jpeg",
+                              "image/png",
+                            ];
+
+                            if (!allowedTypes.includes(file.type)) {
+                              setHistoryError(
+                                "Only PDF, JPG, JPEG and PNG files are allowed.",
+                              );
+                              event.target.value = "";
+                              setHistoryDocument(null);
+                              return;
+                            }
+
+                            if (file.size > 5 * 1024 * 1024) {
+                              setHistoryError(
+                                "Supporting document must be 5 MB or smaller.",
+                              );
+                              event.target.value = "";
+                              setHistoryDocument(null);
+                              return;
+                            }
+
+                            setHistoryError("");
+                            setHistoryDocument(file);
+                          }}
+                        />
+
+                        {historyDocument && (
+                          <button
+                            type="button"
+                            onClick={() => setHistoryDocument(null)}
+                            className="mt-2 text-xs font-semibold text-red-600 hover:text-red-700"
+                          >
+                            Remove selected document
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                          Notes
+                        </label>
+
+                        <textarea
+                          rows={4}
+                          value={historyForm.notes}
+                          onChange={(event) =>
+                            setHistoryForm((current) => ({
+                              ...current,
+                              notes: event.target.value,
+                            }))
+                          }
+                          placeholder="Add any additional tournament details..."
+                          className="
+                            w-full
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            py-3
+                            text-sm
+                            text-slate-900
+                            outline-none
+                            resize-none
+                            focus:border-red-400
+                            focus:ring-4
+                            focus:ring-red-50
+                          "
+                        />
+                      </div>
+                    </div>
+
+                    <div
+                      className="
+                        mt-6
+                        flex
+                        flex-col-reverse
+                        sm:flex-row
+                        sm:justify-end
+                        gap-3
+                        border-t
+                        border-slate-100
+                        pt-5
+                      "
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setShowHistoryForm(false)}
+                        disabled={historySubmitting}
+                        className="
+                          h-12
+                          rounded-xl
+                          border
+                          border-slate-200
+                          bg-white
+                          px-5
+                          text-sm
+                          font-bold
+                          text-slate-600
+                          hover:bg-slate-50
+                          disabled:opacity-50
+                          transition-colors
+                        "
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={historySubmitting}
+                        className="
+                          h-12
+                          rounded-xl
+                          bg-[#ed1c24]
+                          hover:bg-[#d71920]
+                          px-6
+                          text-sm
+                          font-bold
+                          text-white
+                          disabled:opacity-60
+                          disabled:cursor-not-allowed
+                          transition-colors
+                          inline-flex
+                          items-center
+                          justify-center
+                          gap-2
+                        "
+                      >
+                        {historySubmitting ? (
+                          <>
+                            <span
+                              className="
+                                w-4
+                                h-4
+                                rounded-full
+                                border-2
+                                border-white/40
+                                border-t-white
+                                animate-spin
+                              "
+                            />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 size={17} />
+                            Submit for Review
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             {/* =================================================
                 CERTIFICATES HISTORY
@@ -2346,7 +3086,6 @@ const greeting = useMemo(() => {
                 sm:p-6
               "
             >
-
               <div
                 className="
                   flex
@@ -2358,7 +3097,6 @@ const greeting = useMemo(() => {
                   mb-5
                 "
               >
-
                 <div className="flex items-center gap-3">
                   <div
                     className="
@@ -2373,10 +3111,7 @@ const greeting = useMemo(() => {
                       shrink-0
                     "
                   >
-                    <Award
-                      size={21}
-                      strokeWidth={1.8}
-                    />
+                    <Award size={21} strokeWidth={1.8} />
                   </div>
 
                   <div>
@@ -2414,7 +3149,6 @@ const greeting = useMemo(() => {
                   {boxer.certificates?.length ?? 0} Certificate
                   {(boxer.certificates?.length ?? 0) === 1 ? "" : "s"}
                 </span>
-
               </div>
 
               {(boxer.certificates ?? []).length === 0 ? (
@@ -2442,10 +3176,7 @@ const greeting = useMemo(() => {
                       justify-center
                     "
                   >
-                    <Award
-                      size={32}
-                      strokeWidth={1.5}
-                    />
+                    <Award size={32} strokeWidth={1.5} />
                   </div>
 
                   <p className="mt-4 font-semibold text-slate-700">
@@ -2480,7 +3211,9 @@ const greeting = useMemo(() => {
 
                       <tbody>
                         {(boxer.certificates ?? []).map((certificate) => {
-                          const qrStatus = (certificate.qrStatus || "Pending").toLowerCase();
+                          const qrStatus = (
+                            certificate.qrStatus || "Pending"
+                          ).toLowerCase();
                           const isActive =
                             qrStatus === "active" ||
                             qrStatus === "verified" ||
@@ -2506,10 +3239,7 @@ const greeting = useMemo(() => {
                                       shrink-0
                                     "
                                   >
-                                    <Award
-                                      size={18}
-                                      strokeWidth={1.8}
-                                    />
+                                    <Award size={18} strokeWidth={1.8} />
                                   </div>
 
                                   <div className="min-w-0">
@@ -2559,10 +3289,7 @@ const greeting = useMemo(() => {
                                     }
                                   `}
                                 >
-                                  <CheckCircle2
-                                    size={14}
-                                    strokeWidth={2}
-                                  />
+                                  <CheckCircle2 size={14} strokeWidth={2} />
                                   {isActive
                                     ? "Verified"
                                     : certificate.qrStatus || "Pending"}
@@ -2578,7 +3305,9 @@ const greeting = useMemo(() => {
                   {/* Mobile */}
                   <div className="md:hidden space-y-3">
                     {(boxer.certificates ?? []).map((certificate) => {
-                      const qrStatus = (certificate.qrStatus || "Pending").toLowerCase();
+                      const qrStatus = (
+                        certificate.qrStatus || "Pending"
+                      ).toLowerCase();
                       const isActive =
                         qrStatus === "active" ||
                         qrStatus === "verified" ||
@@ -2610,10 +3339,7 @@ const greeting = useMemo(() => {
                                   shrink-0
                                 "
                               >
-                                <Award
-                                  size={18}
-                                  strokeWidth={1.8}
-                                />
+                                <Award size={18} strokeWidth={1.8} />
                               </div>
 
                               <div className="min-w-0">
@@ -2651,9 +3377,7 @@ const greeting = useMemo(() => {
 
                           <div className="mt-4 grid grid-cols-1 gap-3">
                             <div>
-                              <p className="text-xs text-slate-400">
-                                Event
-                              </p>
+                              <p className="text-xs text-slate-400">Event</p>
                               <p className="text-sm font-medium text-slate-700 mt-0.5 break-words">
                                 {certificate.event || "—"}
                               </p>
@@ -2723,10 +3447,7 @@ const greeting = useMemo(() => {
                       shrink-0
                     "
                   >
-                    <HeartPulse
-                      size={21}
-                      strokeWidth={1.8}
-                    />
+                    <HeartPulse size={21} strokeWidth={1.8} />
                   </div>
 
                   <div>
@@ -2797,10 +3518,7 @@ const greeting = useMemo(() => {
                       justify-center
                     "
                   >
-                    <HeartPulse
-                      size={32}
-                      strokeWidth={1.5}
-                    />
+                    <HeartPulse size={32} strokeWidth={1.5} />
                   </div>
 
                   <p className="mt-4 font-semibold text-slate-700">
@@ -2808,7 +3526,8 @@ const greeting = useMemo(() => {
                   </p>
 
                   <p className="text-sm text-slate-400 mt-1">
-                    Your fitness and medical information will appear here once it is added.
+                    Your fitness and medical information will appear here once
+                    it is added.
                   </p>
                 </div>
               ) : (
@@ -2942,10 +3661,8 @@ const greeting = useMemo(() => {
                 </div>
               )}
             </section>
-
           </>
         )}
-
       </div>
     </DashboardLayout>
   );
@@ -2955,19 +3672,10 @@ const greeting = useMemo(() => {
    INFO COMPONENT
    ========================================================= */
 
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-
-      <p className="text-sm text-slate-400 mb-1">
-        {label}
-      </p>
+      <p className="text-sm text-slate-400 mb-1">{label}</p>
 
       <p
         className="
@@ -2979,7 +3687,6 @@ function Info({
       >
         {value}
       </p>
-
     </div>
   );
 }
@@ -3017,7 +3724,6 @@ function StatCard({
         gap-5
       "
     >
-
       <div
         className={`
           w-16
@@ -3030,14 +3736,10 @@ function StatCard({
           ${iconClass}
         `}
       >
-        <Icon
-          size={27}
-          strokeWidth={1.8}
-        />
+        <Icon size={27} strokeWidth={1.8} />
       </div>
 
       <div className="min-w-0">
-
         <p
           className="
             text-2xl
@@ -3069,9 +3771,7 @@ function StatCard({
         >
           {sub}
         </p>
-
       </div>
-
     </div>
   );
 }

@@ -14,25 +14,51 @@ const footerLinks = [
       { label: "About Us", href: "#about" },
       { label: "Official Notices", href: "#news" },
       { label: "Contact Us", href: "#contact" },
-      { label: "Grievance Cell", href: "#" },
+      { label: "Grievance Cell", href: "/grievance" },
     ],
   },
+
   {
     heading: "Members",
     links: [
-      { label: "Boxer Registration", href: "/dashboard/boxer" },
-      { label: "Coach Registration", href: "/dashboard/coach" },
-      { label: "Academy Affiliation", href: "/dashboard/academy" },
-      { label: "School / College", href: "/dashboard/school" },
+      {
+        label: "Boxer Registration",
+        href: "/register",
+      },
+      {
+        label: "Coach Registration",
+        href: "/register",
+      },
+      {
+        label: "Academy Affiliation",
+        href: "/register",
+      },
     ],
   },
+
   {
     heading: "Portal",
     links: [
-      { label: "Rankings", href: "/dashboard/ranking" },
-      { label: "Tournaments", href: "/dashboard/tournament" },
-      { label: "Certificates", href: "/dashboard/certificates" },
-      { label: "Payments", href: "/dashboard/payment" },
+      {
+        label: "Rankings",
+        href: "/dashboard/ranking",
+      },
+      {
+        label: "Tournaments",
+        href: "/events",
+      },
+      {
+        label: "Certificates",
+        href: "/login",
+      },
+      {
+        label: "Payments",
+        href: "/login",
+      },
+      {
+        label: "Sitemap",
+        href: "/sitemap",
+      },
     ],
   },
 ];
@@ -49,7 +75,10 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="max-w-sm">
-            <Link href="/" className="group inline-flex items-center gap-3">
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-3"
+            >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-lg font-black tracking-tight text-white shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5">
                 MB
               </div>
@@ -58,6 +87,7 @@ export default function Footer() {
                 <div className="text-sm font-bold tracking-[0.18em] text-slate-950">
                   MUMBAI
                 </div>
+
                 <div className="mt-1 text-xs font-bold tracking-[0.22em] text-red-600">
                   BOXING ASSOCIATION
                 </div>
@@ -143,6 +173,7 @@ export default function Footer() {
               <p className="text-sm font-semibold text-slate-800">
                 Official Mumbai Boxing Association
               </p>
+
               <p className="mt-0.5 text-xs text-slate-500">
                 BFI affiliated since 1985
               </p>
@@ -150,7 +181,7 @@ export default function Footer() {
           </div>
 
           <Link
-            href="/register"
+            href="/login"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-200 hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20"
           >
             Become a Member
@@ -165,15 +196,26 @@ export default function Footer() {
           </p>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            {["Privacy Policy", "Terms of Use", "Sitemap"].map((text) => (
-              <Link
-                key={text}
-                href="#"
-                className="text-xs text-slate-400 transition-colors hover:text-slate-900"
-              >
-                {text}
-              </Link>
-            ))}
+            <Link
+              href="/privacy-policy"
+              className="text-xs text-slate-400 transition-colors hover:text-slate-900"
+            >
+              Privacy Policy
+            </Link>
+
+            <Link
+              href="/terms"
+              className="text-xs text-slate-400 transition-colors hover:text-slate-900"
+            >
+              Terms of Use
+            </Link>
+
+            <Link
+              href="/sitemap"
+              className="text-xs text-slate-400 transition-colors hover:text-slate-900"
+            >
+              Sitemap
+            </Link>
           </div>
         </div>
       </div>
