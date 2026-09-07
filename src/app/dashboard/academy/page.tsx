@@ -160,8 +160,9 @@ export default function AcademyDashboard() {
       setMembersError("");
 
       const response = await fetch("/api/academy/members", {
-        cache: "no-store",
-      });
+  credentials: "include",
+  cache: "no-store",
+});
 
       const data = await response.json();
 
@@ -181,8 +182,9 @@ export default function AcademyDashboard() {
   async function reloadAcademy() {
     try {
       const response = await fetch("/api/academy", {
-        cache: "no-store",
-      });
+  credentials: "include",
+  cache: "no-store",
+});
 
       const data = await response.json();
 
@@ -194,39 +196,53 @@ export default function AcademyDashboard() {
     }
   }
 
-  async function handleMemberAssignment(
-    type: "boxer" | "coach",
-    id: number,
-    assigned: boolean
-  ) {
-    const key = `${type}-${id}`;
+ async function handleMemberAssignment(
+  type: "boxer" | "coach",
+  id: number,
+  assigned: boolean
+) {
+  const key = `${type}-${id}`;
 
-    try {
-      setProcessingMember(key);
-      setMembersError("");
+  try {
+    setProcessingMember(key);
+    setMembersError("");
 
-      const response = await fetch("/api/academy/members", {
-        method: assigned ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ type, id }),
-      });
+    const response = await fetch("/api/academy/members", {
+      method: assigned ? "DELETE" : "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type,
+        id,
+      }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok || data?.error) {
-        setMembersError(data?.error || "Failed to update member.");
-        return;
-      }
-
-      await Promise.all([loadMembers(), reloadAcademy()]);
-    } catch {
-      setMembersError("Failed to update member. Please try again.");
-    } finally {
-      setProcessingMember("");
+    if (!response.ok || data?.error) {
+      setMembersError(
+        data?.error ||
+          `Failed to ${assigned ? "remove" : "assign"} member.`
+      );
+      return;
     }
+
+    await Promise.all([
+      loadMembers(),
+      reloadAcademy(),
+    ]);
+  } catch (error) {
+    console.error("Member assignment error:", error);
+
+    setMembersError(
+      "Failed to update member. Please try again."
+    );
+  } finally {
+    setProcessingMember("");
   }
+}
 
   if (loading) {
     return (

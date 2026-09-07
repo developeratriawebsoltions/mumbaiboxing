@@ -15,6 +15,7 @@ model academy {
   phone            String?
   membershipExpiry DateTime?
   createdAt        DateTime  @default(now())
+
   user             user      @relation(fields: [userId], references: [id], map: "Academy_userId_fkey")
   boxer            boxer[]
   coach            coach[]
@@ -48,6 +49,8 @@ model boxer {
   medical          medical?
   payment          payment[]
   tournamententry  tournamententry[]
+  tournamentHistory boxer_tournament_history[]
+  points           boxer_points[]
 
   @@index([academyId], map: "Boxer_academyId_fkey")
 }
@@ -60,6 +63,7 @@ model certificate {
   event    String
   issuedAt DateTime @default(now())
   qrStatus String   @default("verified")
+
   boxer    boxer?   @relation(fields: [boxerId], references: [id], map: "Certificate_boxerId_fkey")
   coach    coach?   @relation(fields: [coachId], references: [id], map: "Certificate_coachId_fkey")
 
@@ -75,6 +79,7 @@ model coach {
   academyId        Int?
   membershipExpiry DateTime?
   createdAt        DateTime      @default(now())
+
   certificate      certificate[]
   academy          academy?      @relation(fields: [academyId], references: [id], map: "Coach_academyId_fkey")
   user             user          @relation(fields: [userId], references: [id], map: "Coach_userId_fkey")
@@ -107,6 +112,7 @@ model medical {
   eligible      Boolean   @default(true)
   updatedAt     DateTime
   createdAt     DateTime  @default(now())
+
   boxer         boxer     @relation(fields: [boxerId], references: [id], map: "Medical_boxerId_fkey")
 }
 
@@ -147,6 +153,7 @@ model tournament {
   status          String            @default("upcoming")
   entryFee        Int?              @default(500)
   createdAt       DateTime          @default(now())
+
   tournamententry tournamententry[]
 }
 
@@ -155,6 +162,7 @@ model tournamententry {
   tournamentId Int
   boxerId      Int
   createdAt    DateTime   @default(now())
+
   boxer        boxer      @relation(fields: [boxerId], references: [id], map: "TournamentEntry_boxerId_fkey")
   tournament   tournament @relation(fields: [tournamentId], references: [id], map: "TournamentEntry_tournamentId_fkey")
 
@@ -170,16 +178,16 @@ model user {
   createdAt DateTime  @default(now())
   updatedAt DateTime
 
-  registrationStatus    String    @default("PAYMENT_PENDING")
-  membershipId          String?   @unique
-  membershipValidFrom   DateTime?
-  membershipExpiry      DateTime?
+  registrationStatus  String    @default("PAYMENT_PENDING")
+  membershipId        String?   @unique
+  membershipValidFrom DateTime?
+  membershipExpiry    DateTime?
   membershipActivatedAt DateTime?
 
-  academy  academy?
-  boxer    boxer?
-  coach    coach?
-  document document[]
+  academy       academy?
+  boxer         boxer?
+  coach         coach?
+  document      document[]
   notifications notification[]
 }
 
@@ -190,10 +198,12 @@ enum user_role {
   association
   school
   taluka
+  admin
   superadmin
 }
+
 model notification {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   userId    Int
   title     String
   message   String
@@ -206,4 +216,66 @@ model notification {
   @@index([userId])
   @@index([userId, read])
   @@index([createdAt])
+}
+
+model boxer_tournament_history {
+  id              Int       @id @default(autoincrement())
+
+  boxerId         Int
+
+  tournamentName  String
+  location        String?
+  tournamentDate  DateTime?
+  tournamentType  String?
+  weightCategory  String?
+
+  result          String?
+  medal           String?
+  position        Int?
+
+  coachName       String?
+  notes           String?
+
+  documentPath    String?
+  documentName    String?
+
+  status          String    @default("PENDING_REVIEW")
+  rejectionReason String?
+
+  reviewedBy      Int?
+  reviewedAt      DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  boxer boxer @relation(fields: [boxerId], references: [id], map: "BoxerTournamentHistory_boxerId_fkey")
+
+  points boxer_points?
+
+  @@index([boxerId], map: "BoxerTournamentHistory_boxerId_fkey")
+  @@index([status], map: "BoxerTournamentHistory_status_idx")
+  @@index([tournamentDate], map: "BoxerTournamentHistory_tournamentDate_idx")
+}
+
+model boxer_points {
+  id             Int      @id @default(autoincrement())
+
+  boxerId        Int
+  historyId      Int      @unique
+
+  tournamentName String
+  tournamentType String
+  medal          String
+  points         Int
+  season         Int
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  boxer   boxer                    @relation(fields: [boxerId], references: [id])
+  history boxer_tournament_history @relation(fields: [historyId], references: [id])
+
+  @@index([boxerId])
+  @@index([season])
+  @@index([points])
 }

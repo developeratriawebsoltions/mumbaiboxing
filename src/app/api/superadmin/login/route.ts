@@ -5,39 +5,48 @@ import { signToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+
+    const email = String(body?.email ?? "")
+      .trim()
+      .toLowerCase();
+
+    const password = String(body?.password ?? "");
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Email and password are required." },
+        {
+          error: "Email and password are required.",
+        },
         { status: 400 }
       );
     }
 
     const user = await prisma.user.findUnique({
       where: {
-        email: String(email).trim().toLowerCase(),
+        email,
       },
     });
 
-    /*
-     * This endpoint is ONLY for Admin accounts.
-     */
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "superadmin") {
       return NextResponse.json(
-        { error: "Invalid admin credentials." },
+        {
+          error: "Invalid Super Admin credentials.",
+        },
         { status: 401 }
       );
     }
 
     const passwordValid = await bcrypt.compare(
-      String(password),
+      password,
       user.password
     );
 
     if (!passwordValid) {
       return NextResponse.json(
-        { error: "Invalid admin credentials." },
+        {
+          error: "Invalid Super Admin credentials.",
+        },
         { status: 401 }
       );
     }
@@ -45,13 +54,13 @@ export async function POST(req: NextRequest) {
     const token = await signToken({
       id: user.id,
       email: user.email,
-      role: "admin",
+      role: "superadmin",
     });
 
     const response = NextResponse.json({
       success: true,
-      redirect: "/dashboard/admin",
-      role: "admin",
+      redirect: "/dashboard/superadmin",
+      role: "superadmin",
     });
 
     response.cookies.set("mba_token", token, {
@@ -64,10 +73,12 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Admin login error:", error);
+    console.error("Super Admin login error:", error);
 
     return NextResponse.json(
-      { error: "Unable to process login." },
+      {
+        error: "Server error. Please try again.",
+      },
       { status: 500 }
     );
   }

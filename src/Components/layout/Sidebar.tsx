@@ -18,7 +18,7 @@ import {
   FileText,
   LogOut,
   ChevronDown,
-  CalendarDays,
+  ClipboardCheck,
 } from "lucide-react";
 
 type MenuItem = {
@@ -42,6 +42,17 @@ const MENUS: Record<string, MenuSection[]> = {
      ======================================================= */
 
   superadmin: [
+    {
+      group: "Overview",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard/superadmin",
+          icon: LayoutDashboard,
+        },
+      ],
+    },
+
     {
       group: "Members",
       items: [
@@ -70,6 +81,11 @@ const MENUS: Record<string, MenuSection[]> = {
           name: "Tournaments",
           href: "/dashboard/admin/tournaments",
           icon: Trophy,
+        },
+        {
+          name: "Tournament Review",
+          href: "/dashboard/admin/tournament-history",
+          icon: ClipboardCheck,
         },
         {
           name: "Documents",
@@ -326,8 +342,7 @@ export default function Sidebar({
   ).toLowerCase();
 
   const menu =
-    MENUS[normalizedRole] ??
-    MENUS.superadmin;
+    MENUS[normalizedRole] ?? MENUS.superadmin;
 
   /* =======================================================
      USER INITIAL
@@ -357,23 +372,30 @@ export default function Sidebar({
       className="
         hidden
         lg:flex
+        fixed
+        left-0
+        top-0
+        z-40
+        h-screen
         w-[270px]
-        min-h-screen
         bg-[#071426]
         text-white
         flex-col
         shrink-0
+        overflow-hidden
       "
     >
       {/* ===================================================
           BRAND
           =================================================== */}
 
-      <div className="px-6 pt-8 pb-7">
+      <div className="shrink-0 px-6 pt-8 pb-7">
         <Link
           href={
             normalizedRole === "boxer"
               ? "/dashboard/boxer"
+              : normalizedRole === "superadmin"
+              ? "/dashboard/superadmin"
               : "/dashboard"
           }
           className="block"
@@ -402,7 +424,7 @@ export default function Sidebar({
           NAVIGATION
           =================================================== */}
 
-      <nav className="flex-1 overflow-y-auto px-3 pb-5">
+      <nav className="flex-1 overflow-hidden px-3 pb-5">
         {menu.map((section) => (
           <div
             key={section.group}
@@ -428,16 +450,8 @@ export default function Sidebar({
 
             <div className="space-y-1">
               {section.items.map((item) => {
-                /*
-                 * Exact route match.
-                 */
-
                 const isActive =
                   path === item.href;
-
-                /*
-                 * Lucide component.
-                 */
 
                 const Icon = item.icon;
 
@@ -512,7 +526,7 @@ export default function Sidebar({
           USER AREA
           =================================================== */}
 
-      <div className="px-3 pb-4">
+      <div className="mt-auto shrink-0 px-3 pb-4">
         <div
           className="
             rounded-2xl
@@ -523,7 +537,6 @@ export default function Sidebar({
           "
         >
           <div className="flex items-center gap-3">
-
             {/* Avatar */}
 
             <div
