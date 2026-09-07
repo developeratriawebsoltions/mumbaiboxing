@@ -3,106 +3,140 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Hero() {
-  const [time, setTime] = useState({ d: 2, h: 18, m: 45, s: 33 });
+  const [time, setTime] = useState({ d: 2, h: 18, m: 45, s: 11 });
 
   useEffect(() => {
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setTime((prev) => {
         let { d, h, m, s } = prev;
-        s--;
-        if (s < 0) { s = 59; m--; }
-        if (m < 0) { m = 59; h--; }
-        if (h < 0) { h = 23; d--; }
-        if (d < 0) { d = 0; h = 0; m = 0; s = 0; }
+        s -= 1;
+        if (s < 0) {
+          s = 59;
+          m -= 1;
+        }
+        if (m < 0) {
+          m = 59;
+          h -= 1;
+        }
+        if (h < 0) {
+          h = 23;
+          d -= 1;
+        }
+        if (d < 0) {
+          d = 0;
+          h = 0;
+          m = 0;
+          s = 0;
+        }
         return { d, h, m, s };
       });
     }, 1000);
-    return () => clearInterval(t);
+
+    return () => clearInterval(timer);
   }, []);
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden">
-      {/* BG image */}
+    <section className="relative isolate min-h-[760px] overflow-hidden bg-[#f6f3f2]">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/hero.png')" }}
       />
-      {/* Dark overlay */}
-      <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.25) 100%)" }} />
 
-      {/* Content */}
-      <div className="relative flex-1 flex flex-col justify-center container mx-auto px-6 pt-28 pb-8">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-8">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.72) 21%, rgba(255,255,255,0.3) 38%, rgba(0,0,0,0.38) 60%, rgba(0,0,0,0.58) 100%)",
+        }}
+      />
 
-          {/* Left — headline */}
-          <div className="max-w-xl">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 border border-white/30 px-3 py-1 mb-6 text-[11px] tracking-widest text-white/80 uppercase">
-              <span className="text-white/50">EST. 1985</span>
-              <span className="w-px h-3 bg-white/30" />
-              BUILDING CHAMPIONS SINCE 1985
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.3),transparent_55%)]" />
+
+      <div className="relative z-10 mx-auto flex min-h-[760px] w-full max-w-[1500px] flex-col justify-between px-5 pb-10 pt-5 md:px-10 xl:px-16">
+        <div className="mx-auto flex w-full max-w-[1440px] items-start justify-between gap-8">
+          <div className="max-w-[680px] pt-16 md:pt-20 xl:pt-28">
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[#d52f2f] bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1f1f1f] backdrop-blur-sm">
+              <span className="text-[#d52f2f]">EST. 1985</span>
+              <span className="h-4 w-px bg-[#d52f2f]/60" />
+              <span className="text-[#1a1a1a]">Building champions since 1985</span>
             </div>
 
-            <h1 className="font-display leading-none text-white" style={{ fontSize: "clamp(38px,8vw,96px)" }}>
+            <h1
+              className="leading-[0.82] font-black tracking-[-0.06em] text-[#0f172a]"
+              style={{ fontSize: "clamp(4rem, 7vw, 11rem)" }}
+            >
               WHERE
               <br />
-              <span style={{ color: "#DC2626" }}>CHAMPIONS</span>
+              <span className="text-[#e53935]">CHAMPIONS</span>
               <br />
               ARE BUILT.
             </h1>
 
-            <p className="mt-6 text-sm leading-relaxed max-w-sm" style={{ color: "#94A3B8" }}>
+            <p className="mt-6 max-w-[430px] text-base leading-7 text-[#1f2937] md:text-lg">
               Mumbai Boxing Association is dedicated to developing boxers, promoting the sport, and building a stronger boxing community.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/dashboard"
-                className="inline-flex items-center gap-2 px-7 py-3 text-sm font-bold text-white uppercase tracking-wider"
-                style={{ background: "#DC2626" }}>
-                EXPLORE BOXING →
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center rounded-md bg-[#e53935] px-7 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-[0_14px_30px_rgba(229,57,53,0.35)] transition hover:scale-[1.02] hover:bg-[#d62d2d]"
+              >
+                Explore Boxing
               </Link>
-              <Link href="/events"
-                className="inline-flex items-center gap-2 px-7 py-3 text-sm font-bold uppercase tracking-wider"
-                style={{ border: "1px solid rgba(255,255,255,0.5)", color: "#fff" }}>
-                VIEW TOURNAMENTS
+
+              <Link
+                href="/events"
+                className="inline-flex items-center justify-center rounded-md border border-[#2a2a2a]/70 bg-white/10 px-7 py-3 text-sm font-bold uppercase tracking-[0.08em] text-[#111827] shadow-sm backdrop-blur-sm transition hover:bg-white/20"
+              >
+                View Tournaments
               </Link>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-xs text-white/50 uppercase tracking-widest">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              SCROLL DOWN
+            <div className="mt-12 inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#111827]/70">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#e53935] ring-4 ring-[#f8d9d9]" />
+              Scroll Down
             </div>
           </div>
 
-          {/* Right — Live countdown */}
-          <div className="hidden lg:block shrink-0 w-64 rounded-lg p-5 self-center"
-            style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-red-600 px-2 py-0.5 rounded-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
-              </span>
-            </div>
-            <p className="text-white font-bold text-base leading-tight">Mumbai Boxing Championship 2025</p>
-            <p className="text-slate-400 text-xs mt-1 mb-4">Semi Final</p>
+          <div className="hidden lg:block pt-24 pb-8">
+            <div className="w-[310px] rounded-[22px] border border-white/60 bg-white/80 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.16)] backdrop-blur-sm">
+              <div className="mb-4 flex items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#e53935] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+                  <span className="h-2 w-2 rounded-full bg-white" />
+                  Live
+                </span>
+              </div>
 
-            <div className="grid grid-cols-4 gap-2 text-center">
-              {[{ v: pad(time.d), l: "DAYS" }, { v: pad(time.h), l: "HRS" }, { v: pad(time.m), l: "MIN" }, { v: pad(time.s), l: "SEC" }].map(({ v, l }) => (
-                <div key={l}>
-                  <div className="text-2xl font-extrabold text-white">{v}</div>
-                  <div className="text-[9px] text-slate-400 tracking-wider mt-0.5">{l}</div>
-                </div>
-              ))}
-            </div>
+              <p className="text-[17px] font-bold leading-tight text-[#111827]">
+                Mumbai Boxing Championship 2025
+              </p>
+              <p className="mt-1 text-sm text-[#6b7280]">Semi Final</p>
 
-            <Link href="/events" className="mt-4 flex items-center gap-1 text-xs font-semibold" style={{ color: "#DC2626" }}>
-              VIEW LIVE →
-            </Link>
+              <div className="mt-5 grid grid-cols-4 gap-2 text-center">
+                {[
+                  { value: pad(time.d), label: "Days" },
+                  { value: pad(time.h), label: "Hrs" },
+                  { value: pad(time.m), label: "Min" },
+                  { value: pad(time.s), label: "Sec" },
+                ].map(({ value, label }) => (
+                  <div key={label}>
+                    <div className="text-[24px] font-black leading-none text-[#111827]">{value}</div>
+                    <div className="mt-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#7a7f87]">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Link href="/events" className="mt-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.12em] text-[#d62d2d]">
+                View Live <span aria-hidden>→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-
     </section>
   );
 }
