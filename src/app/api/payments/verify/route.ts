@@ -27,7 +27,7 @@ function verifyRazorpaySignature(
   orderId: string,
   paymentId: string,
   signature: string,
-  secret: string
+  secret: string,
 ) {
   const payload = `${orderId}|${paymentId}`;
 
@@ -43,27 +43,18 @@ function verifyRazorpaySignature(
     return false;
   }
 
-  return crypto.timingSafeEqual(
-    expectedBuffer,
-    receivedBuffer
-  );
+  return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const razorpayOrderId = String(
-      body?.razorpay_order_id || ""
-    ).trim();
+    const razorpayOrderId = String(body?.razorpay_order_id || "").trim();
 
-    const razorpayPaymentId = String(
-      body?.razorpay_payment_id || ""
-    ).trim();
+    const razorpayPaymentId = String(body?.razorpay_payment_id || "").trim();
 
-    const razorpaySignature = String(
-      body?.razorpay_signature || ""
-    ).trim();
+    const razorpaySignature = String(body?.razorpay_signature || "").trim();
 
     const userId = Number(body?.userId);
 
@@ -73,17 +64,12 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    if (
-      !razorpayOrderId ||
-      !razorpayPaymentId ||
-      !razorpaySignature
-    ) {
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
       return NextResponse.json(
         {
-          error:
-            "Incomplete Razorpay payment information",
+          error: "Incomplete Razorpay payment information",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -92,7 +78,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Invalid user ID",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -102,22 +88,18 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const razorpaySecret =
-      process.env.RAZORPAY_KEY_SECRET;
+    const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    const razorpayKeyId =
-      process.env.RAZORPAY_KEY_ID;
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 
     if (!razorpaySecret || !razorpayKeyId) {
-      console.error(
-        "Razorpay environment variables are missing"
-      );
+      console.error("Razorpay environment variables are missing");
 
       return NextResponse.json(
         {
           error: "Payment service is not configured",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -127,20 +109,19 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const validSignature =
-      verifyRazorpaySignature(
-        razorpayOrderId,
-        razorpayPaymentId,
-        razorpaySignature,
-        razorpaySecret
-      );
+    const validSignature = verifyRazorpaySignature(
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+      razorpaySecret,
+    );
 
     if (!validSignature) {
       return NextResponse.json(
         {
           error: "Invalid payment signature",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -150,39 +131,38 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const payment =
-      await prisma.payment.findUnique({
-        where: {
-          razorpayOrderId,
-        },
+    const payment = await prisma.payment.findUnique({
+      where: {
+        razorpayOrderId,
+      },
 
-        include: {
-          boxer: {
-            include: {
-              user: true,
-            },
-          },
-
-          coach: {
-            include: {
-              user: true,
-            },
-          },
-
-          academy: {
-            include: {
-              user: true,
-            },
+      include: {
+        boxer: {
+          include: {
+            user: true,
           },
         },
-      });
+
+        coach: {
+          include: {
+            user: true,
+          },
+        },
+
+        academy: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
 
     if (!payment) {
       return NextResponse.json(
         {
           error: "Payment order not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -209,10 +189,9 @@ export async function POST(req: NextRequest) {
     if (!paymentUserId || !dbRole) {
       return NextResponse.json(
         {
-          error:
-            "Payment is not associated with a valid membership profile",
+          error: "Payment is not associated with a valid membership profile",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -225,10 +204,9 @@ export async function POST(req: NextRequest) {
     if (paymentUserId !== userId) {
       return NextResponse.json(
         {
-          error:
-            "Payment does not belong to this user",
+          error: "Payment does not belong to this user",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -238,30 +216,29 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const user =
-      await prisma.user.findUnique({
-        where: {
-          id: paymentUserId,
-        },
+    const user = await prisma.user.findUnique({
+      where: {
+        id: paymentUserId,
+      },
 
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          registrationStatus: true,
-          membershipId: true,
-          membershipValidFrom: true,
-          membershipExpiry: true,
-          membershipActivatedAt: true,
-        },
-      });
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        registrationStatus: true,
+        membershipId: true,
+        membershipValidFrom: true,
+        membershipExpiry: true,
+        membershipActivatedAt: true,
+      },
+    });
 
     if (!user) {
       return NextResponse.json(
         {
           error: "User not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -271,15 +248,12 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    if (
-      String(user.role).toLowerCase() !==
-      dbRole
-    ) {
+    if (String(user.role).toLowerCase() !== dbRole) {
       return NextResponse.json(
         {
           error: "Payment role mismatch",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -289,25 +263,21 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const expectedAmount =
-      ROLE_FEES[dbRole];
+    const expectedAmount = ROLE_FEES[dbRole];
 
     if (payment.amount !== expectedAmount) {
-      console.error(
-        "Payment amount mismatch",
-        {
-          paymentId: payment.id,
-          databaseAmount: payment.amount,
-          expectedAmount,
-          userId: paymentUserId,
-        }
-      );
+      console.error("Payment amount mismatch", {
+        paymentId: payment.id,
+        databaseAmount: payment.amount,
+        expectedAmount,
+        userId: paymentUserId,
+      });
 
       return NextResponse.json(
         {
           error: "Payment amount mismatch",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -322,25 +292,18 @@ export async function POST(req: NextRequest) {
       key_secret: razorpaySecret,
     });
 
-    const razorpayPayment =
-      await razorpay.payments.fetch(
-        razorpayPaymentId
-      );
+    const razorpayPayment = await razorpay.payments.fetch(razorpayPaymentId);
 
     /*
      * Make sure payment belongs to this order.
      */
 
-    if (
-      razorpayPayment.order_id !==
-      razorpayOrderId
-    ) {
+    if (razorpayPayment.order_id !== razorpayOrderId) {
       return NextResponse.json(
         {
-          error:
-            "Payment does not belong to this order",
+          error: "Payment does not belong to this order",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -348,16 +311,12 @@ export async function POST(req: NextRequest) {
      * Razorpay amount is in paise.
      */
 
-    if (
-      razorpayPayment.amount !==
-      expectedAmount * 100
-    ) {
+    if (razorpayPayment.amount !== expectedAmount * 100) {
       return NextResponse.json(
         {
-          error:
-            "Razorpay payment amount mismatch",
+          error: "Razorpay payment amount mismatch",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -365,16 +324,12 @@ export async function POST(req: NextRequest) {
      * Only captured payments activate membership.
      */
 
-    if (
-      razorpayPayment.status !==
-      "captured"
-    ) {
+    if (razorpayPayment.status !== "captured") {
       return NextResponse.json(
         {
-          error:
-            `Payment is not captured. Current status: ${razorpayPayment.status}`,
+          error: `Payment is not captured. Current status: ${razorpayPayment.status}`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -391,8 +346,7 @@ export async function POST(req: NextRequest) {
 
     if (
       payment.status === "Paid" &&
-      payment.razorpayPaymentId ===
-        razorpayPaymentId &&
+      payment.razorpayPaymentId === razorpayPaymentId &&
       user.registrationStatus === "ACTIVE" &&
       user.membershipId
     ) {
@@ -401,34 +355,24 @@ export async function POST(req: NextRequest) {
         alreadyProcessed: true,
 
         membership: {
-          membershipId:
-            user.membershipId,
+          membershipId: user.membershipId,
 
-          role: String(
-            user.role
-          ).toLowerCase(),
+          role: String(user.role).toLowerCase(),
 
-          validFrom:
-            user.membershipValidFrom,
+          validFrom: user.membershipValidFrom,
 
-          expiry:
-            user.membershipExpiry,
+          expiry: user.membershipExpiry,
 
-          activatedAt:
-            user.membershipActivatedAt,
+          activatedAt: user.membershipActivatedAt,
         },
 
         payment: {
           id: payment.id,
           amount: payment.amount,
-          method:
-            payment.method ||
-            "Razorpay",
+          method: payment.method || "Razorpay",
           status: payment.status,
-          invoiceNumber:
-            payment.invoiceNumber || "",
-          isDeveloperBypass:
-            payment.isDeveloperBypass,
+          invoiceNumber: payment.invoiceNumber || "",
+          isDeveloperBypass: payment.isDeveloperBypass,
         },
       });
     }
@@ -442,10 +386,9 @@ export async function POST(req: NextRequest) {
     if (payment.status === "Paid") {
       return NextResponse.json(
         {
-          error:
-            "This payment order has already been processed",
+          error: "This payment order has already been processed",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -455,17 +398,11 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const membershipValidFrom =
-      new Date();
+    const membershipValidFrom = new Date();
 
-    const membershipExpiry =
-      new Date(
-        membershipValidFrom
-      );
+    const membershipExpiry = new Date(membershipValidFrom);
 
-    membershipExpiry.setFullYear(
-      membershipExpiry.getFullYear() + 1
-    );
+    membershipExpiry.setFullYear(membershipExpiry.getFullYear() + 1);
 
     /*
      * ---------------------------------------------------------
@@ -473,10 +410,7 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const membershipId =
-      generateMembershipId(
-        user.id
-      );
+    const membershipId = generateMembershipId(user.id);
 
     /*
      * ---------------------------------------------------------
@@ -484,157 +418,125 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    const result =
-      await prisma.$transaction(
-        async (tx) => {
-          /*
-           * Check membership ID collision.
-           */
+    const result = await prisma.$transaction(
+      async (tx) => {
+        /*
+         * Check membership ID collision.
+         */
+        const existingMembership = await tx.user.findUnique({
+          where: {
+            membershipId,
+          },
+          select: {
+            id: true,
+          },
+        });
 
-          const existingMembership =
-            await tx.user.findUnique({
-              where: {
-                membershipId,
-              },
-
-              select: {
-                id: true,
-              },
-            });
-
-          if (
-            existingMembership &&
-            existingMembership.id !==
-              user.id
-          ) {
-            throw new Error(
-              "Membership ID collision. Please try again."
-            );
-          }
-
-          /*
-           * Mark payment as paid.
-           */
-
-          const updatedPayment =
-            await tx.payment.update({
-              where: {
-                id: payment.id,
-              },
-
-              data: {
-                status: "Paid",
-                method: "Razorpay",
-
-                razorpayPaymentId,
-                razorpaySignature,
-
-                membershipExpiry,
-              },
-            });
-
-          /*
-           * Generate invoice number.
-           */
-
-          const invoiceNumber =
-            generateInvoiceNumber(
-              updatedPayment.id
-            );
-
-          const paymentWithInvoice =
-            await tx.payment.update({
-              where: {
-                id: updatedPayment.id,
-              },
-
-              data: {
-                invoiceNumber,
-              },
-            });
-
-          /*
-           * Activate user.
-           */
-
-          const updatedUser =
-            await tx.user.update({
-              where: {
-                id: user.id,
-              },
-
-              data: {
-                registrationStatus:
-                  "ACTIVE",
-
-                membershipId,
-
-                membershipValidFrom,
-
-                membershipExpiry,
-
-                membershipActivatedAt:
-                  new Date(),
-              },
-
-              select: {
-                id: true,
-                email: true,
-                role: true,
-                registrationStatus: true,
-                membershipId: true,
-                membershipValidFrom: true,
-                membershipExpiry: true,
-                membershipActivatedAt: true,
-              },
-            });
-
-          /*
-           * Keep role-specific expiry synchronized.
-           */
-
-          if (dbRole === "boxer") {
-            await tx.boxer.update({
-              where: {
-                id: payment.boxer!.id,
-              },
-
-              data: {
-                membershipExpiry,
-              },
-            });
-          }
-
-          if (dbRole === "coach") {
-            await tx.coach.update({
-              where: {
-                id: payment.coach!.id,
-              },
-
-              data: {
-                membershipExpiry,
-              },
-            });
-          }
-
-          if (dbRole === "academy") {
-            await tx.academy.update({
-              where: {
-                id: payment.academy!.id,
-              },
-
-              data: {
-                membershipExpiry,
-              },
-            });
-          }
-
-          return {
-            user: updatedUser,
-            payment: paymentWithInvoice,
-          };
+        if (existingMembership && existingMembership.id !== user.id) {
+          throw new Error("Membership ID collision. Please try again.");
         }
-      );
+
+        /*
+         * Mark payment as paid.
+         */
+        const updatedPayment = await tx.payment.update({
+          where: {
+            id: payment.id,
+          },
+          data: {
+            status: "Paid",
+            method: "Razorpay",
+            razorpayPaymentId,
+            razorpaySignature,
+            membershipExpiry,
+          },
+        });
+
+        /*
+         * Generate invoice number.
+         */
+        const invoiceNumber = generateInvoiceNumber(updatedPayment.id);
+
+        const paymentWithInvoice = await tx.payment.update({
+          where: {
+            id: updatedPayment.id,
+          },
+          data: {
+            invoiceNumber,
+          },
+        });
+
+        /*
+         * Activate user.
+         */
+        const updatedUser = await tx.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            registrationStatus: "ACTIVE",
+            membershipId,
+            membershipValidFrom,
+            membershipExpiry,
+            membershipActivatedAt: new Date(),
+          },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            registrationStatus: true,
+            membershipId: true,
+            membershipValidFrom: true,
+            membershipExpiry: true,
+            membershipActivatedAt: true,
+          },
+        });
+
+        /*
+         * Keep role-specific expiry synchronized.
+         */
+        if (dbRole === "boxer") {
+          await tx.boxer.update({
+            where: {
+              id: payment.boxer!.id,
+            },
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        if (dbRole === "coach") {
+          await tx.coach.update({
+            where: {
+              id: payment.coach!.id,
+            },
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        if (dbRole === "academy") {
+          await tx.academy.update({
+            where: {
+              id: payment.academy!.id,
+            },
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        return {
+          user: updatedUser,
+          payment: paymentWithInvoice,
+        };
+      },
+      {
+        timeout: 15000,
+      },
+    );
 
     /*
      * ---------------------------------------------------------
@@ -646,56 +548,39 @@ export async function POST(req: NextRequest) {
       success: true,
 
       membership: {
-        membershipId:
-          result.user.membershipId!,
+        membershipId: result.user.membershipId!,
 
-        role: String(
-          result.user.role
-        ).toLowerCase(),
+        role: String(result.user.role).toLowerCase(),
 
-        validFrom:
-          result.user.membershipValidFrom!,
+        validFrom: result.user.membershipValidFrom!,
 
-        expiry:
-          result.user.membershipExpiry!,
+        expiry: result.user.membershipExpiry!,
 
-        activatedAt:
-          result.user.membershipActivatedAt!,
+        activatedAt: result.user.membershipActivatedAt!,
       },
 
       payment: {
         id: result.payment.id,
 
-        amount:
-          result.payment.amount,
+        amount: result.payment.amount,
 
-        method:
-          result.payment.method,
+        method: result.payment.method,
 
-        status:
-          result.payment.status,
+        status: result.payment.status,
 
-        invoiceNumber:
-          result.payment.invoiceNumber!,
+        invoiceNumber: result.payment.invoiceNumber!,
 
-        isDeveloperBypass:
-          result.payment.isDeveloperBypass,
+        isDeveloperBypass: result.payment.isDeveloperBypass,
       },
     });
   } catch (err) {
-    console.error(
-      "Payment verification error:",
-      err
-    );
+    console.error("Payment verification error:", err);
 
     return NextResponse.json(
       {
-        error:
-          err instanceof Error
-            ? err.message
-            : "Verification failed",
+        error: err instanceof Error ? err.message : "Verification failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
