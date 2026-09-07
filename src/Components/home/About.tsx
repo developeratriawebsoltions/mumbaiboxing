@@ -1,61 +1,102 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowRight,
-  Check,
   ShieldCheck,
   Target,
-  Trophy,
   Users,
+  Trophy,
+  Scale,
+  Award,
 } from "lucide-react";
 
-const milestones = [
+const missions = [
   {
-    year: "1985",
-    title: "Founded",
-    desc: "Mumbai Boxing Association established.",
+    title: "Grassroots Development",
+    description:
+      "Systematically scout and train boxing talent across Borivali, Andheri, and Kurla talukas through structured tournaments and affiliated gyms.",
+    icon: Target,
   },
   {
-    year: "2000",
-    title: "City-Wide Reach",
-    desc: "Expansion of academies across all districts.",
+    title: "Transparent Governance",
+    description:
+      "Digitize athlete registries, medical screening, weigh-ins, and selection trials to ensure complete fairness.",
+    icon: ShieldCheck,
   },
   {
-    year: "2015",
-    title: "National Stage",
-    desc: "Consistent national-level tournament wins.",
+    title: "Community Empowerment",
+    description:
+      "Facilitate affordable access to coaching, protective equipment, and athlete welfare programs for boxers of all economic backgrounds.",
+    icon: Users,
   },
   {
-    year: "2026",
-    title: "Digital Era",
-    desc: "Complete digital management platform.",
-    active: true,
+    title: "Technical Excellence",
+    description:
+      "Conduct periodic seminars and accreditation clinics for referees, judges, and corner coaches matching state and national regulations.",
+    icon: Trophy,
   },
 ];
 
-const highlights = [
-  "Building Champions",
-  "Promoting Fitness",
-  "Creating Opportunities",
-  "Stronger Communities",
+const committeeMembers = [
+  {
+    number: 1,
+    name: "Mr. Subhash Mahadeo Kolge",
+    designation: "President",
+    portfolio: "Executive Leadership & Strategic Alliances",
+  },
+  {
+    number: 2,
+    name: "Mr. Rajendra Sakharam Jathar",
+    designation: "Vice President",
+    portfolio: "Technical Operations & Training Oversight",
+  },
+  {
+    number: 3,
+    name: "Mr. Subhodh Pandharinath Raorane",
+    designation: "Secretary",
+    portfolio: "Governance, Circulars & Official Records",
+  },
+  {
+    number: 4,
+    name: "Mr. Shailesh Chandrabhan Tripathi",
+    designation: "Joint Secretary",
+    portfolio: "Operations, Affiliation & Digital Platforms",
+  },
+  {
+    number: 5,
+    name: "Mr. Vivek Shrikant Rane",
+    designation: "Treasurer",
+    portfolio: "Finance, Audit & Accounts Management",
+  },
+  {
+    number: 6,
+    name: "Mr. Dipak Manohar Kurulkar",
+    designation: "Executive Member",
+    portfolio: "Committee Governance & Athlete Welfare",
+  },
+  {
+    number: 7,
+    name: "Mr. Nitin Prabhakar Thakoor",
+    designation: "Executive Member",
+    portfolio: "Committee Governance & Event Logistics",
+  },
 ];
 
 export default function About() {
   return (
-    <section
-      id="about"
-      className="w-full overflow-hidden bg-white"
-    >
-      <div className="mx-auto w-full max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+    <>
+      {/* =========================================================
+          ABOUT US
+      ========================================================= */}
+      <section
+        id="about"
+        className="w-full overflow-hidden bg-white"
+      >
+        <div className="mx-auto w-full max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
-        {/* =====================================================
-            TOP INTRO
-        ===================================================== */}
-        <div className="mb-14 grid grid-cols-1 gap-8 lg:mb-16 lg:grid-cols-[1fr_auto] lg:items-end">
-
-          <div>
-            {/* Section Label */}
+          {/* =====================================================
+              SECTION HEADER
+          ===================================================== */}
+          <div className="mb-14 max-w-[1050px] lg:mb-16">
             <div className="mb-4 flex items-center gap-3">
               <span className="h-[2px] w-8 bg-red-600" />
 
@@ -64,270 +105,254 @@ export default function About() {
               </p>
             </div>
 
-            {/* Heading */}
-            <h2 className="max-w-[850px] text-4xl font-black leading-[1.02] tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-6xl xl:text-[68px]">
-              THE HEART OF{" "}
+            <h2 className="text-4xl font-black leading-[1.02] tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-6xl xl:text-[68px]">
+              BUILDING THE FUTURE OF{" "}
               <span className="text-red-600">
-                BOXING
-              </span>{" "}
-              IN MUMBAI
+                GRASSROOTS BOXING
+              </span>
             </h2>
-          </div>
 
-          {/* Established Badge */}
-          <div className="hidden items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 lg:flex">
-            <ShieldCheck
-              size={17}
-              className="text-red-600"
-            />
-
-            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-              Established Since 1985
-            </span>
-          </div>
-        </div>
-
-        {/* =====================================================
-            MAIN CONTENT
-        ===================================================== */}
-        <div className="grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16 xl:gap-24">
-
-          {/* ===================================================
-              LEFT — MISSION
-          =================================================== */}
-          <div className="flex flex-col justify-center">
-
-            <p className="max-w-[650px] text-[15px] leading-7 text-slate-500 sm:text-base sm:leading-8">
-              For nearly four decades, the Mumbai Boxing Association
-              has been the cornerstone of combat sports in Maharashtra —
-              shaping lives through discipline, determination, and the
-              relentless spirit of boxing.
+            <p className="mt-6 max-w-[850px] text-[15px] leading-7 text-slate-500 sm:text-base sm:leading-8">
+              Mumbai Boxing Association is committed to developing athletes,
+              strengthening boxing infrastructure, and creating transparent,
+              inclusive pathways for boxers to progress from grassroots
+              competition to the national and international stage.
             </p>
+          </div>
 
-            {/* Highlights */}
-            <div className="mt-9 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {highlights.map((highlight) => (
-                <div
-                  key={highlight}
-                  className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 transition-all duration-200 hover:border-red-100 hover:bg-red-50/40"
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-50 transition-colors group-hover:bg-red-100">
-                    <Check
-                      size={14}
-                      strokeWidth={3}
-                      className="text-red-600"
-                    />
-                  </span>
+          {/* =====================================================
+              VISION
+          ===================================================== */}
+          <div className="mb-14 rounded-[28px] border border-red-100 bg-red-50/50 p-6 sm:p-8 lg:mb-20 lg:p-10 xl:p-12">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start">
 
-                  <span className="text-sm font-semibold text-slate-700">
-                    {highlight}
-                  </span>
+              <div className="flex items-center gap-4 lg:block">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 text-white shadow-sm">
+                  <Target size={22} strokeWidth={2} />
                 </div>
-              ))}
-            </div>
 
-            {/* CTA */}
-            <div className="mt-9">
-              <Link
-                href="#contact"
-                className="group inline-flex items-center gap-3 rounded-xl bg-red-600 px-6 py-3.5 text-xs font-bold uppercase tracking-[0.12em] !text-white shadow-sm transition-all duration-200 hover:bg-red-700 hover:shadow-lg"
-              >
-                Learn More
+                <div className="lg:mt-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-600">
+                    Our Vision
+                  </p>
 
-                <ArrowRight
-                  size={16}
-                  strokeWidth={2.5}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
-              </Link>
-            </div>
-
-            {/* Supporting Features */}
-            <div className="mt-12 grid grid-cols-3 gap-4 border-t border-slate-100 pt-8 sm:gap-6">
-
-              {/* Discipline */}
-              <div>
-                <Target
-                  size={20}
-                  strokeWidth={1.8}
-                  className="mb-3 text-red-600"
-                />
-
-                <p className="text-xs font-bold text-slate-900">
-                  Discipline
-                </p>
-
-                <p className="mt-1 text-[10px] leading-4 text-slate-400">
-                  Building strong foundations.
-                </p>
+                  <h3 className="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    Vision
+                  </h3>
+                </div>
               </div>
 
-              {/* Excellence */}
               <div>
-                <Trophy
-                  size={20}
-                  strokeWidth={1.8}
-                  className="mb-3 text-red-600"
-                />
-
-                <p className="text-xs font-bold text-slate-900">
-                  Excellence
-                </p>
-
-                <p className="mt-1 text-[10px] leading-4 text-slate-400">
-                  Competing at every level.
-                </p>
-              </div>
-
-              {/* Community */}
-              <div>
-                <Users
-                  size={20}
-                  strokeWidth={1.8}
-                  className="mb-3 text-red-600"
-                />
-
-                <p className="text-xs font-bold text-slate-900">
-                  Community
-                </p>
-
-                <p className="mt-1 text-[10px] leading-4 text-slate-400">
-                  Growing boxing together.
+                <p className="text-lg font-medium leading-8 text-slate-700 sm:text-xl sm:leading-9 lg:text-[22px]">
+                  To establish North Bombay as a premier hub for grassroots
+                  boxing excellence in India by developing world-class
+                  athletes, upholding the highest standards of sportsmanship
+                  and technical officiating, and creating inclusive pathways
+                  from school level to national and international podiums.
                 </p>
               </div>
 
             </div>
           </div>
 
-          {/* ===================================================
-              RIGHT — TIMELINE
-          =================================================== */}
-          <div className="relative">
+          {/* =====================================================
+              MISSION
+          ===================================================== */}
+          <div>
+            <div className="mb-8">
+              <div className="flex items-center gap-3">
+                <span className="h-[2px] w-8 bg-red-600" />
 
-            {/* Timeline Heading */}
-            <div className="mb-7 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Our Journey
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-600">
+                  Our Mission
                 </p>
-
-                <h3 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">
-                  Four Decades of Progress
-                </h3>
               </div>
 
-              <div className="hidden rounded-full bg-red-50 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-red-600 sm:block">
-                1985 — 2026
-              </div>
+              <h3 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                Four Pillars of Our Mission
+              </h3>
             </div>
 
-            {/* Timeline Container */}
-            <div className="relative rounded-[24px] border border-slate-200 bg-[#f8fafc] p-4 sm:p-6 lg:p-7">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {missions.map((mission) => {
+                const Icon = mission.icon;
 
-              {/* Vertical Line */}
-              <div className="absolute bottom-10 left-[31px] top-10 w-px bg-slate-200 sm:left-[44px]" />
-
-              {/* Red Progress Line */}
-              <div className="absolute left-[31px] top-10 h-[72%] w-px bg-red-600 sm:left-[44px]" />
-
-              {/* Milestones */}
-              <div className="relative space-y-4 sm:space-y-5">
-                {milestones.map((milestone) => (
+                return (
                   <div
-                    key={milestone.year}
-                    className={`relative flex gap-3 rounded-2xl border p-4 transition-all duration-200 sm:gap-5 sm:p-5 ${
-                      milestone.active
-                        ? "border-red-100 bg-white shadow-[0_10px_30px_rgba(220,38,38,0.08)]"
-                        : "border-transparent bg-white/70 hover:border-slate-200 hover:bg-white"
-                    }`}
+                    key={mission.title}
+                    className="group rounded-2xl border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-red-100 hover:shadow-[0_15px_40px_rgba(15,23,42,0.07)]"
                   >
-
-                    {/* Timeline Dot */}
-                    <div className="relative z-10 flex w-7 shrink-0 justify-center sm:w-9">
-                      <div
-                        className={`mt-1.5 h-3.5 w-3.5 rounded-full ${
-                          milestone.active
-                            ? "bg-red-600 ring-4 ring-red-100"
-                            : "border-[3px] border-slate-300 bg-[#f8fafc]"
-                        }`}
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600 transition-colors duration-200 group-hover:bg-red-600 group-hover:text-white">
+                      <Icon
+                        size={20}
+                        strokeWidth={1.9}
                       />
                     </div>
 
-                    {/* Year */}
-                    <div className="w-14 shrink-0 sm:w-20">
-                      <span
-                        className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black tracking-wide ${
-                          milestone.active
-                            ? "bg-red-600 text-white"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {milestone.year}
-                      </span>
-                    </div>
+                    <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-red-600">
+                      Mission Pillar
+                    </p>
 
-                    {/* Content */}
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-bold text-slate-950 sm:text-[15px]">
-                        {milestone.title}
-                      </h4>
+                    <h4 className="mt-2 text-lg font-bold tracking-tight text-slate-950">
+                      {mission.title}
+                    </h4>
 
-                      <p className="mt-1 text-xs leading-5 text-slate-400 sm:text-[13px]">
-                        {milestone.desc}
-                      </p>
-                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-500">
+                      {mission.description}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* =================================================
-                BOTTOM STAT
-            ================================================= */}
-            <div className="mt-5 grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm sm:grid-cols-3 sm:items-center sm:gap-0">
-
-              {/* Years */}
-              <div className="sm:pr-5">
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  Years of Legacy
-                </p>
-
-                <p className="mt-1 text-2xl font-black tracking-tight text-slate-950">
-                  40+
-                </p>
-              </div>
-
-              <div className="hidden h-10 w-px bg-slate-100 sm:block" />
-
-              {/* Mission */}
-              <div className="sm:px-5">
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  Mission
-                </p>
-
-                <p className="mt-1 text-sm font-bold text-slate-950">
-                  Build Champions
-                </p>
-              </div>
-
-              <div className="hidden h-10 w-px bg-slate-100 sm:block" />
-
-              {/* Community */}
-              <div className="col-span-2 border-t border-slate-100 pt-4 sm:col-span-1 sm:border-t-0 sm:pl-5 sm:pt-0">
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                  Community
-                </p>
-
-                <p className="mt-1 text-sm font-bold text-slate-950">
-                  Stronger Together
-                </p>
-              </div>
-
+                );
+              })}
             </div>
           </div>
 
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* =========================================================
+          EXECUTIVE COMMITTEE
+      ========================================================= */}
+      <section
+        id="committee"
+        className="w-full overflow-hidden border-t border-slate-100 bg-[#f8fafc]"
+      >
+        <div className="mx-auto w-full max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+
+          {/* =====================================================
+              COMMITTEE HEADER
+          ===================================================== */}
+          <div className="mb-12 flex flex-col gap-6 lg:mb-14 lg:flex-row lg:items-end lg:justify-between">
+
+            <div className="max-w-[850px]">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="h-[2px] w-8 bg-red-600" />
+
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-600">
+                  Executive Committee · 2025–2030
+                </p>
+              </div>
+
+              <h2 className="text-4xl font-black leading-[1.02] tracking-[-0.035em] text-slate-950 sm:text-5xl lg:text-6xl">
+                LEADERSHIP &{" "}
+                <span className="text-red-600">
+                  GOVERNANCE
+                </span>
+              </h2>
+
+              <p className="mt-5 max-w-[750px] text-[15px] leading-7 text-slate-500 sm:text-base sm:leading-8">
+                Meet the executive committee responsible for strategic
+                leadership, technical operations, governance, athlete welfare,
+                finance, affiliation, and event management.
+              </p>
+            </div>
+
+            <div className="hidden items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-sm lg:flex">
+              <ShieldCheck
+                size={17}
+                className="text-red-600"
+              />
+
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                Association Leadership
+              </span>
+            </div>
+          </div>
+
+          {/* =====================================================
+              COMMITTEE GRID
+          ===================================================== */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {committeeMembers.map((member) => (
+              <article
+                key={member.number}
+                className="group overflow-hidden rounded-[22px] border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-red-100 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
+              >
+                {/* Photo Area */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+
+                  {/* Association Badge */}
+                  <div className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-red-600 text-[10px] font-black tracking-tight text-white shadow-md">
+                    MBA
+                  </div>
+
+                  {/* Serial Number */}
+                  <div className="absolute right-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-[9px] font-black tracking-wider text-slate-500 backdrop-blur-sm">
+                    #{String(member.number).padStart(2, "0")}
+                  </div>
+
+                  {/* Photo Placeholder */}
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-white text-2xl font-black text-slate-300 shadow-sm">
+                      {member.name
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(1, 3)
+                        .map((word) => word[0])
+                        .join("")}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Card Content */}
+                <div className="p-5">
+
+                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-red-600">
+                    {member.designation}
+                  </p>
+
+                  <h3 className="mt-2 text-base font-bold leading-6 text-slate-950">
+                    {member.name}
+                  </h3>
+
+                  <div className="mt-4 border-t border-slate-100 pt-4">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                      Portfolio
+                    </p>
+
+                    <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                      {member.portfolio}
+                    </p>
+                  </div>
+
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* =====================================================
+              COMMITTEE FOOTER
+          ===================================================== */}
+          <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+                <Scale size={19} />
+              </div>
+
+              <div>
+                <p className="text-sm font-bold text-slate-900">
+                  Executive Committee
+                </p>
+
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Governing term 2025–2030
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <Award
+                size={15}
+                className="text-red-600"
+              />
+              Mumbai Boxing Association
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+    </>
   );
 }

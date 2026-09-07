@@ -162,10 +162,10 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Association Badge */}
+        {/* Association / Registration Badge */}
         <div className="mt-14 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-red-600 shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-red-600 shadow-sm">
               <ShieldCheck size={18} />
             </div>
 
@@ -174,15 +174,16 @@ export default function Footer() {
                 Official Mumbai Boxing Association
               </p>
 
-              <p className="mt-0.5 text-xs text-slate-500">
-                BFI affiliated since 1985
+              <p className="mt-0.5 text-xs leading-5 text-slate-500">
+                Registration: Regd. No. F-45151 (MUM) under The Bombay Public
+                Trusts Act, 1950
               </p>
             </div>
           </div>
 
           <Link
             href="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-200 hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-200 hover:bg-red-700 hover:shadow-lg hover:shadow-red-600/20"
           >
             Become a Member
             <ArrowUpRight size={14} />
