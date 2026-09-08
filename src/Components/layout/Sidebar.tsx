@@ -277,6 +277,60 @@ const MENUS: Record<string, MenuSection[]> = {
       ],
     },
   ],
+
+  /* =======================================================
+     REFEREE / JUDGE
+     ======================================================= */
+
+  referee_judge: [
+    {
+      group: "Overview",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard/referee-judge",
+          icon: LayoutDashboard,
+        },
+      ],
+    },
+
+    {
+      group: "My Account",
+      items: [
+        {
+          name: "My Profile",
+          href: "/dashboard/referee-judge/profile",
+          icon: UserRound,
+        },
+        {
+          name: "My Documents",
+          href: "/dashboard/referee-judge/documents",
+          icon: FolderOpen,
+        },
+        {
+          name: "Certificates",
+          href: "/dashboard/referee-judge/certificates",
+          icon: Award,
+        },
+      ],
+    },
+
+    {
+      group: "Activity",
+      items: [
+        {
+          name: "Tournaments",
+          href: "/dashboard/referee-judge/tournaments",
+          icon: Trophy,
+        },
+        {
+          name: "Payment Receipts",
+          href: "/dashboard/referee-judge/payments",
+          icon: CreditCard,
+        },
+      ],
+    },
+  ],
 };
 
 /* =========================================================
@@ -337,12 +391,9 @@ export default function Sidebar({
      ROLE
      ======================================================= */
 
-  const normalizedRole = (
-    role || "superadmin"
-  ).toLowerCase();
+  const normalizedRole = (role || "superadmin").toLowerCase();
 
-  const menu =
-    MENUS[normalizedRole] ?? MENUS.superadmin;
+  const menu = MENUS[normalizedRole] ?? MENUS.superadmin;
 
   /* =======================================================
      USER INITIAL
@@ -360,8 +411,23 @@ export default function Sidebar({
   const displayRole =
     normalizedRole === "superadmin"
       ? "Super Admin"
-      : normalizedRole.charAt(0).toUpperCase() +
-        normalizedRole.slice(1);
+      : normalizedRole === "referee_judge"
+        ? "Referee / Judge"
+        : normalizedRole.charAt(0).toUpperCase() +
+          normalizedRole.slice(1);
+
+  /* =======================================================
+     BRAND LINK
+     ======================================================= */
+
+  const brandHref =
+    normalizedRole === "boxer"
+      ? "/dashboard/boxer"
+      : normalizedRole === "superadmin"
+        ? "/dashboard/superadmin"
+        : normalizedRole === "referee_judge"
+          ? "/dashboard/referee-judge"
+          : "/dashboard";
 
   /* =======================================================
      RENDER
@@ -391,13 +457,7 @@ export default function Sidebar({
 
       <div className="shrink-0 px-6 pt-8 pb-7">
         <Link
-          href={
-            normalizedRole === "boxer"
-              ? "/dashboard/boxer"
-              : normalizedRole === "superadmin"
-              ? "/dashboard/superadmin"
-              : "/dashboard"
-          }
+          href={brandHref}
           className="block"
         >
           <h1
@@ -450,8 +510,7 @@ export default function Sidebar({
 
             <div className="space-y-1">
               {section.items.map((item) => {
-                const isActive =
-                  path === item.href;
+                const isActive = path === item.href;
 
                 const Icon = item.icon;
 

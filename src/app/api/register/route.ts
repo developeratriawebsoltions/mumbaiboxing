@@ -13,9 +13,21 @@ export async function POST(req: NextRequest) {
       name,
       phone,
       dob,
+      gender,
       weight,
       ageGroup,
       address,
+
+      // Referee / Judge fields
+      officialDesignation,
+      officiatingLevel,
+      officialQualification,
+      officiatingExperience,
+      officialAffiliation,
+      officialIdNumber,
+      tournamentsOfficiated,
+      officialAchievements,
+      officialAddress,
     } = body;
 
     if (!email || !password || !role) {
@@ -28,12 +40,38 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
-    const normalizedRole = String(role).trim().toLowerCase();
 
-    const allowedRoles = ["boxer", "coach", "academy"] as const;
+    const rawRole = String(role).trim().toLowerCase();
+
+    /*
+     * Convert the frontend display role:
+     *
+     * Referee / Judge
+     *
+     * into the Prisma enum value:
+     *
+     * referee_judge
+     */
+    const normalizedRole =
+      rawRole === "referee / judge" ||
+      rawRole === "referee/judge" ||
+      rawRole === "referee" ||
+      rawRole === "judge" ||
+      rawRole === "official"
+        ? "referee_judge"
+        : rawRole;
+
+    const allowedRoles = [
+      "boxer",
+      "coach",
+      "academy",
+      "referee_judge",
+    ] as const;
 
     if (
-      !allowedRoles.includes(normalizedRole as (typeof allowedRoles)[number])
+      !allowedRoles.includes(
+        normalizedRole as (typeof allowedRoles)[number],
+      )
     ) {
       return NextResponse.json(
         {
@@ -67,36 +105,73 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    /*
+     * Validate date before passing it to Prisma.
+     */
+    let parsedDob: Date | null = null;
+
+    if (dob) {
+      const date = new Date(dob);
+
+      if (Number.isNaN(date.getTime())) {
+        return NextResponse.json(
+          {
+            error: "Invalid date of birth",
+          },
+          { status: 400 },
+        );
+      }
+
+      parsedDob = date;
+    }
+
     const hashed = await bcrypt.hash(password, 12);
 
-    const dbRole = normalizedRole as "boxer" | "coach" | "academy";
+    const dbRole = normalizedRole as
+      | "boxer"
+      | "coach"
+      | "academy"
+      | "referee_judge";
 
+    /*
+     * Create the account and role-specific profile
+     * in one Prisma operation.
+     */
     const user = await prisma.user.create({
       data: {
         email: normalizedEmail,
         password: hashed,
         role: dbRole,
 
-        // IMPORTANT:
-        // The account is NOT active until payment is verified
-        // or an authorized developer bypass is used.
+        /*
+         * Account remains inactive until payment is verified
+         * or an authorized developer bypass is used.
+         */
         registrationStatus: "PAYMENT_PENDING",
 
-        // Required by the Prisma User model
         updatedAt: new Date(),
 
+        /*
+         * BOXER
+         */
         ...(dbRole === "boxer" &&
           name && {
             boxer: {
               create: {
                 name: String(name).trim(),
-                dob: dob ? new Date(dob) : null,
+                dob: parsedDob,
+                gender: gender || null,
+                phone: phone || null,
+                address: address || null,
                 weight: weight || null,
                 ageGroup: ageGroup || null,
               },
             },
           }),
 
+        /*
+         * COACH
+         */
         ...(dbRole === "coach" &&
           name && {
             coach: {
@@ -107,6 +182,9 @@ export async function POST(req: NextRequest) {
             },
           }),
 
+        /*
+         * ACADEMY
+         */
         ...(dbRole === "academy" &&
           name && {
             academy: {
@@ -114,6 +192,41 @@ export async function POST(req: NextRequest) {
                 name: String(name).trim(),
                 address: address || null,
                 phone: phone || null,
+              },
+            },
+          }),
+
+        /*
+         * REFEREE / JUDGE
+         */
+        ...(dbRole === "referee_judge" &&
+          name && {
+            refereeJudge: {
+              create: {
+                name: String(name).trim(),
+                phone: phone || null,
+                dob: parsedDob,
+                gender: gender || null,
+
+                designation: officialDesignation || null,
+                officiatingLevel: officiatingLevel || null,
+                qualification: officialQualification || null,
+
+                officiatingExperience:
+                  officiatingExperience || null,
+
+                federationAffiliation:
+                  officialAffiliation || null,
+
+                aadhaarPan: officialIdNumber || null,
+
+                tournamentsOfficiated:
+                  tournamentsOfficiated || null,
+
+                achievements:
+                  officialAchievements || null,
+
+                address: officialAddress || null,
               },
             },
           }),

@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-const ROLES = ['Boxer', 'Coach', 'Academy'] as const;
+const ROLES = ['Boxer', 'Coach', 'Academy', 'Referee / Judge'] as const;
 type Role = (typeof ROLES)[number];
 type Step = 1 | 2 | 3 | 4;
 
@@ -399,7 +399,9 @@ function BasicDetails({
             ? 'Academy / Club Name'
             : role === 'Coach'
               ? 'Full Name of Coach'
-              : 'Boxer Full Name'
+              : role === 'Referee / Judge'
+                ? 'Full Name of Referee / Judge'
+                : 'Boxer Full Name'
         }
         placeholder={
           role === 'Academy'
@@ -855,6 +857,193 @@ function AcademyAdditionalDetails({
           value={formData.coachEmail || ''}
           onChange={onChange}
         />
+      </div>
+    </div>
+  );
+}
+
+
+function RefereeJudgeAdditionalDetails({
+  formData,
+  files,
+  onChange,
+  onFileSelect,
+}: {
+  formData: Record<string, string>;
+  files: Record<string, File>;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void;
+  onFileSelect: (fieldName: string, file: File | null) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <SectionTitle
+        title="Referee / Judge details"
+        description="Provide your officiating background, qualifications and supporting documents."
+      />
+
+      <div
+        className="rounded-2xl border p-4"
+        style={{
+          borderColor: 'rgba(220,38,38,0.18)',
+          background: '#F8FAFC',
+        }}
+      >
+        <p
+          className="mb-3 text-sm font-semibold"
+          style={{ color: '#1E293B' }}
+        >
+          Official designation
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField
+            label="Designation"
+            name="officialDesignation"
+            value={formData.officialDesignation || ''}
+            onChange={onChange}
+            options={['Referee', 'Judge']}
+          />
+
+          <SelectField
+            label="Officiating Level"
+            name="officiatingLevel"
+            value={formData.officiatingLevel || ''}
+            onChange={onChange}
+            options={[
+              'Local',
+              'District',
+              'State',
+              'National',
+              'International',
+            ]}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <SelectField
+          label="Qualification / Certification"
+          name="officialQualification"
+          value={formData.officialQualification || ''}
+          onChange={onChange}
+          options={[
+            'Referee / Judge Certified',
+            'State Certified',
+            'National Certified',
+            'International Certified',
+            'Other',
+          ]}
+        />
+
+        <Field
+          label="Officiating Experience"
+          placeholder="e.g. 5 years"
+          name="officiatingExperience"
+          value={formData.officiatingExperience || ''}
+          onChange={onChange}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Association / Federation Affiliation"
+          placeholder="Enter association or federation"
+          name="officialAffiliation"
+          value={formData.officialAffiliation || ''}
+          onChange={onChange}
+        />
+
+        <Field
+          label="Aadhaar / PAN Number"
+          placeholder="Enter ID number"
+          name="officialIdNumber"
+          value={formData.officialIdNumber || ''}
+          onChange={onChange}
+        />
+      </div>
+
+      <Field
+        label="Tournaments / Competitions Officiated"
+        placeholder="e.g. Mumbai District Championship 2025, State Championship 2026"
+        name="tournamentsOfficiated"
+        value={formData.tournamentsOfficiated || ''}
+        onChange={onChange}
+      />
+
+      <TextAreaField
+        label="Officiating Experience / Achievements"
+        placeholder="Describe your officiating experience, appointments and achievements..."
+        name="officialAchievements"
+        value={formData.officialAchievements || ''}
+        onChange={onChange}
+      />
+
+      <TextAreaField
+        label="Residential / Correspondence Address"
+        placeholder="Enter your complete address"
+        name="officialAddress"
+        value={formData.officialAddress || ''}
+        onChange={onChange}
+      />
+
+      <div
+        className="rounded-2xl border p-4"
+        style={{
+          borderColor: 'rgba(220,38,38,0.18)',
+          background: '#F8FAFC',
+        }}
+      >
+        <p
+          className="mb-1 text-sm font-semibold"
+          style={{ color: '#1E293B' }}
+        >
+          Supporting documents
+        </p>
+
+        <p
+          className="mb-3 text-[11px] leading-5"
+          style={{ color: '#64748B' }}
+        >
+          Upload clear copies. Maximum file size is 10 MB per document.
+        </p>
+
+        <div className="space-y-3">
+          <FileField
+            label="Referee / Judge Passport size Photo"
+            selectedFile={
+              files['referee-judge-passport-size-photo']
+            }
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Referee / Judge ID Proof"
+            selectedFile={
+              files['referee-judge-id-proof']
+            }
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Referee / Judge Certificate"
+            selectedFile={
+              files['referee-judge-certificate']
+            }
+            onFileSelect={onFileSelect}
+          />
+
+          <FileField
+            label="Referee / Judge Experience Proof"
+            selectedFile={
+              files['referee-judge-experience-proof']
+            }
+            onFileSelect={onFileSelect}
+          />
+        </div>
       </div>
     </div>
   );
@@ -1458,25 +1647,45 @@ export default function RegisterPage() {
   }
 
   function validateDocuments() {
-    if (role !== 'Boxer') return true;
+    if (role === 'Boxer') {
+      const requiredDocuments = [
+        'birth-certificate',
+        'aadhaar-card',
+        'passport-size-photo',
+        'medical-fitness-certificate-by-mbbs-dr',
+        'hiv-hepatitis-b-c-test-report',
+      ];
 
-    const requiredDocuments = [
-      'birth-certificate',
-      'aadhaar-card',
-      'passport-size-photo',
-      'medical-fitness-certificate-by-mbbs-dr',
-      'hiv-hepatitis-b-c-test-report',
-    ];
-
-    const missing = requiredDocuments.some(
-      (key) => !files[key]
-    );
-
-    if (missing) {
-      setError(
-        'Please upload all required boxer documents.'
+      const missing = requiredDocuments.some(
+        (key) => !files[key]
       );
-      return false;
+
+      if (missing) {
+        setError(
+          'Please upload all required boxer documents.'
+        );
+        return false;
+      }
+    }
+
+    if (role === 'Referee / Judge') {
+      const requiredDocuments = [
+        'referee-judge-passport-size-photo',
+        'referee-judge-id-proof',
+        'referee-judge-certificate',
+        'referee-judge-experience-proof',
+      ];
+
+      const missing = requiredDocuments.some(
+        (key) => !files[key]
+      );
+
+      if (missing) {
+        setError(
+          'Please upload all required referee / judge documents.'
+        );
+        return false;
+      }
     }
 
     return true;
@@ -1759,12 +1968,23 @@ export default function RegisterPage() {
     }
   }
 
-  const fee =
-    registeredUser?.role === 'boxer'
-      ? '100'
-      : registeredUser?.role === 'coach'
-        ? '1,000'
-        : '1,500';
+ const normalizedRole = String(
+  registeredUser?.role || ''
+)
+  .toLowerCase()
+  .trim();
+
+const fee =
+  normalizedRole === 'boxer'
+    ? '100'
+    : normalizedRole === 'coach' ||
+        normalizedRole === 'referee_judge' ||
+        normalizedRole === 'referee' ||
+        normalizedRole === 'judge' ||
+        normalizedRole === 'official' ||
+        normalizedRole === 'referee / judge'
+      ? '1,000'
+      : '1,500';
 
   return (
     <div
@@ -1814,7 +2034,7 @@ export default function RegisterPage() {
               Register As
             </label>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 gap-2">
               {ROLES.map((r) => (
                 <button
                   key={r}
@@ -1903,6 +2123,15 @@ export default function RegisterPage() {
                 <AcademyAdditionalDetails
                   formData={formData}
                   onChange={handleFieldChange}
+                />
+              )}
+
+              {role === 'Referee / Judge' && (
+                <RefereeJudgeAdditionalDetails
+                  formData={formData}
+                  files={files}
+                  onChange={handleFieldChange}
+                  onFileSelect={handleFileSelect}
                 />
               )}
 
