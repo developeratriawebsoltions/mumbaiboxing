@@ -146,10 +146,11 @@ export async function POST(req: NextRequest) {
      * Validate supported member roles.
      */
     const allowedMemberRoles = [
-      "boxer",
-      "coach",
-      "academy",
-    ] as const;
+  "boxer",
+  "coach",
+  "academy",
+  "referee_judge",
+] as const;
 
     if (
       !allowedMemberRoles.includes(
@@ -182,7 +183,10 @@ export async function POST(req: NextRequest) {
     /*
      * Redirect based on role.
      */
-    const redirect = `/dashboard/${user.role}`;
+    const redirect =
+  user.role === "referee_judge"
+    ? "/dashboard/referee-judge"
+    : `/dashboard/${user.role}`;
 
     const res = NextResponse.json({
       success: true,

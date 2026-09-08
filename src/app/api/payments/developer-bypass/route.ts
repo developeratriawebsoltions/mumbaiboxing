@@ -7,6 +7,7 @@ const ROLE_FEES = {
   boxer: 100,
   coach: 1000,
   academy: 1500,
+  referee_judge: 1000,
 } as const;
 
 type RegistrationRole = keyof typeof ROLE_FEES;
@@ -58,7 +59,8 @@ export async function POST(req: NextRequest) {
      * 3. Verify developer secret.
      * ---------------------------------------------------------
      */
-    const developerSecret = process.env.DEVELOPER_BYPASS_SECRET;
+    const developerSecret =
+      process.env.DEVELOPER_BYPASS_SECRET;
 
     if (!developerSecret) {
       console.error(
@@ -117,6 +119,7 @@ export async function POST(req: NextRequest) {
       where: {
         id: userId,
       },
+
       select: {
         id: true,
         email: true,
@@ -140,6 +143,12 @@ export async function POST(req: NextRequest) {
             id: true,
           },
         },
+
+        refereeJudge: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
@@ -154,15 +163,16 @@ export async function POST(req: NextRequest) {
 
     /*
      * ---------------------------------------------------------
-     * 5. Developer bypass is only for normal membership roles.
+     * 5. Determine role and fee from database.
      * ---------------------------------------------------------
      */
     const role = String(user.role).toLowerCase();
 
-    if (!(role in ROLE_FEES)) {
+    if (!Object.prototype.hasOwnProperty.call(ROLE_FEES, role)) {
       return NextResponse.json(
         {
-          error: "Developer bypass is not available for this role",
+          error:
+            "Developer bypass is not available for this role",
         },
         { status: 400 }
       );
@@ -173,10 +183,26 @@ export async function POST(req: NextRequest) {
 
     /*
      * ---------------------------------------------------------
-     * 6. Make sure the correct profile exists.
+     * 6. Extract profile IDs before role narrowing.
+     *
+     * This avoids TypeScript `never` narrowing problems.
      * ---------------------------------------------------------
      */
-    if (registrationRole === "boxer" && !user.boxer) {
+    const boxerId = user.boxer?.id ?? null;
+    const coachId = user.coach?.id ?? null;
+    const academyId = user.academy?.id ?? null;
+    const refereeJudgeId =
+      user.refereeJudge?.id ?? null;
+
+    /*
+     * ---------------------------------------------------------
+     * 7. Make sure the correct profile exists.
+     * ---------------------------------------------------------
+     */
+    if (
+      registrationRole === "boxer" &&
+      boxerId === null
+    ) {
       return NextResponse.json(
         {
           error: "Boxer profile not found",
@@ -185,7 +211,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (registrationRole === "coach" && !user.coach) {
+    if (
+      registrationRole === "coach" &&
+      coachId === null
+    ) {
       return NextResponse.json(
         {
           error: "Coach profile not found",
@@ -194,7 +223,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (registrationRole === "academy" && !user.academy) {
+    if (
+      registrationRole === "academy" &&
+      academyId === null
+    ) {
       return NextResponse.json(
         {
           error: "Academy profile not found",
@@ -203,9 +235,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (
+      registrationRole === "referee_judge" &&
+      refereeJudgeId === null
+    ) {
+      return NextResponse.json(
+        {
+          error: "Referee / Judge profile not found",
+        },
+        { status: 400 }
+      );
+    }
+
     /*
      * ---------------------------------------------------------
-     * 7. Don't bypass an already active membership.
+     * 8. Don't bypass an already active membership.
      * ---------------------------------------------------------
      */
     if (user.registrationStatus === "ACTIVE") {
@@ -219,14 +263,13 @@ export async function POST(req: NextRequest) {
 
     /*
      * ---------------------------------------------------------
-     * 8. Create membership dates.
+     * 9. Create membership dates.
      * ---------------------------------------------------------
      */
     const membershipValidFrom = new Date();
 
-    const membershipExpiry = new Date(
-      membershipValidFrom
-    );
+    const membershipExpiry =
+      new Date(membershipValidFrom);
 
     membershipExpiry.setFullYear(
       membershipExpiry.getFullYear() + 1
@@ -234,130 +277,167 @@ export async function POST(req: NextRequest) {
 
     /*
      * ---------------------------------------------------------
-     * 9. Create payment + activate membership atomically.
+     * 10. Create payment + activate membership atomically.
      * ---------------------------------------------------------
      */
-    const result = await prisma.$transaction(async (tx) => {
-      const payment = await tx.payment.create({
-        data: {
-          type: "Annual Membership Fee",
-          amount,
-          method: "Developer Bypass",
-          status: "Paid",
-          membershipExpiry,
-          isDeveloperBypass: true,
-
-          ...(registrationRole === "boxer" && {
-            boxerId: user.boxer!.id,
-          }),
-
-          ...(registrationRole === "coach" && {
-            coachId: user.coach!.id,
-          }),
-
-          ...(registrationRole === "academy" && {
-            academyId: user.academy!.id,
-          }),
-        },
-      });
-
-      const membershipId = generateMembershipId(user.id);
-      const invoiceNumber = generateInvoiceNumber(payment.id);
-
-      /*
-       * Save invoice number.
-       */
-      const updatedPayment = await tx.payment.update({
-        where: {
-          id: payment.id,
-        },
-        data: {
-          invoiceNumber,
-        },
-      });
-
-      /*
-       * Update user membership.
-       */
-      const updatedUser = await tx.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          registrationStatus: "ACTIVE",
-          membershipId,
-          membershipValidFrom,
-          membershipExpiry,
-          membershipActivatedAt: new Date(),
-        },
-      });
-
-      /*
-       * Keep role-specific membership expiry synchronized.
-       */
-      if (registrationRole === "boxer") {
-        await tx.boxer.update({
-          where: {
-            id: user.boxer!.id,
-          },
+    const result = await prisma.$transaction(
+      async (tx) => {
+        const payment = await tx.payment.create({
           data: {
+            type: "Annual Membership Fee",
+            amount,
+            method: "Developer Bypass",
+            status: "Paid",
             membershipExpiry,
+            isDeveloperBypass: true,
+
+            boxerId,
+            coachId,
+            academyId,
+            refereeJudgeId,
           },
         });
-      }
 
-      if (registrationRole === "coach") {
-        await tx.coach.update({
-          where: {
-            id: user.coach!.id,
-          },
-          data: {
-            membershipExpiry,
-          },
-        });
-      }
+        const membershipId =
+          generateMembershipId(user.id);
 
-      if (registrationRole === "academy") {
-        await tx.academy.update({
-          where: {
-            id: user.academy!.id,
-          },
-          data: {
-            membershipExpiry,
-          },
-        });
-      }
+        const invoiceNumber =
+          generateInvoiceNumber(payment.id);
 
-      return {
-        user: updatedUser,
-        payment: updatedPayment,
-      };
-    });
+        /*
+         * Save invoice number.
+         */
+        const updatedPayment =
+          await tx.payment.update({
+            where: {
+              id: payment.id,
+            },
+
+            data: {
+              invoiceNumber,
+            },
+          });
+
+        /*
+         * Update user membership.
+         */
+        const updatedUser =
+          await tx.user.update({
+            where: {
+              id: user.id,
+            },
+
+            data: {
+              registrationStatus: "ACTIVE",
+              membershipId,
+              membershipValidFrom,
+              membershipExpiry,
+              membershipActivatedAt: new Date(),
+            },
+          });
+
+        /*
+         * Keep role-specific membership expiry synchronized.
+         */
+        if (registrationRole === "boxer") {
+          await tx.boxer.update({
+            where: {
+              id: boxerId!,
+            },
+
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        if (registrationRole === "coach") {
+          await tx.coach.update({
+            where: {
+              id: coachId!,
+            },
+
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        if (registrationRole === "academy") {
+          await tx.academy.update({
+            where: {
+              id: academyId!,
+            },
+
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        if (
+          registrationRole === "referee_judge"
+        ) {
+          await tx.referee_judge.update({
+            where: {
+              id: refereeJudgeId!,
+            },
+
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        return {
+          user: updatedUser,
+          payment: updatedPayment,
+        };
+      }
+    );
 
     /*
      * ---------------------------------------------------------
-     * 10. Return membership information.
+     * 11. Return membership information.
      * ---------------------------------------------------------
      */
     return NextResponse.json({
       success: true,
 
-      message: "Developer membership activated successfully",
+      message:
+        "Developer membership activated successfully",
 
       membership: {
-        membershipId: result.user.membershipId,
+        membershipId:
+          result.user.membershipId,
+
         role: registrationRole,
-        validFrom: result.user.membershipValidFrom,
-        expiry: result.user.membershipExpiry,
-        activatedAt: result.user.membershipActivatedAt,
+
+        validFrom:
+          result.user.membershipValidFrom,
+
+        expiry:
+          result.user.membershipExpiry,
+
+        activatedAt:
+          result.user.membershipActivatedAt,
       },
 
       payment: {
         id: result.payment.id,
-        amount: result.payment.amount,
-        method: result.payment.method,
-        status: result.payment.status,
-        invoiceNumber: result.payment.invoiceNumber,
+
+        amount:
+          result.payment.amount,
+
+        method:
+          result.payment.method,
+
+        status:
+          result.payment.status,
+
+        invoiceNumber:
+          result.payment.invoiceNumber,
+
         isDeveloperBypass:
           result.payment.isDeveloperBypass,
       },

@@ -39,6 +39,17 @@ const ROLE_ALLOWED: Record<string, string[]> = {
     "/dashboard/documents",
   ],
 
+  /*
+   * REFEREE / JUDGE
+   */
+  referee_judge: [
+  "/dashboard/referee-judge",
+  "/dashboard/referee-judge/profile",
+  "/dashboard/referee-judge/documents",
+  "/dashboard/referee-judge/certificates",
+  "/dashboard/referee-judge/tournaments",
+  "/dashboard/referee-judge/payments",
+],
   association: [
     "/dashboard/association",
     "/dashboard/boxer",
@@ -70,8 +81,6 @@ const ROLE_ALLOWED: Record<string, string[]> = {
 
   /*
    * ADMIN
-   *
-   * Admin is intentionally separate from Super Admin.
    */
   admin: [
     "/dashboard/admin",
@@ -79,8 +88,6 @@ const ROLE_ALLOWED: Record<string, string[]> = {
 
   /*
    * SUPER ADMIN
-   *
-   * Super Admin has access to the complete administration area.
    */
   superadmin: [
     "/dashboard/admin",
@@ -109,38 +116,88 @@ export async function middleware(req: NextRequest) {
 
   /*
    * ---------------------------------------------------------
-   * 1. Protected dashboard routes
+   * 1. Canonicalize old Referee/Judge URL
+   *
+   * If anything still tries to access:
+   * /dashboard/referee_judge
+   *
+   * send it to:
+   * /dashboard/referee-judge
    * ---------------------------------------------------------
    */
 
-  if (PROTECTED.test(pathname) && !payload) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  if (
+    pathname === "/dashboard/referee_judge" ||
+    pathname.startsWith("/dashboard/referee_judge/")
+  ) {
+    const url = req.nextUrl.clone();
+
+    url.pathname = pathname.replace(
+      "/dashboard/referee_judge",
+      "/dashboard/referee-judge"
+    );
+
+    return NextResponse.redirect(url);
   }
 
   /*
    * ---------------------------------------------------------
-   * 2. Auth pages
+   * 2. Protected dashboard routes
+   * ---------------------------------------------------------
+   */
+
+  if (PROTECTED.test(pathname) && !payload) {
+    return NextResponse.redirect(
+      new URL("/login", req.url)
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * 3. Auth pages
    *
-   * Don't send an already authenticated user to the
-   * normal member login page.
+   * Already authenticated users should not remain on
+   * the login/register pages.
    * ---------------------------------------------------------
    */
 
   if (AUTH_PAGES.includes(pathname) && payload) {
-    const role = payload.role.toLowerCase();
+    const role = String(payload.role ?? "").toLowerCase();
 
+    /*
+     * SUPER ADMIN
+     */
     if (role === "superadmin") {
       return NextResponse.redirect(
         new URL("/dashboard/superadmin", req.url)
       );
     }
 
+    /*
+     * ADMIN
+     */
     if (role === "admin") {
       return NextResponse.redirect(
         new URL("/dashboard/admin", req.url)
       );
     }
 
+    /*
+     * REFEREE / JUDGE
+     *
+     * IMPORTANT:
+     * Database role = referee_judge
+     * URL = referee-judge
+     */
+    if (role === "referee_judge") {
+      return NextResponse.redirect(
+        new URL("/dashboard/referee-judge", req.url)
+      );
+    }
+
+    /*
+     * NORMAL MEMBERS
+     */
     return NextResponse.redirect(
       new URL(`/dashboard/${role}`, req.url)
     );
@@ -148,19 +205,22 @@ export async function middleware(req: NextRequest) {
 
   /*
    * ---------------------------------------------------------
-   * 3. Role-based dashboard access
+   * 4. Role-based dashboard access
    * ---------------------------------------------------------
    */
 
   if (PROTECTED.test(pathname) && payload) {
-    const role = payload.role.toLowerCase();
+    const role = String(payload.role ?? "").toLowerCase();
+
     const allowed = ROLE_ALLOWED[role];
 
     /*
      * Unknown role = deny access.
      */
     if (!allowed) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(
+        new URL("/login", req.url)
+      );
     }
 
     const hasAccess = allowed.some(
@@ -169,19 +229,41 @@ export async function middleware(req: NextRequest) {
         pathname.startsWith(route + "/")
     );
 
+    /*
+     * User is authenticated but does not have permission
+     * for this dashboard route.
+     */
     if (!hasAccess) {
+      /*
+       * SUPER ADMIN
+       */
       if (role === "superadmin") {
         return NextResponse.redirect(
           new URL("/dashboard/superadmin", req.url)
         );
       }
 
+      /*
+       * ADMIN
+       */
       if (role === "admin") {
         return NextResponse.redirect(
           new URL("/dashboard/admin", req.url)
         );
       }
 
+      /*
+       * REFEREE / JUDGE
+       */
+      if (role === "referee_judge") {
+        return NextResponse.redirect(
+          new URL("/dashboard/referee-judge", req.url)
+        );
+      }
+
+      /*
+       * NORMAL MEMBER
+       */
       return NextResponse.redirect(
         new URL(`/dashboard/${role}`, req.url)
       );
@@ -193,11 +275,11 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-  "/dashboard/:path*",
-  "/login",
-  "/login/admin",
-  "/login/superadmin",
-  "/register",
-  "/admin/login",
-],
+    "/dashboard/:path*",
+    "/login",
+    "/login/admin",
+    "/login/superadmin",
+    "/register",
+    "/admin/login",
+  ],
 };

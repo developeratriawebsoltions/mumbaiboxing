@@ -7,6 +7,7 @@ const ROLE_FEES = {
   boxer: 100,
   coach: 1000,
   academy: 1500,
+  referee_judge: 1000,
 } as const;
 
 type RegistrationRole = keyof typeof ROLE_FEES;
@@ -27,7 +28,7 @@ function verifyRazorpaySignature(
   orderId: string,
   paymentId: string,
   signature: string,
-  secret: string,
+  secret: string
 ) {
   const payload = `${orderId}|${paymentId}`;
 
@@ -50,11 +51,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const razorpayOrderId = String(body?.razorpay_order_id || "").trim();
+    const razorpayOrderId = String(
+      body?.razorpay_order_id || ""
+    ).trim();
 
-    const razorpayPaymentId = String(body?.razorpay_payment_id || "").trim();
+    const razorpayPaymentId = String(
+      body?.razorpay_payment_id || ""
+    ).trim();
 
-    const razorpaySignature = String(body?.razorpay_signature || "").trim();
+    const razorpaySignature = String(
+      body?.razorpay_signature || ""
+    ).trim();
 
     const userId = Number(body?.userId);
 
@@ -64,12 +71,16 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+    if (
+      !razorpayOrderId ||
+      !razorpayPaymentId ||
+      !razorpaySignature
+    ) {
       return NextResponse.json(
         {
           error: "Incomplete Razorpay payment information",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -78,7 +89,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Invalid user ID",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -89,7 +100,6 @@ export async function POST(req: NextRequest) {
      */
 
     const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
-
     const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 
     if (!razorpaySecret || !razorpayKeyId) {
@@ -99,7 +109,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Payment service is not configured",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -113,7 +123,7 @@ export async function POST(req: NextRequest) {
       razorpayOrderId,
       razorpayPaymentId,
       razorpaySignature,
-      razorpaySecret,
+      razorpaySecret
     );
 
     if (!validSignature) {
@@ -121,7 +131,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Invalid payment signature",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -154,6 +164,12 @@ export async function POST(req: NextRequest) {
             user: true,
           },
         },
+
+        refereeJudge: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -162,7 +178,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Payment order not found",
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -184,14 +200,18 @@ export async function POST(req: NextRequest) {
     } else if (payment.academy) {
       paymentUserId = payment.academy.userId;
       dbRole = "academy";
+    } else if (payment.refereeJudge) {
+      paymentUserId = payment.refereeJudge.userId;
+      dbRole = "referee_judge";
     }
 
     if (!paymentUserId || !dbRole) {
       return NextResponse.json(
         {
-          error: "Payment is not associated with a valid membership profile",
+          error:
+            "Payment is not associated with a valid membership profile",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -206,7 +226,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Payment does not belong to this user",
         },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -238,7 +258,7 @@ export async function POST(req: NextRequest) {
         {
           error: "User not found",
         },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -253,7 +273,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Payment role mismatch",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -277,7 +297,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Payment amount mismatch",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -292,7 +312,8 @@ export async function POST(req: NextRequest) {
       key_secret: razorpaySecret,
     });
 
-    const razorpayPayment = await razorpay.payments.fetch(razorpayPaymentId);
+    const razorpayPayment =
+      await razorpay.payments.fetch(razorpayPaymentId);
 
     /*
      * Make sure payment belongs to this order.
@@ -303,7 +324,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Payment does not belong to this order",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -316,7 +337,7 @@ export async function POST(req: NextRequest) {
         {
           error: "Razorpay payment amount mismatch",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -329,18 +350,13 @@ export async function POST(req: NextRequest) {
         {
           error: `Payment is not captured. Current status: ${razorpayPayment.status}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     /*
      * ---------------------------------------------------------
      * 11. Already processed payment
-     * ---------------------------------------------------------
-     *
-     * IMPORTANT:
-     * Return the SAME response structure expected
-     * by the registration page.
      * ---------------------------------------------------------
      */
 
@@ -388,7 +404,7 @@ export async function POST(req: NextRequest) {
         {
           error: "This payment order has already been processed",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -402,7 +418,9 @@ export async function POST(req: NextRequest) {
 
     const membershipExpiry = new Date(membershipValidFrom);
 
-    membershipExpiry.setFullYear(membershipExpiry.getFullYear() + 1);
+    membershipExpiry.setFullYear(
+      membershipExpiry.getFullYear() + 1
+    );
 
     /*
      * ---------------------------------------------------------
@@ -423,56 +441,73 @@ export async function POST(req: NextRequest) {
         /*
          * Check membership ID collision.
          */
-        const existingMembership = await tx.user.findUnique({
-          where: {
-            membershipId,
-          },
-          select: {
-            id: true,
-          },
-        });
 
-        if (existingMembership && existingMembership.id !== user.id) {
-          throw new Error("Membership ID collision. Please try again.");
+        const existingMembership =
+          await tx.user.findUnique({
+            where: {
+              membershipId,
+            },
+
+            select: {
+              id: true,
+            },
+          });
+
+        if (
+          existingMembership &&
+          existingMembership.id !== user.id
+        ) {
+          throw new Error(
+            "Membership ID collision. Please try again."
+          );
         }
 
         /*
          * Mark payment as paid.
          */
-        const updatedPayment = await tx.payment.update({
-          where: {
-            id: payment.id,
-          },
-          data: {
-            status: "Paid",
-            method: "Razorpay",
-            razorpayPaymentId,
-            razorpaySignature,
-            membershipExpiry,
-          },
-        });
+
+        const updatedPayment =
+          await tx.payment.update({
+            where: {
+              id: payment.id,
+            },
+
+            data: {
+              status: "Paid",
+              method: "Razorpay",
+              razorpayPaymentId,
+              razorpaySignature,
+              membershipExpiry,
+            },
+          });
 
         /*
          * Generate invoice number.
          */
-        const invoiceNumber = generateInvoiceNumber(updatedPayment.id);
 
-        const paymentWithInvoice = await tx.payment.update({
-          where: {
-            id: updatedPayment.id,
-          },
-          data: {
-            invoiceNumber,
-          },
-        });
+        const invoiceNumber =
+          generateInvoiceNumber(updatedPayment.id);
+
+        const paymentWithInvoice =
+          await tx.payment.update({
+            where: {
+              id: updatedPayment.id,
+            },
+
+            data: {
+              invoiceNumber,
+            },
+          });
 
         /*
          * Activate user.
          */
+
         const updatedUser = await tx.user.update({
           where: {
             id: user.id,
           },
+
           data: {
             registrationStatus: "ACTIVE",
             membershipId,
@@ -480,6 +515,7 @@ export async function POST(req: NextRequest) {
             membershipExpiry,
             membershipActivatedAt: new Date(),
           },
+
           select: {
             id: true,
             email: true,
@@ -495,33 +531,52 @@ export async function POST(req: NextRequest) {
         /*
          * Keep role-specific expiry synchronized.
          */
-        if (dbRole === "boxer") {
+
+        if (dbRole === "boxer" && payment.boxerId) {
           await tx.boxer.update({
             where: {
-              id: payment.boxer!.id,
+              id: payment.boxerId,
             },
+
             data: {
               membershipExpiry,
             },
           });
         }
 
-        if (dbRole === "coach") {
+        if (dbRole === "coach" && payment.coachId) {
           await tx.coach.update({
             where: {
-              id: payment.coach!.id,
+              id: payment.coachId,
             },
+
             data: {
               membershipExpiry,
             },
           });
         }
 
-        if (dbRole === "academy") {
+        if (dbRole === "academy" && payment.academyId) {
           await tx.academy.update({
             where: {
-              id: payment.academy!.id,
+              id: payment.academyId,
             },
+
+            data: {
+              membershipExpiry,
+            },
+          });
+        }
+
+        if (
+          dbRole === "referee_judge" &&
+          payment.refereeJudgeId
+        ) {
+          await tx.referee_judge.update({
+            where: {
+              id: payment.refereeJudgeId,
+            },
+
             data: {
               membershipExpiry,
             },
@@ -535,7 +590,7 @@ export async function POST(req: NextRequest) {
       },
       {
         timeout: 15000,
-      },
+      }
     );
 
     /*
@@ -578,9 +633,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: err instanceof Error ? err.message : "Verification failed",
+        error:
+          err instanceof Error
+            ? err.message
+            : "Verification failed",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

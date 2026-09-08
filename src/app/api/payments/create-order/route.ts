@@ -6,6 +6,7 @@ const ROLE_FEES = {
   boxer: 100,
   coach: 1000,
   academy: 1500,
+  referee_judge: 1000,
 } as const;
 
 type RegistrationRole = keyof typeof ROLE_FEES;
@@ -23,7 +24,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Never trust role or amount from the browser.
+    /*
+     * Get the user and all possible registration profiles.
+     * The browser does not control the role or payment amount.
+     */
     const user = await prisma.user.findUnique({
       where: {
         id: userId,
@@ -51,6 +55,12 @@ export async function POST(req: NextRequest) {
             id: true,
           },
         },
+
+        refereeJudge: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
@@ -71,9 +81,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const role = String(user.role).toLowerCase() as RegistrationRole;
+    /*
+     * Convert Prisma enum to the role used by the payment system.
+     */
+    const roleValue = String(user.role).toLowerCase();
 
-    if (!(role in ROLE_FEES)) {
+    if (!Object.prototype.hasOwnProperty.call(ROLE_FEES, roleValue)) {
       return NextResponse.json(
         {
           error: "This account is not eligible for membership payment",
@@ -82,30 +95,54 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const role = roleValue as RegistrationRole;
     const amount = ROLE_FEES[role];
 
-    // Make sure the role-specific profile exists.
-    if (role === "boxer" && !user.boxer) {
+    /*
+     * Extract profile IDs BEFORE role narrowing.
+     *
+     * This avoids TypeScript incorrectly narrowing a relation
+     * to `never`.
+     */
+    const boxerId = user.boxer?.id ?? null;
+    const coachId = user.coach?.id ?? null;
+    const academyId = user.academy?.id ?? null;
+    const refereeJudgeId = user.refereeJudge?.id ?? null;
+
+    /*
+     * Make sure the correct role-specific profile exists.
+     */
+    if (role === "boxer" && boxerId === null) {
       return NextResponse.json(
         { error: "Boxer profile not found" },
         { status: 400 }
       );
     }
 
-    if (role === "coach" && !user.coach) {
+    if (role === "coach" && coachId === null) {
       return NextResponse.json(
         { error: "Coach profile not found" },
         { status: 400 }
       );
     }
 
-    if (role === "academy" && !user.academy) {
+    if (role === "academy" && academyId === null) {
       return NextResponse.json(
         { error: "Academy profile not found" },
         { status: 400 }
       );
     }
 
+    if (role === "referee_judge" && refereeJudgeId === null) {
+      return NextResponse.json(
+        { error: "Referee / Judge profile not found" },
+        { status: 400 }
+      );
+    }
+
+    /*
+     * Razorpay configuration.
+     */
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
@@ -123,6 +160,11 @@ export async function POST(req: NextRequest) {
       key_secret: keySecret,
     });
 
+    /*
+     * Create Razorpay order.
+     *
+     * Amount comes from ROLE_FEES on the server.
+     */
     const order = await razorpay.orders.create({
       amount: amount * 100,
       currency: "INR",
@@ -134,6 +176,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    /*
+     * Create local payment record.
+     */
     const payment = await prisma.payment.create({
       data: {
         type: "Membership",
@@ -145,17 +190,10 @@ export async function POST(req: NextRequest) {
 
         isDeveloperBypass: false,
 
-        ...(role === "boxer" && {
-          boxerId: user.boxer!.id,
-        }),
-
-        ...(role === "coach" && {
-          coachId: user.coach!.id,
-        }),
-
-        ...(role === "academy" && {
-          academyId: user.academy!.id,
-        }),
+        boxerId,
+        coachId,
+        academyId,
+        refereeJudgeId,
       },
 
       select: {
