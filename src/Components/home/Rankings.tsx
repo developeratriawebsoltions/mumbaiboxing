@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Navbar from "@/Components/navbar/Navbar";
+
 import Footer from "@/Components/footer/Footer";
 
 import {
@@ -306,7 +306,7 @@ export default function RankingsPage() {
 
   return (
     <main className="min-h-screen bg-[#05070a] text-white">
-      <Navbar />
+     
 
       {/* =========================================================
           HERO
@@ -1428,8 +1428,6 @@ export default function RankingsPage() {
 
         </div>
       </section>
-
-      <Footer />
     </main>
   );
 }

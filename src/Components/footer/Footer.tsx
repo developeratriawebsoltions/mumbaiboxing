@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowUpRight,
   Mail,
@@ -81,7 +82,6 @@ export default function Footer() {
       ===================================================== */}
 
       <div className="pointer-events-none absolute inset-0">
-
         {/* Red ambient glow */}
 
         <div className="absolute -left-40 top-10 h-[450px] w-[450px] rounded-full bg-red-600/[0.035] blur-[150px]" />
@@ -98,7 +98,6 @@ export default function Footer() {
             backgroundSize: "72px 72px",
           }}
         />
-
       </div>
 
       {/* =====================================================
@@ -106,50 +105,50 @@ export default function Footer() {
       ===================================================== */}
 
       <div className="relative mx-auto max-w-[1440px] px-6 py-16 lg:px-10">
-
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-
           {/* =================================================
               BRAND
           ================================================= */}
 
           <div className="max-w-sm">
-
             <Link
               href="/"
               className="group inline-flex items-center gap-3"
             >
-
-              {/* Logo */}
+              {/* =================================================
+                  ACTUAL MBA LOGO
+              ================================================= */}
 
               <div
                 className="
+                  relative
                   flex
-                  h-11
-                  w-11
+                  h-12
+                  w-12
+                  shrink-0
                   items-center
                   justify-center
+                  overflow-hidden
                   rounded-xl
-                  border
-                  border-red-500/20
-                  bg-red-600
-                  text-lg
-                  font-black
-                  tracking-tight
-                  text-white
-                  shadow-[0_0_25px_rgba(220,38,38,0.15)]
-                  transition-all
+                  transition-transform
                   duration-200
                   group-hover:-translate-y-0.5
-                  group-hover:bg-red-500
-                  group-hover:shadow-[0_0_30px_rgba(220,38,38,0.25)]
+                  group-hover:scale-105
                 "
               >
-                MB
+                <Image
+                  src="/logo/download.webp"
+                  alt="Mumbai Boxing Association"
+                  fill
+                  priority
+                  sizes="48px"
+                  className="object-contain"
+                />
               </div>
 
-              <div className="leading-none">
+              {/* Brand */}
 
+              <div className="leading-none">
                 <div className="text-sm font-bold tracking-[0.18em] text-white">
                   MUMBAI
                 </div>
@@ -157,9 +156,7 @@ export default function Footer() {
                 <div className="mt-1 text-xs font-bold tracking-[0.22em] text-red-500">
                   BOXING ASSOCIATION
                 </div>
-
               </div>
-
             </Link>
 
             {/* Description */}
@@ -175,7 +172,6 @@ export default function Footer() {
             ================================================= */}
 
             <div className="mt-7 space-y-4">
-
               {/* Email */}
 
               <a
@@ -191,7 +187,6 @@ export default function Footer() {
                   hover:text-white
                 "
               >
-
                 <span
                   className="
                     flex
@@ -216,7 +211,6 @@ export default function Footer() {
                 <span>
                   info@mumbaiboxing.org
                 </span>
-
               </a>
 
               {/* Phone */}
@@ -234,7 +228,6 @@ export default function Footer() {
                   hover:text-white
                 "
               >
-
                 <span
                   className="
                     flex
@@ -259,13 +252,11 @@ export default function Footer() {
                 <span>
                   +91 22 1234 5678
                 </span>
-
               </a>
 
               {/* Location */}
 
               <div className="flex items-center gap-3 text-sm text-slate-400">
-
                 <span
                   className="
                     flex
@@ -286,11 +277,8 @@ export default function Footer() {
                 <span>
                   Mumbai, Maharashtra
                 </span>
-
               </div>
-
             </div>
-
           </div>
 
           {/* =================================================
@@ -298,19 +286,14 @@ export default function Footer() {
           ================================================= */}
 
           {footerLinks.map((col) => (
-
             <div key={col.heading}>
-
               <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.18em] text-red-500">
                 {col.heading}
               </h4>
 
               <ul className="space-y-3">
-
                 {col.links.map((link) => (
-
                   <li key={link.label}>
-
                     <Link
                       href={link.href}
                       className="
@@ -325,7 +308,6 @@ export default function Footer() {
                         hover:text-white
                       "
                     >
-
                       <span>
                         {link.label}
                       </span>
@@ -343,19 +325,12 @@ export default function Footer() {
                           group-hover:text-red-500
                         "
                       />
-
                     </Link>
-
                   </li>
-
                 ))}
-
               </ul>
-
             </div>
-
           ))}
-
         </div>
 
         {/* =====================================================
@@ -380,9 +355,7 @@ export default function Footer() {
             sm:justify-between
           "
         >
-
           <div className="flex items-center gap-3">
-
             <div
               className="
                 flex
@@ -402,7 +375,6 @@ export default function Footer() {
             </div>
 
             <div>
-
               <p className="text-sm font-semibold text-white">
                 Official Mumbai Boxing Association
               </p>
@@ -411,9 +383,7 @@ export default function Footer() {
                 Registration: Regd. No. F-45151 (MUM) under The Bombay Public
                 Trusts Act, 1950
               </p>
-
             </div>
-
           </div>
 
           {/* Become Member */}
@@ -446,7 +416,6 @@ export default function Footer() {
 
             <ArrowUpRight size={14} />
           </Link>
-
         </div>
 
         {/* =====================================================
@@ -467,13 +436,11 @@ export default function Footer() {
             md:justify-between
           "
         >
-
           <p className="text-xs text-slate-700">
             © 2026 Mumbai Boxing Association. All rights reserved.
           </p>
 
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-
             <Link
               href="/privacy-policy"
               className="
@@ -509,9 +476,7 @@ export default function Footer() {
             >
               Sitemap
             </Link>
-
           </div>
-
         </div>
 
         {/* =====================================================
@@ -519,7 +484,6 @@ export default function Footer() {
         ===================================================== */}
 
         <div className="mt-10 flex items-center justify-center gap-3">
-
           <span className="h-px w-12 bg-white/[0.06]" />
 
           <span className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
@@ -531,9 +495,7 @@ export default function Footer() {
           <span className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]" />
 
           <span className="h-px w-12 bg-white/[0.06]" />
-
         </div>
-
       </div>
     </footer>
   );

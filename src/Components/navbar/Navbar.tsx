@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -31,10 +32,8 @@ export default function Navbar() {
    * ------------------------------------------------------------
    * AUTH
    * ------------------------------------------------------------
-   *
-   * Fetch once when the navbar mounts.
-   * The navbar keeps its layout stable while this request runs.
    */
+
   useEffect(() => {
     let cancelled = false;
 
@@ -81,6 +80,7 @@ export default function Navbar() {
    * CLOSE MOBILE MENU ON PAGE CHANGE
    * ------------------------------------------------------------
    */
+
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -90,6 +90,7 @@ export default function Navbar() {
    * LOGOUT
    * ------------------------------------------------------------
    */
+
   async function handleLogout() {
     if (loggingOut) return;
 
@@ -118,6 +119,7 @@ export default function Navbar() {
    * NAVIGATION
    * ------------------------------------------------------------
    */
+
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "About", href: "/about" },
@@ -145,6 +147,7 @@ export default function Navbar() {
    * RENDER
    * ------------------------------------------------------------
    */
+
   return (
     <header
       className="
@@ -180,31 +183,32 @@ export default function Navbar() {
           href="/"
           className="group flex shrink-0 items-center gap-3"
         >
-          {/* Logo mark */}
+          {/* Actual MBA Logo */}
 
           <div
             className="
+              relative
               flex
-              h-10
-              w-10
+              h-12
+              w-12
               shrink-0
               items-center
               justify-center
+              overflow-hidden
               rounded-full
-              border
-              border-red-500/20
-              bg-red-600
-              text-sm
-              font-black
-              text-white
-              shadow-[0_0_25px_rgba(220,38,38,0.18)]
-              transition-all
+              transition-transform
               duration-200
-              group-hover:bg-red-500
-              group-hover:shadow-[0_0_30px_rgba(220,38,38,0.3)]
+              group-hover:scale-105
             "
           >
-            MB
+            <Image
+              src="/logo/download.webp"
+              alt="Mumbai Boxing Association"
+              fill
+              priority
+              sizes="48px"
+              className="object-contain"
+            />
           </div>
 
           {/* Brand */}
@@ -280,169 +284,169 @@ export default function Navbar() {
           })}
         </nav>
 
-       {/* =====================================================
-    DESKTOP ACTIONS
-    Stable layout — prevents auth state jumping
-===================================================== */}
+        {/* =====================================================
+            DESKTOP ACTIONS
+            Stable layout — prevents auth state jumping
+        ===================================================== */}
 
-<div
-  className="
-    hidden
-    h-10
-    w-[230px]
-    shrink-0
-    items-center
-    justify-end
-    lg:flex
-  "
->
-  {/* Keep the container mounted at all times.
-      Only its contents change. */}
+        <div
+          className="
+            hidden
+            h-10
+            w-[230px]
+            shrink-0
+            items-center
+            justify-end
+            lg:flex
+          "
+        >
+          {/* Keep container mounted at all times */}
 
-  {loading ? (
-    <div
-      className="
-        h-10
-        w-[190px]
-        shrink-0
-      "
-      aria-hidden="true"
-    />
-  ) : user ? (
-    <div
-      className="
-        flex
-        h-10
-        shrink-0
-        items-center
-        justify-end
-      "
-    >
-      {/* Dashboard */}
+          {loading ? (
+            <div
+              className="
+                h-10
+                w-[190px]
+                shrink-0
+              "
+              aria-hidden="true"
+            />
+          ) : user ? (
+            <div
+              className="
+                flex
+                h-10
+                shrink-0
+                items-center
+                justify-end
+              "
+            >
+              {/* Dashboard */}
 
-      <Link
-        href="/dashboard"
-        className="
-          flex
-          h-10
-          shrink-0
-          items-center
-          gap-2
-          rounded-full
-          border
-          border-white/10
-          bg-white/[0.03]
-          px-5
-          text-sm
-          font-medium
-          !text-slate-300
-          transition-all
-          duration-200
-          hover:border-white/20
-          hover:bg-white/[0.06]
-          hover:!text-white
-        "
-      >
-        <Grid2X2 size={15} />
+              <Link
+                href="/dashboard"
+                className="
+                  flex
+                  h-10
+                  shrink-0
+                  items-center
+                  gap-2
+                  rounded-full
+                  border
+                  border-white/10
+                  bg-white/[0.03]
+                  px-5
+                  text-sm
+                  font-medium
+                  !text-slate-300
+                  transition-all
+                  duration-200
+                  hover:border-white/20
+                  hover:bg-white/[0.06]
+                  hover:!text-white
+                "
+              >
+                <Grid2X2 size={15} />
 
-        Dashboard
-      </Link>
+                Dashboard
+              </Link>
 
-      {/* Logout */}
+              {/* Logout */}
 
-      <button
-        type="button"
-        onClick={handleLogout}
-        disabled={loggingOut}
-        className="
-          ml-3
-          flex
-          h-10
-          shrink-0
-          items-center
-          gap-2
-          rounded-full
-          bg-red-600
-          px-5
-          text-sm
-          font-semibold
-          !text-white
-          shadow-[0_5px_20px_rgba(220,38,38,0.16)]
-          transition-all
-          duration-200
-          hover:bg-red-500
-          hover:shadow-[0_8px_25px_rgba(220,38,38,0.25)]
-          disabled:cursor-not-allowed
-          disabled:opacity-60
-        "
-      >
-        <LogOut size={15} />
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="
+                  ml-3
+                  flex
+                  h-10
+                  shrink-0
+                  items-center
+                  gap-2
+                  rounded-full
+                  bg-red-600
+                  px-5
+                  text-sm
+                  font-semibold
+                  !text-white
+                  shadow-[0_5px_20px_rgba(220,38,38,0.16)]
+                  transition-all
+                  duration-200
+                  hover:bg-red-500
+                  hover:shadow-[0_8px_25px_rgba(220,38,38,0.25)]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
+                "
+              >
+                <LogOut size={15} />
 
-        {loggingOut ? "Logging out..." : "Logout"}
-      </button>
-    </div>
-  ) : (
-    <div
-      className="
-        flex
-        h-10
-        shrink-0
-        items-center
-        justify-end
-      "
-    >
-      {/* Login */}
+                {loggingOut ? "Logging out..." : "Logout"}
+              </button>
+            </div>
+          ) : (
+            <div
+              className="
+                flex
+                h-10
+                shrink-0
+                items-center
+                justify-end
+              "
+            >
+              {/* Login */}
 
-      <Link
-        href="/login"
-        className="
-          flex
-          h-10
-          shrink-0
-          items-center
-          rounded-full
-          px-4
-          text-sm
-          font-medium
-          !text-slate-400
-          transition-colors
-          hover:!text-white
-        "
-      >
-        Login
-      </Link>
+              <Link
+                href="/login"
+                className="
+                  flex
+                  h-10
+                  shrink-0
+                  items-center
+                  rounded-full
+                  px-4
+                  text-sm
+                  font-medium
+                  !text-slate-400
+                  transition-colors
+                  hover:!text-white
+                "
+              >
+                Login
+              </Link>
 
-      {/* Register */}
+              {/* Register */}
 
-      <Link
-        href="/register"
-        className="
-          ml-1
-          flex
-          h-10
-          shrink-0
-          items-center
-          gap-2
-          rounded-full
-          bg-red-600
-          px-5
-          text-sm
-          font-semibold
-          !text-white
-          shadow-[0_5px_20px_rgba(220,38,38,0.16)]
-          transition-all
-          duration-200
-          hover:bg-red-500
-          hover:shadow-[0_8px_25px_rgba(220,38,38,0.25)]
-        "
-      >
-        Register
+              <Link
+                href="/register"
+                className="
+                  ml-1
+                  flex
+                  h-10
+                  shrink-0
+                  items-center
+                  gap-2
+                  rounded-full
+                  bg-red-600
+                  px-5
+                  text-sm
+                  font-semibold
+                  !text-white
+                  shadow-[0_5px_20px_rgba(220,38,38,0.16)]
+                  transition-all
+                  duration-200
+                  hover:bg-red-500
+                  hover:shadow-[0_8px_25px_rgba(220,38,38,0.25)]
+                "
+              >
+                Register
 
-        <ArrowRight size={15} />
-      </Link>
-    </div>
-  )}
-</div>
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* =====================================================
             MOBILE MENU BUTTON
         ===================================================== */}
