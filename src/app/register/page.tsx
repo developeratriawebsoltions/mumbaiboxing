@@ -1744,10 +1744,17 @@ export default function RegisterPage() {
         });
 
         if (!uploadRes.ok) {
+          // All uploads failed — warn but still proceed to payment
           setError(
-            'Registration was created, but some documents could not be uploaded. Please contact support.'
+            'Account created, but documents could not be uploaded. You can re-upload them from your dashboard.'
           );
-          return;
+        } else {
+          const uploadJson = await uploadRes.json();
+          if (uploadJson.failed?.length > 0) {
+            setError(
+              `Account created. ${uploadJson.failed.length} document(s) failed to upload and can be re-uploaded from your dashboard.`
+            );
+          }
         }
       }
 

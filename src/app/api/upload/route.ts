@@ -11,26 +11,37 @@ export async function POST(req: NextRequest) {
 
     const saved: { label: string; filePath: string }[] = [];
 
+    const failed: string[] = [];
+
     for (const [key, value] of formData.entries()) {
       if (key === "userId" || !(value instanceof File)) continue;
 
       const file = value as File;
       if (file.size === 0) continue;
 
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const fileType = file.type.startsWith("image/") ? "image" : "raw";
-      const url = await cloudinaryUpload(buffer, `mba/${userId}`, key, fileType as "image" | "raw");
+      try {
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const fileType = file.type.startsWith("image/") ? "image" : "raw";
+        const url = await cloudinaryUpload(buffer, `mba/${userId}`, key, fileType as "image" | "raw");
 
-      await prisma.document.upsert({
-        where: { userId_label: { userId: parseInt(userId), label: key } },
-        update: { filePath: url, fileType: fileType === "image" ? "image" : "pdf" },
-        create: { userId: parseInt(userId), label: key, filePath: url, fileType: fileType === "image" ? "image" : "pdf" },
-      });
+        await prisma.document.upsert({
+          where: { userId_label: { userId: parseInt(userId), label: key } },
+          update: { filePath: url, fileType: fileType === "image" ? "image" : "pdf" },
+          create: { userId: parseInt(userId), label: key, filePath: url, fileType: fileType === "image" ? "image" : "pdf" },
+        });
 
-      saved.push({ label: key, filePath: url });
+        saved.push({ label: key, filePath: url });
+      } catch (fileErr) {
+        console.error(`Failed to upload file "${key}":`, fileErr);
+        failed.push(key);
+      }
     }
 
-    return NextResponse.json({ saved }, { status: 201 });
+    if (failed.length > 0 && saved.length === 0) {
+      return NextResponse.json({ error: "Upload failed", failed }, { status: 500 });
+    }
+
+    return NextResponse.json({ saved, failed }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
