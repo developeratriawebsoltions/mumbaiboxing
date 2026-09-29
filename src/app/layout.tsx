@@ -3,33 +3,71 @@ import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-inter",
 });
 
 const bebasNeue = Bebas_Neue({
-  variable: "--font-bebas",
   subsets: ["latin"],
   weight: "400",
+  variable: "--font-bebas",
 });
 
 export const metadata: Metadata = {
-  title: "Mumbai Boxing Association | Official Portal",
+  title: "Mumbai Boxing Association",
   description:
-    "Official platform for boxer registrations, tournaments, rankings, certifications and academy management in Mumbai.",
+    "Mumbai Boxing Association — Developing grassroots boxing talent and strengthening the boxing community.",
+
+  icons: {
+    icon: [
+      {
+        url: "/logo/Favicon/favicon.ico",
+        sizes: "any",
+      },
+      {
+        url: "/logo/Favicon/favicon-16x16.png",
+        type: "image/png",
+        sizes: "16x16",
+      },
+      {
+        url: "/logo/Favicon/favicon-32x32.png",
+        type: "image/png",
+        sizes: "32x32",
+      },
+      {
+        url: "/logo/Favicon/android-chrome-192x192.png",
+        type: "image/png",
+        sizes: "192x192",
+      },
+      {
+        url: "/logo/Favicon/android-chrome-512x512.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+
+    apple: [
+      {
+        url: "/logo/Favicon/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+
+  manifest: "/logo/Favicon/site.webmanifest",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${inter.variable} ${bebasNeue.variable} h-full antialiased`}
-    >
-      <body suppressHydrationWarning className="min-h-full flex flex-col font-inter bg-transparent">
+    <html lang="en">
+      <body
+        className={`${inter.variable} ${bebasNeue.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
