@@ -537,6 +537,34 @@ function BoxerAdditionalDetails({
   ) => void;
   onFileSelect: (fieldName: string, file: File | null) => void;
 }) {
+  const gender = formData.boxerGender || "";
+
+  const maleWeightCategories = [
+    "47–50 kg",
+    "50–55 kg",
+    "55–60 kg",
+    "60–65 kg",
+    "65–70 kg",
+    "70–75 kg",
+    "75–80 kg",
+    "80–85 kg",
+    "85–90 kg",
+    "+90 kg",
+  ];
+
+  const femaleWeightCategories = [
+    "45–48 kg",
+    "48–51 kg",
+    "51–54 kg",
+    "54–57 kg",
+    "57–60 kg",
+    "60–65 kg",
+    "65–70 kg",
+    "70–75 kg",
+    "75–80 kg",
+    "+80 kg",
+  ];
+
   return (
     <div className="space-y-4">
       <SectionTitle
@@ -549,7 +577,7 @@ function BoxerAdditionalDetails({
           label="Competition Category"
           placeholder="e.g. Senior / Junior"
           name="ageGroup"
-          value={formData.ageGroup || ''}
+          value={formData.ageGroup || ""}
           onChange={onChange}
         />
 
@@ -557,82 +585,99 @@ function BoxerAdditionalDetails({
           label="Aadhaar Number"
           placeholder="Enter Aadhaar number"
           name="aadhaar"
-          value={formData.aadhaar || ''}
+          value={formData.aadhaar || ""}
           onChange={onChange}
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* =====================================================
+          WEIGHT CATEGORY
+         ===================================================== */}
+
+      <div>
         <SelectField
-          label="Weight Category Boys"
+          label={
+            gender === "Male"
+              ? "Weight Category — Male"
+              : gender === "Female"
+                ? "Weight Category — Female"
+                : "Weight Category"
+          }
           name="weight"
-          required={false}
-          value={formData.weight || ''}
+          required={Boolean(gender)}
+          value={formData.weight || ""}
           onChange={onChange}
-          options={[
-            '47–50 kg',
-            '50–55 kg',
-            '55–60 kg',
-            '60–65 kg',
-            '65–70 kg',
-            '70–75 kg',
-            '75–80 kg',
-            '80–85 kg',
-            '85–90 kg',
-            '+90 kg',
-          ]}
+          options={
+            gender === "Male"
+              ? maleWeightCategories
+              : gender === "Female"
+                ? femaleWeightCategories
+                : []
+          }
         />
 
-        <SelectField
-          label="Weight Category Girls"
-          name="weightGirls"
-          required={false}
-          value={formData.weightGirls || ''}
-          onChange={onChange}
-          options={[
-            '45–48 kg',
-            '48–51 kg',
-            '51–54 kg',
-            '54–57 kg',
-            '57–60 kg',
-            '60–65 kg',
-            '65–70 kg',
-            '70–75 kg',
-            '75–80 kg',
-            '+80 kg',
-          ]}
-        />
+        {!gender && (
+          <p
+            className="mt-2 rounded-xl border px-3 py-2 text-[11px] leading-5"
+            style={{
+              borderColor: "rgba(220,38,38,0.12)",
+              color: "#64748B",
+              background: "#F8FAFC",
+            }}
+          >
+            Select your gender above to see the applicable weight categories.
+          </p>
+        )}
+
+        {gender === "Male" && (
+          <p
+            className="mt-2 rounded-xl border px-3 py-2 text-[11px] leading-5"
+            style={{
+              borderColor: "rgba(220,38,38,0.12)",
+              color: "#64748B",
+              background: "#F8FAFC",
+            }}
+          >
+            Showing male weight categories only.
+          </p>
+        )}
+
+        {gender === "Female" && (
+          <p
+            className="mt-2 rounded-xl border px-3 py-2 text-[11px] leading-5"
+            style={{
+              borderColor: "rgba(220,38,38,0.12)",
+              color: "#64748B",
+              background: "#F8FAFC",
+            }}
+          >
+            Showing female weight categories only.
+          </p>
+        )}
       </div>
 
       <Field
         label="Academy / Club"
         placeholder="Academy name"
         name="academyName"
-        value={formData.academyName || ''}
+        value={formData.academyName || ""}
         onChange={onChange}
       />
 
-      <p
-        className="rounded-xl border px-3 py-2 text-[11px] leading-5"
-        style={{
-          borderColor: 'rgba(220,38,38,0.12)',
-          color: '#64748B',
-          background: '#F8FAFC',
-        }}
-      >
-        Select either the boys or girls weight category as applicable.
-      </p>
+      {/* =====================================================
+          DOCUMENTS
+         ===================================================== */}
 
       <div
         className="rounded-2xl border p-4"
         style={{
-          borderColor: 'rgba(220,38,38,0.18)',
-          background: '#F8FAFC',
+          borderColor: "rgba(220,38,38,0.18)",
+          background: "#F8FAFC",
         }}
       >
         <p
           className="mb-3 text-sm font-semibold"
-          style={{ color: '#1E293B' }}
+          style={{ color: "#1E293B" }}
         >
           Documents
         </p>
@@ -640,28 +685,26 @@ function BoxerAdditionalDetails({
         <div className="space-y-3">
           <FileField
             label="Birth Certificate"
-            selectedFile={files['birth-certificate']}
+            selectedFile={files["birth-certificate"]}
             onFileSelect={onFileSelect}
           />
 
           <FileField
             label="Aadhaar Card"
-            selectedFile={files['aadhaar-card']}
+            selectedFile={files["aadhaar-card"]}
             onFileSelect={onFileSelect}
           />
 
           <FileField
             label="Passport size Photo"
-            selectedFile={files['passport-size-photo']}
+            selectedFile={files["passport-size-photo"]}
             onFileSelect={onFileSelect}
           />
 
           <FileField
             label="Medical Fitness Certificate by (MBBS) Dr."
             selectedFile={
-              files[
-                'medical-fitness-certificate-by-mbbs-dr'
-              ]
+              files["medical-fitness-certificate-by-mbbs-dr"]
             }
             onFileSelect={onFileSelect}
           />
@@ -669,7 +712,7 @@ function BoxerAdditionalDetails({
           <FileField
             label="HIV / Hepatitis B & C Test Report"
             selectedFile={
-              files['hiv-hepatitis-b-c-test-report']
+              files["hiv-hepatitis-b-c-test-report"]
             }
             onFileSelect={onFileSelect}
           />
@@ -1458,24 +1501,48 @@ export default function RegisterPage() {
     [role]
   );
 
-  function handleFieldChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) {
-    const { name, value } = e.target;
+function handleFieldChange(
+  e: React.ChangeEvent<
+    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+  >
+) {
+  const { name, value } = e.target;
 
-    if (!name) return;
+  if (!name) return;
 
-    setFormData((prev) => ({
+  setFormData((prev) => {
+    const next = {
       ...prev,
       [name]: value,
-    }));
+    };
 
-    if (name === 'email') {
-      setEmail(value);
+    /*
+     * =====================================================
+     * BOXER GENDER → WEIGHT CATEGORY
+     * =====================================================
+     *
+     * If gender changes, clear the existing weight.
+     *
+     * Example:
+     * Male → 60–65 kg
+     * then Female
+     *
+     * The old male weight is removed so it cannot
+     * accidentally be submitted with female data.
+     */
+
+    if (name === "boxerGender") {
+      next.weight = "";
+      next.weightGirls = "";
     }
+
+    return next;
+  });
+
+  if (name === "email") {
+    setEmail(value);
   }
+}
 
   function handleFileSelect(
     fieldName: string,
@@ -1593,14 +1660,79 @@ export default function RegisterPage() {
 
     if (!e.currentTarget.reportValidity()) return;
 
-    if (
-      role === 'Boxer' &&
-      !formData.weight &&
-      !formData.weightGirls
-    ) {
-      setError('Please select a weight category.');
+   function handleAdditionalNext(
+  e: React.FormEvent<HTMLFormElement>
+) {
+  e.preventDefault();
+  setError("");
+
+  if (!e.currentTarget.reportValidity()) {
+    return;
+  }
+
+  if (role === "Boxer") {
+    const gender = formData.boxerGender;
+
+    if (!gender) {
+      setError("Please select your gender.");
       return;
     }
+
+    if (!formData.weight) {
+      setError(
+        `Please select a weight category for ${gender.toLowerCase()} boxers.`
+      );
+      return;
+    }
+
+    /* -----------------------------------------------------
+       Extra safety validation
+       Prevent manually manipulated/inconsistent values.
+    ----------------------------------------------------- */
+
+    const maleWeightCategories = [
+      "47–50 kg",
+      "50–55 kg",
+      "55–60 kg",
+      "60–65 kg",
+      "65–70 kg",
+      "70–75 kg",
+      "75–80 kg",
+      "80–85 kg",
+      "85–90 kg",
+      "+90 kg",
+    ];
+
+    const femaleWeightCategories = [
+      "45–48 kg",
+      "48–51 kg",
+      "51–54 kg",
+      "54–57 kg",
+      "57–60 kg",
+      "60–65 kg",
+      "65–70 kg",
+      "70–75 kg",
+      "75–80 kg",
+      "+80 kg",
+    ];
+
+    const validCategories =
+      gender === "Male"
+        ? maleWeightCategories
+        : gender === "Female"
+          ? femaleWeightCategories
+          : [];
+
+    if (!validCategories.includes(formData.weight)) {
+      setError(
+        "Please select a valid weight category for the selected gender."
+      );
+      return;
+    }
+  }
+
+  setStep(3);
+}
 
     setStep(3);
   }
