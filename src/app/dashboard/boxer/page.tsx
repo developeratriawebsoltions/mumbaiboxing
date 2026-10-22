@@ -32,6 +32,13 @@ import DashboardLayout from "@/Components/layout/DashboardLayout";
    TYPES
    ========================================================= */
 
+type BoxerForm = {
+  name: string;
+  dob: string;
+  weight: string;
+  ageGroup: string;
+};
+
 type Doc = {
   id: number;
   label: string;
