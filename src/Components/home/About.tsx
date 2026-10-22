@@ -33,7 +33,7 @@ const committeeMembers = [
     number: "03",
     role: "Secretary",
     name: "Mr. Subodh Pandharinath Raorane",
-    image: "/committee/subodh-raorane.jpeg",
+    image: "/committee/nitin-thakur.jpeg",
   },
   {
     number: "04",
@@ -51,7 +51,13 @@ const committeeMembers = [
     number: "06",
     role: "Executive Committee Members",
     name: "Mr. Dipak Manohar Kurulkar",
-    image: "/committee/dipak-kurulkar.jpeg",
+    image: "/committee/dipak-kurulkar.png",
+  },
+  {
+    number: "07",
+    role: "Executive Committee Members",
+    name: "Mr. Nitin Thakur",
+    image: "/committee/subodh-raorane.jpeg",
   },
 ];
 

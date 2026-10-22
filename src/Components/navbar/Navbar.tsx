@@ -189,8 +189,8 @@ export default function Navbar() {
             className="
               relative
               flex
-              h-12
-              w-12
+              h-15
+              w-15
               shrink-0
               items-center
               justify-center
@@ -206,7 +206,7 @@ export default function Navbar() {
               alt="Mumbai Boxing Association"
               fill
               priority
-              sizes="48px"
+              sizes="60px"
               className="object-contain"
             />
           </div>
@@ -214,14 +214,14 @@ export default function Navbar() {
           {/* Brand */}
 
           <div className="leading-none">
-            <div className="text-[16px] font-extrabold tracking-[0.08em] text-white">
+            <div className="text-[17px] font-extrabold tracking-[0.06em] text-white sm:text-[19px]">
               MUMBAI{" "}
               <span className="text-red-500">
                 BOXING
               </span>
             </div>
 
-            <div className="mt-1 text-[8px] font-semibold tracking-[0.28em] text-slate-600">
+            <div className="mt-1 text-[9px] font-semibold tracking-[0.28em] text-slate-400 sm:text-[10px]">
               ASSOCIATION
             </div>
           </div>
@@ -245,7 +245,7 @@ export default function Navbar() {
                   flex
                   h-full
                   items-center
-                  text-[13px]
+                  text-[17px]
                   font-medium
                   transition-colors
                   duration-200
