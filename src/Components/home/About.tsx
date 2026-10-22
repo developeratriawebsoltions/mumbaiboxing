@@ -21,43 +21,37 @@ const committeeMembers = [
     number: "01",
     role: "President",
     name: "Mr. Subhash Mahadeo Kolge",
-    image: "/images/committee/subhash-kolge.jpg",
+    image: "/committee/subhash-kolge.jpeg",
   },
   {
     number: "02",
     role: "Vice President",
     name: "Mr. Rajendra Sakharam Jathar",
-    image: "/images/committee/rajendra-jathar.jpg",
+    image: "/committee/rajendra-jathar.jpeg",
   },
   {
     number: "03",
     role: "Secretary",
     name: "Mr. Subodh Pandharinath Raorane",
-    image: "/images/committee/subodh-raorane.jpg",
+    image: "/committee/subodh-raorane.jpeg",
   },
   {
     number: "04",
     role: "Joint Secretary",
     name: "Mr. Shailesh Chandrabhan Tripathi",
-    image: "/images/committee/shailesh-tripathi.jpg",
+    image: "/committee/shailesh-tripathi.jpeg",
   },
   {
     number: "05",
     role: "Treasurer",
     name: "Mr. Vivek Shrikant Rane",
-    image: "/images/committee/vivek-rane.jpg",
+    image: "/committee/vivek-rane.jpeg",
   },
   {
     number: "06",
     role: "Executive Committee Members",
     name: "Mr. Dipak Manohar Kurulkar",
-    image: "/images/committee/dipak-kurulkar.jpg",
-  },
-  {
-    number: "07",
-    role: "Executive Committee Members",
-    name: "Mr. Nitin Prabhakar Thakoor",
-    image: "/images/committee/nitin-thakoor.jpg",
+    image: "/committee/dipak-kurulkar.jpeg",
   },
 ];
 
@@ -469,19 +463,11 @@ export default function About() {
                       alt={member.name}
                       fill
                       sizes="(max-width: 640px) 90vw, (max-width: 1280px) 45vw, 25vw"
-                      className="
-                        object-cover
-                        object-top
-                        grayscale
-                        transition-all
-                        duration-500
-                        group-hover:scale-[1.03]
-                        group-hover:grayscale-0
-                      "
+                      className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                     />
 
                     {/* Image fade */}
-                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#090c11] via-[#090c11]/40 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#090c11] to-transparent" />
                   </div>
                 </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import Navbar from "@/Components/navbar/Navbar";
 import Footer from "@/Components/footer/Footer";
 
@@ -99,12 +99,6 @@ const committeeMembers = [
     designation: "Executive Committee Members",
     image: "/committee/dipak-kurulkar.jpeg",
   },
-  {
-    number: 7,
-    name: "Mr. Nitin Prabhakar Thakoor",
-    designation: "Executive Committee Members",
-    image: "/committee/nitin-thakoor.jpeg",
-  },
 ];
 
 /* =========================================================
@@ -137,6 +131,53 @@ const focusAreas = [
     icon: Users,
   },
 ];
+
+function CommitteeMemberCard({ member }: { member: typeof committeeMembers[0] }) {
+  const [imgSrc, setImgSrc] = useState(member.image);
+
+  return (
+    <article
+      className="group relative overflow-hidden rounded-[22px] border border-white/10 bg-[#05070a] transition-all duration-300 hover:-translate-y-1 hover:border-red-500/30 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
+    >
+      <div className="relative aspect-[4/4.3] overflow-hidden bg-[#0b0f15]">
+        <div
+          className="pointer-events-none absolute inset-0 z-10 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl transition-all duration-500 group-hover:bg-red-600/20" />
+        <div className="absolute left-4 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-lg bg-red-600 text-[9px] font-black text-white shadow-[0_8px_25px_rgba(220,38,38,0.25)]">
+          MBA
+        </div>
+        <div className="absolute right-4 top-4 z-30 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-[9px] font-black tracking-wider text-slate-400 backdrop-blur-sm">
+          #{String(member.number).padStart(2, "0")}
+        </div>
+        <div className="absolute inset-x-7 bottom-0 top-12 overflow-hidden rounded-t-[18px]">
+          <img
+            src={imgSrc}
+            alt={member.name}
+            onError={() => setImgSrc("/committee/placeholder.svg")}
+            className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#05070a] via-[#05070a]/50 to-transparent" />
+        </div>
+      </div>
+      <div className="relative p-5">
+        <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-red-500">
+          {member.designation}
+        </p>
+        <h3 className="mt-2 min-h-[48px] text-base font-bold leading-6 text-white">
+          {member.name}
+        </h3>
+        <div className="mt-5 h-px w-full bg-white/[0.08]" />
+      </div>
+      <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-red-600 transition-all duration-300 group-hover:w-16" />
+    </article>
+  );
+}
 
 export default function AboutPage() {
   return (
@@ -530,111 +571,7 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {committeeMembers.map((member) => (
-              <article
-                key={member.number}
-                className="
-                  group
-                  relative
-                  overflow-hidden
-                  rounded-[22px]
-                  border
-                  border-white/10
-                  bg-[#05070a]
-                  transition-all
-                  duration-300
-                  hover:-translate-y-1
-                  hover:border-red-500/30
-                  hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]
-                "
-              >
-                {/* =================================================
-                    PHOTO
-                ================================================= */}
-
-                <div className="relative aspect-[4/4.3] overflow-hidden bg-[#0b0f15]">
-                  {/* Grid */}
-
-                  <div
-                    className="pointer-events-none absolute inset-0 z-10 opacity-[0.035]"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-                      backgroundSize: "24px 24px",
-                    }}
-                  />
-
-                  {/* Red glow */}
-
-                  <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-3xl transition-all duration-500 group-hover:bg-red-600/20" />
-
-                  {/* MBA Badge */}
-
-                  <div className="absolute left-4 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-lg bg-red-600 text-[9px] font-black text-white shadow-[0_8px_25px_rgba(220,38,38,0.25)]">
-                    MBA
-                  </div>
-
-                  {/* Number */}
-
-                  <div className="absolute right-4 top-4 z-30 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-[9px] font-black tracking-wider text-slate-400 backdrop-blur-sm">
-                    #{String(member.number).padStart(2, "0")}
-                  </div>
-
-                  {/* =================================================
-                      MEMBER PHOTO
-
-                      IMPORTANT:
-                      NO grayscale filter is applied here.
-                      Images will display in their original colors.
-                  ================================================= */}
-
-                  <div className="absolute inset-x-7 bottom-0 top-12 overflow-hidden rounded-t-[18px]">
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      fill
-                      priority={member.number <= 4}
-                      sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 25vw"
-                      className="
-                        object-cover
-                        object-top
-                        transition-transform
-                        duration-500
-                        group-hover:scale-[1.04]
-                      "
-                    />
-
-                    {/* Bottom gradient */}
-
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#05070a] via-[#05070a]/50 to-transparent" />
-                  </div>
-                </div>
-
-                {/* =================================================
-                    MEMBER DETAILS
-                ================================================= */}
-
-                <div className="relative p-5">
-                  {/* Designation */}
-
-                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-red-500">
-                    {member.designation}
-                  </p>
-
-                  {/* Name */}
-
-                  <h3 className="mt-2 min-h-[48px] text-base font-bold leading-6 text-white">
-                    {member.name}
-                  </h3>
-
-                  {/* Bottom line */}
-
-                  <div className="mt-5 h-px w-full bg-white/[0.08]" />
-                </div>
-
-                {/* Hover accent */}
-
-                <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-red-600 transition-all duration-300 group-hover:w-16" />
-              </article>
+              <CommitteeMemberCard key={member.number} member={member} />
             ))}
           </div>
         </div>

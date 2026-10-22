@@ -4,22 +4,21 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  const email = process.env.SUPERADMIN_EMAIL?.trim().toLowerCase();
-  const password = process.env.SUPERADMIN_PASSWORD;
+const users = [
+  { email: "superadmin@mba.com", password: "superadmin@123", role: "superadmin" as const, login: "/superadmin/login" },
+  { email: "admin@mba.com",      password: "admin@123",      role: "admin"      as const, login: "/admin/login" },
+];
 
-  if (!email || !password) {
-    throw new Error(
-      "Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD before running the seed."
-    );
-  }
+async function main() {
+  const email = "admin@mba.com";
+  const password = "superadmin@123";
 
   const existing = await prisma.user.findUnique({
     where: { email },
   });
 
   if (existing) {
-    console.log("Super Admin account already exists; no changes made.");
+    console.log("Superadmin already exists:", email);
     return;
   }
 
@@ -35,7 +34,10 @@ async function main() {
     },
   });
 
-  console.log("Super Admin account created. Sign in at /login/superadmin.");
+  console.log("✅ Superadmin created:");
+  console.log("   Email   :", email);
+  console.log("   Password:", password);
+  console.log("   Login at: /admin/login");
 }
 
 main()
