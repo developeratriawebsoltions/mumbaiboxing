@@ -134,6 +134,14 @@ export default function BoxerDashboard() {
   const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<BoxerForm>({
+    name: "",
+    dob: "",
+    weight: "",
+    ageGroup: "",
+  });
 
   const [downloadingCard, setDownloadingCard] = useState(false);
 
@@ -4027,6 +4035,85 @@ export default function BoxerDashboard() {
           </>
         )}
       </div>
+
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-xl font-bold text-black">Edit Profile</h3>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="text-sm text-gray-500 hover:text-black"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-black mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">Date of Birth</label>
+                <input
+                  type="date"
+                  value={form.dob}
+                  onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-black mb-1">Weight Category</label>
+                <input
+                  type="text"
+                  value={form.weight}
+                  onChange={(e) => setForm({ ...form, weight: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="e.g. 75kg"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-black mb-1">Age Group</label>
+                <input
+                  type="text"
+                  value={form.ageGroup}
+                  onChange={(e) => setForm({ ...form, ageGroup: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="e.g. U21"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-black hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
