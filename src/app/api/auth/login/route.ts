@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
 
     const email = String(body?.email ?? "").trim().toLowerCase();
     const password = String(body?.password ?? "");
+    const selectedRole = String(body?.role ?? "").trim().toLowerCase();
     const requestedTournamentId = Number(body?.tournamentId);
 
     if (!email || !password) {
@@ -78,6 +79,28 @@ export async function POST(req: NextRequest) {
         {
           error: "Use the sign-in page for your account role.",
           code: "ROLE_SPECIFIC_LOGIN_REQUIRED",
+        },
+        { status: 403 }
+      );
+    }
+
+    /*
+     * Validate selected role matches actual DB role.
+     */
+    const roleMap: Record<string, string> = {
+      "boxer": "boxer",
+      "coach": "coach",
+      "academy": "academy",
+      "referee/judge": "referee_judge",
+    };
+
+    const expectedRole = roleMap[selectedRole];
+
+    if (expectedRole && user.role !== expectedRole) {
+      return NextResponse.json(
+        {
+          error: `This account is not registered as ${body?.role}. Please select the correct role.`,
+          code: "ROLE_MISMATCH",
         },
         { status: 403 }
       );

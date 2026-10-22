@@ -51,35 +51,6 @@ const ROLE_ALLOWED: Record<string, string[]> = {
   "/dashboard/referee-judge/tournaments",
   "/dashboard/referee-judge/payments",
 ],
-  association: [
-    "/dashboard/association",
-    "/dashboard/boxer",
-    "/dashboard/coach",
-    "/dashboard/academy",
-    "/dashboard/tournament",
-    "/dashboard/ranking",
-    "/dashboard/payment",
-    "/dashboard/documents",
-    "/dashboard/reports",
-  ],
-
-  school: [
-    "/dashboard/school",
-    "/dashboard/boxer",
-    "/dashboard/tournament",
-    "/dashboard/certificates",
-    "/dashboard/documents",
-  ],
-
-  taluka: [
-    "/dashboard/taluka",
-    "/dashboard/boxer",
-    "/dashboard/coach",
-    "/dashboard/school",
-    "/dashboard/tournament",
-    "/dashboard/ranking",
-  ],
-
   /*
    * ADMIN
    */
