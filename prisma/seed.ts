@@ -3,35 +3,24 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const users = [
+  { email: "superadmin@mba.com", password: "superadmin@123", role: "superadmin" as const, login: "/superadmin/login" },
+  { email: "admin@mba.com",      password: "admin@123",      role: "admin"      as const, login: "/admin/login" },
+];
+
 async function main() {
-  const email = "admin@mba.com";
-  const password = "superadmin@123";
-
-  const existing = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (existing) {
-    console.log("Superadmin already exists:", email);
-    return;
+  for (const u of users) {
+    const existing = await prisma.user.findUnique({ where: { email: u.email } });
+    if (existing) {
+      console.log(`Already exists: ${u.email}`);
+      continue;
+    }
+    const hashed = await bcrypt.hash(u.password, 10);
+    await prisma.user.create({
+      data: { email: u.email, password: hashed, role: u.role, registrationStatus: "ACTIVE", updatedAt: new Date() },
+    });
+    console.log(`✅ ${u.role} created: ${u.email} | password: ${u.password} | login: ${u.login}`);
   }
-
-  const hashed = await bcrypt.hash(password, 10);
-
-  await prisma.user.create({
-    data: {
-      email,
-      password: hashed,
-      role: "superadmin",
-      registrationStatus: "ACTIVE",
-      updatedAt: new Date(),
-    },
-  });
-
-  console.log("✅ Superadmin created:");
-  console.log("   Email   :", email);
-  console.log("   Password:", password);
-  console.log("   Login at: /admin/login");
 }
 
 main()
