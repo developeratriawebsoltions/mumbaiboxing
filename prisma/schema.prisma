@@ -88,7 +88,7 @@ model Tournament {
   status      String   @default("upcoming")
   entryFee    Int?     @default(500)
   createdAt   DateTime @default(now())
-  entries     TournamentEntry[]
+  tournamententry TournamentEntry[]
 }
 
 model TournamentEntry {

@@ -26,14 +26,15 @@ export async function GET(req: NextRequest) {
   const tournaments = await prisma.tournament.findMany({
     orderBy: { startDate: "desc" },
     include: {
-      entries: boxer ? { where: { boxerId: boxer.id } } : false,
+      tournamententry: boxer ? { where: { boxerId: boxer.id } } : false,
     },
   });
 
   return NextResponse.json(
-    tournaments.map((t) => ({
-      ...t,
-      registered: boxer ? t.entries.length > 0 : false,
-    }))
+    tournaments.map(({ tournamententry, ...tournament }) => ({
+      ...tournament,
+      ...(boxer ? { entries: tournamententry } : {}),
+      registered: boxer ? tournamententry.length > 0 : false,
+    })),
   );
 }

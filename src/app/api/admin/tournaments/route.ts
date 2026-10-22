@@ -35,10 +35,15 @@ export async function GET(req: NextRequest) {
 
   const tournaments = await prisma.tournament.findMany({
     orderBy: { startDate: "asc" },
-    include: { _count: { select: { entries: true } } },
+    include: { _count: { select: { tournamententry: true } } },
   });
 
-  return NextResponse.json(tournaments);
+  return NextResponse.json(
+    tournaments.map(({ _count, ...tournament }) => ({
+      ...tournament,
+      _count: { entries: _count.tournamententry },
+    })),
+  );
 }
 
 export async function POST(req: NextRequest) {
