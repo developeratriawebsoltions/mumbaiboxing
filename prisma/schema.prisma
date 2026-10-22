@@ -200,6 +200,12 @@ model tournament {
   startDate   DateTime?
   endDate     DateTime?
   weightClass String?
+<<<<<<< HEAD
+  status      String   @default("upcoming")
+  entryFee    Int?     @default(500)
+  createdAt   DateTime @default(now())
+  tournamententry TournamentEntry[]
+=======
   status      String    @default("upcoming")
   entryFee    Int?      @default(500)
   isFeatured  Boolean   @default(false)
@@ -207,6 +213,7 @@ model tournament {
 
   tournamententry        tournamententry[]
   refereeJudgeTournament referee_judge_tournament[]
+>>>>>>> b1fe62f5d88115e5b93a55b123379162e1dd249c
 }
 
 model tournamententry {
