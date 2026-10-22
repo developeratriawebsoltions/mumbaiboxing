@@ -54,24 +54,4 @@ export async function GET(req: NextRequest) {
       { status: 503 }
     );
   }
-<<<<<<< HEAD
-
-  const boxer = await prisma.boxer.findUnique({ where: { userId: payload.id } });
-
-  const tournaments = await prisma.tournament.findMany({
-    orderBy: { startDate: "desc" },
-    include: {
-      tournamententry: boxer ? { where: { boxerId: boxer.id } } : false,
-    },
-  });
-
-  return NextResponse.json(
-    tournaments.map(({ tournamententry, ...tournament }) => ({
-      ...tournament,
-      ...(boxer ? { entries: tournamententry } : {}),
-      registered: boxer ? tournamententry.length > 0 : false,
-    })),
-  );
-=======
->>>>>>> b1fe62f5d88115e5b93a55b123379162e1dd249c
 }
