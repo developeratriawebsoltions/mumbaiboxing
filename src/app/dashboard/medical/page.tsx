@@ -3,6 +3,7 @@
 import {
   CalendarDays,
   CheckCircle2,
+  Clock3,
   Download,
   ExternalLink,
   FileCheck2,
@@ -616,7 +617,7 @@ export default function MedicalPage() {
               </div>
 
               <p className="mt-1 text-sm text-slate-500">
-                Documents verified and approved by Mumbai Boxing Association
+                Medical certificates and reports submitted for review
               </p>
 
             </div>
@@ -627,18 +628,18 @@ export default function MedicalPage() {
                 items-center
                 gap-2
                 rounded-full
-                bg-emerald-50
+                bg-slate-100
                 px-3
                 py-1.5
                 text-xs
                 font-semibold
-                text-emerald-700
+                text-slate-700
               "
             >
 
-              <CheckCircle2 size={15} />
+            <FileText size={15} />
 
-              {data?.documents?.length ?? 0} Approved
+            {data?.documents?.length ?? 0} Submitted
 
             </div>
 
@@ -669,11 +670,11 @@ export default function MedicalPage() {
               </div>
 
               <p className="mt-4 font-semibold text-slate-700">
-                No approved medical documents
+                No medical documents found
               </p>
 
               <p className="mt-1 text-sm text-slate-400">
-                Your approved medical certificates and reports will appear here.
+                Your uploaded medical certificates and reports will appear here, including documents awaiting review.
               </p>
 
             </div>
@@ -789,32 +790,23 @@ export default function MedicalPage() {
 
                           )}
 
-                          {/* APPROVED */}
+                          {/* REVIEW STATUS */}
 
                           <div
-                            className="
-                              absolute
-                              top-4
-                              right-4
-                              inline-flex
-                              items-center
-                              gap-1.5
-                              rounded-full
-                              bg-white
-                              px-3
-                              py-1.5
-                              text-xs
-                              font-semibold
-                              text-emerald-700
-                              shadow-sm
-                              border
-                              border-emerald-100
-                            "
+                            className={`absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow-sm ${
+                              document.status.trim().toLowerCase() === "approved"
+                                ? "border-emerald-100 text-emerald-700"
+                                : document.status.trim().toLowerCase() === "rejected"
+                                  ? "border-red-100 text-red-700"
+                                  : "border-amber-100 text-amber-700"
+                            }`}
                           >
-
-                            <CheckCircle2 size={14} />
-
-                            Approved
+                            {document.status.trim().toLowerCase() === "approved" ? (
+                              <CheckCircle2 size={14} />
+                            ) : (
+                              <Clock3 size={14} />
+                            )}
+                            {document.status}
 
                           </div>
 
@@ -860,6 +852,11 @@ export default function MedicalPage() {
                                   document.createdAt
                                 )}
                               </p>
+                              {document.rejectionReason && (
+                                <p className="mt-2 text-sm text-red-600">
+                                  Review note: {document.rejectionReason}
+                                </p>
+                              )}
 
                             </div>
 
@@ -975,9 +972,9 @@ export default function MedicalPage() {
               </h3>
 
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Only medical documents approved by
-                Mumbai Boxing Association are displayed
-                in this section.
+                Submitted medical certificates and reports are shown here with
+                their current review status. A submitted document is not itself
+                a structured fitness assessment or eligibility decision.
               </p>
 
             </div>
@@ -1057,13 +1054,19 @@ export default function MedicalPage() {
 
                 <div className="mt-1 flex items-center gap-2">
 
+                  {selectedDocument.status.trim().toLowerCase() === "approved" ? (
                   <CheckCircle2
                     size={14}
                     className="text-emerald-600"
                   />
+                  ) : selectedDocument.status.trim().toLowerCase() === "rejected" ? (
+                    <X size={14} className="text-red-600" />
+                  ) : (
+                    <Clock3 size={14} className="text-amber-600" />
+                  )}
 
-                  <span className="text-xs font-semibold text-emerald-600">
-                    Approved
+                  <span className="text-xs font-semibold capitalize text-slate-600">
+                    {selectedDocument.status}
                   </span>
 
                 </div>

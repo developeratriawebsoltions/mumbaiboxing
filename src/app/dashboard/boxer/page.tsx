@@ -60,6 +60,7 @@ type TournamentHistory = {
   rejectionReason: string | null;
   reviewedAt: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 type Boxer = {
@@ -83,6 +84,8 @@ type Boxer = {
     updatedAt: string;
     createdAt: string;
   } | null;
+
+  medicalDocuments: Doc[];
 
   certificates: {
     id: number;
@@ -142,6 +145,16 @@ export default function BoxerDashboard() {
 
   const [showHistoryForm, setShowHistoryForm] = useState(false);
 
+  const [historyEditingId, setHistoryEditingId] = useState<number | null>(null);
+
+  const [historyStep, setHistoryStep] = useState(0);
+
+  const [latestPastTournamentDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    return date.toISOString().slice(0, 10);
+  });
+
   const [historySubmitting, setHistorySubmitting] = useState(false);
 
   const [historyError, setHistoryError] = useState("");
@@ -164,6 +177,141 @@ export default function BoxerDashboard() {
   });
 
   const [historyDocument, setHistoryDocument] = useState<File | null>(null);
+
+  const historyProofRequired =
+    historyForm.medal !== "NONE" || historyForm.position.trim() !== "";
+
+  function openNewHistoryForm() {
+    setHistoryEditingId(null);
+    setHistoryStep(0);
+    setHistoryError("");
+    setHistorySuccess("");
+    setHistoryDocument(null);
+    setHistoryForm({
+      tournamentName: "",
+      location: "",
+      tournamentDate: "",
+      tournamentType: "",
+      weightCategory: "",
+      result: "",
+      medal: "NONE",
+      position: "",
+      coachName: "",
+      notes: "",
+      documentPath: "",
+      documentName: "",
+    });
+    setShowHistoryForm(true);
+  }
+
+  function openEditHistoryForm(history: TournamentHistory) {
+    setHistoryEditingId(history.id);
+    setHistoryStep(0);
+    setHistoryError("");
+    setHistorySuccess("");
+    setHistoryDocument(null);
+    setHistoryForm({
+      tournamentName: history.tournamentName,
+      location: history.location || "",
+      tournamentDate: history.tournamentDate
+        ? new Date(history.tournamentDate).toISOString().slice(0, 10)
+        : "",
+      tournamentType: history.tournamentType || "",
+      weightCategory: history.weightCategory || "",
+      result: history.result || "",
+      medal: history.medal || "NONE",
+      position: history.position?.toString() || "",
+      coachName: history.coachName || "",
+      notes: history.notes || "",
+      documentPath: history.documentPath || "",
+      documentName: history.documentName || "",
+    });
+    setShowHistoryForm(true);
+  }
+
+  function advanceHistoryStep() {
+    setHistoryError("");
+
+    if (historyStep === 0) {
+      if (!historyForm.tournamentName.trim() || !historyForm.tournamentDate) {
+        setHistoryError("Enter the tournament name and date to continue.");
+        return;
+      }
+
+      if (
+        Number.isNaN(
+          new Date(`${historyForm.tournamentDate}T00:00:00.000Z`).getTime(),
+        ) ||
+        historyForm.tournamentDate >= new Date().toISOString().slice(0, 10)
+      ) {
+        setHistoryError("Tournament date must be in the past.");
+        return;
+      }
+    }
+
+    if (historyStep === 1 && !historyForm.result.trim()) {
+      setHistoryError("Add your result, such as Participation or Finalist.");
+      return;
+    }
+
+    if (historyStep === 1) {
+      const position = historyForm.position.trim()
+        ? Number(historyForm.position)
+        : null;
+      const medalPosition: Record<string, number> = {
+        GOLD: 1,
+        SILVER: 2,
+        BRONZE: 3,
+      };
+      if (position !== null && (!Number.isSafeInteger(position) || position <= 0)) {
+        setHistoryError("Position must be a positive whole number.");
+        return;
+      }
+      if (position !== null && position <= 3) {
+        const expectedMedal = ["", "GOLD", "SILVER", "BRONZE"][position];
+        if (historyForm.medal !== expectedMedal) {
+          setHistoryError(
+            `Position ${position} must match the ${expectedMedal.toLowerCase()} medal.`,
+          );
+          return;
+        }
+      }
+      if (
+        historyForm.medal !== "NONE" &&
+        position !== null &&
+        medalPosition[historyForm.medal] !== position
+      ) {
+        setHistoryError(
+          `${historyForm.medal.toLowerCase()} medal must match position ${medalPosition[historyForm.medal]}.`,
+        );
+        return;
+      }
+      if (
+        historyForm.medal !== "NONE" &&
+        !["DISTRICT", "STATE", "NATIONAL", "INTERNATIONAL"].includes(
+          historyForm.tournamentType,
+        )
+      ) {
+        setHistoryError("Choose the tournament level for a medal claim.");
+        return;
+      }
+    }
+
+    if (
+      historyStep === 2 &&
+      historyProofRequired &&
+      !historyDocument &&
+      !historyForm.documentPath
+    ) {
+      setHistoryError(
+        "Upload a certificate or official result proof for medal or placing claims.",
+      );
+      return;
+    }
+
+    setHistoryStep((current) => Math.min(current + 1, 3));
+  }
+
   /* =======================================================
      LOAD PROFILE
      ======================================================= */
@@ -633,26 +781,23 @@ export default function BoxerDashboard() {
   async function submitTournamentHistory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (historyStep < 3) {
+      advanceHistoryStep();
+      return;
+    }
+
     try {
       setHistorySubmitting(true);
       setHistoryError("");
       setHistorySuccess("");
 
-      if (!historyForm.tournamentName.trim()) {
-        setHistoryError("Tournament name is required.");
-        return;
-      }
-
-      if (!historyForm.tournamentDate) {
-        setHistoryError("Tournament date is required.");
-        return;
-      }
-
-      let documentPath: string | null = null;
-      let documentName: string | null = null;
+      let documentPath: string | null =
+        historyEditingId !== null ? historyForm.documentPath || null : null;
+      let documentName: string | null =
+        historyEditingId !== null ? historyForm.documentName || null : null;
 
       /* =====================================================
-         OPTIONAL SUPPORTING DOCUMENT UPLOAD
+         SUPPORTING DOCUMENT UPLOAD
          ===================================================== */
 
       if (historyDocument) {
@@ -677,14 +822,24 @@ export default function BoxerDashboard() {
 
         documentPath = uploadData.filePath;
         documentName = uploadData.fileName;
+        setHistoryForm((current) => ({
+          ...current,
+          documentPath: uploadData.filePath,
+          documentName: uploadData.fileName,
+        }));
+        setHistoryDocument(null);
       }
 
       /* =====================================================
          CREATE TOURNAMENT HISTORY RECORD
          ===================================================== */
 
-      const response = await fetch("/api/boxer/tournament-history", {
-        method: "POST",
+      const response = await fetch(
+        historyEditingId === null
+          ? "/api/boxer/tournament-history"
+          : `/api/boxer/tournament-history/${historyEditingId}`,
+        {
+        method: historyEditingId === null ? "POST" : "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -711,11 +866,19 @@ export default function BoxerDashboard() {
 
       if (!response.ok) {
         throw new Error(
-          data?.message || "Failed to submit tournament history.",
+          data?.error ||
+            data?.message ||
+            "Failed to submit tournament history.",
         );
       }
 
-      setTournamentHistory((current) => [data.history, ...current]);
+      setTournamentHistory((current) =>
+        historyEditingId === null
+          ? [data.history, ...current]
+          : current.map((record) =>
+              record.id === historyEditingId ? data.history : record,
+            ),
+      );
 
       setHistoryForm({
         tournamentName: "",
@@ -733,11 +896,15 @@ export default function BoxerDashboard() {
       });
 
       setHistoryDocument(null);
+      setHistoryEditingId(null);
+      setHistoryStep(0);
 
       setShowHistoryForm(false);
       setHistorySuccess(
-  "Tournament record submitted successfully. It is now pending verification."
-);
+        historyEditingId === null
+          ? "Tournament record submitted successfully. It is now pending verification."
+          : "Updated tournament record submitted for review.",
+      );
     } catch (err) {
       setHistoryError(
         err instanceof Error
@@ -1582,11 +1749,7 @@ export default function BoxerDashboard() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setHistoryError("");
-                    setHistorySuccess("");
-                    setShowHistoryForm(true);
-                  }}
+                  onClick={openNewHistoryForm}
                   className="
                     inline-flex
                     items-center
@@ -2097,10 +2260,10 @@ export default function BoxerDashboard() {
                 >
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
-                      Tournaments Played
+                      Tournament History &amp; Achievements
                     </h3>
                     <p className="text-sm text-slate-400 mt-0.5">
-                      Previous tournaments submitted for verification
+                      Approved records are verified achievements; pending records do not count yet.
                     </p>
                   </div>
 
@@ -2192,11 +2355,7 @@ export default function BoxerDashboard() {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setHistoryError("");
-                        setHistorySuccess("");
-                        setShowHistoryForm(true);
-                      }}
+                      onClick={openNewHistoryForm}
                       className="
                         mt-5
                         inline-flex
@@ -2343,6 +2502,14 @@ export default function BoxerDashboard() {
                             </span>
                           </div>
 
+                          {status === "PENDING_REVIEW" && (
+                            <p className="mt-3 text-xs text-amber-700">
+                              Submitted for review on{" "}
+                              {formatDate(history.updatedAt || history.createdAt)}.
+                              This record is not verified yet.
+                            </p>
+                          )}
+
                           <div
                             className="
                               mt-5
@@ -2434,7 +2601,7 @@ export default function BoxerDashboard() {
                             </div>
                           )}
 
-                          {status === "REJECTED" && history.rejectionReason && (
+                          {status === "REJECTED" && (
                             <div
                               className="
                                   mt-4
@@ -2451,9 +2618,28 @@ export default function BoxerDashboard() {
                               </p>
 
                               <p className="mt-1 text-sm text-red-700 leading-6">
-                                {history.rejectionReason}
+                                {history.rejectionReason ||
+                                  "Please update your record and supporting details before resubmitting."}
                               </p>
+                              <button
+                                type="button"
+                                onClick={() => openEditHistoryForm(history)}
+                                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-bold text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
+                              >
+                                Edit and resubmit
+                                <ArrowRight size={15} />
+                              </button>
                             </div>
+                          )}
+
+                          {history.documentPath && (
+                            <a
+                              href={`/api/tournament-history/${history.id}/document`}
+                              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:underline"
+                            >
+                              <FileText size={16} />
+                              View supporting proof
+                            </a>
                           )}
 
                           {status === "APPROVED" && history.reviewedAt && (
@@ -2523,10 +2709,14 @@ export default function BoxerDashboard() {
                   >
                     <div>
                       <h3 className="text-xl font-bold text-slate-900">
-                        Add Previous Tournament
+                        {historyEditingId === null
+                          ? "Add Previous Tournament"
+                          : "Edit and Resubmit Tournament"}
                       </h3>
                       <p className="mt-0.5 text-sm text-slate-400">
-                        Submit your past tournament record for verification.
+                        {historyEditingId === null
+                          ? "Follow the steps to submit your past result for verification."
+                          : "Update the rejected record, then send it for review again."}
                       </p>
                     </div>
 
@@ -2570,10 +2760,48 @@ export default function BoxerDashboard() {
                     >
                       After submission, your record will remain{" "}
                       <strong>Pending Review</strong> until it has been verified
-                      by the association.
+                      by the association. Medal and placing claims need official
+                      proof; participation-only records do not earn ranking points.
                     </div>
 
+                    <ol
+                      aria-label="Tournament history submission steps"
+                      className="mt-5 grid grid-cols-4 gap-2"
+                    >
+                      {["Event", "Result", "Proof", "Review"].map(
+                        (stepName, index) => (
+                          <li
+                            key={stepName}
+                            aria-current={historyStep === index ? "step" : undefined}
+                            className={`rounded-lg px-2 py-2 text-center text-xs font-bold sm:text-sm ${
+                              historyStep === index
+                                ? "bg-red-600 text-white"
+                                : historyStep > index
+                                  ? "bg-red-50 text-red-700"
+                                  : "bg-slate-100 text-slate-500"
+                            }`}
+                          >
+                            <span className="mr-1">{index + 1}.</span>
+                            {stepName}
+                          </li>
+                        ),
+                      )}
+                    </ol>
+
+                    {historyError && (
+                      <div
+                        role="alert"
+                        className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-700"
+                      >
+                        {historyError}
+                      </div>
+                    )}
+
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <fieldset
+                        disabled={historyStep !== 0}
+                        className="contents"
+                      >
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-semibold text-slate-700 mb-2">
                           Tournament Name *
@@ -2616,6 +2844,7 @@ export default function BoxerDashboard() {
                         <input
                           type="date"
                           required
+                          max={latestPastTournamentDate}
                           value={historyForm.tournamentDate}
                           onChange={(event) =>
                             setHistoryForm((current) => ({
@@ -2679,8 +2908,7 @@ export default function BoxerDashboard() {
                           Tournament Type
                         </label>
 
-                        <input
-                          type="text"
+                        <select
                           value={historyForm.tournamentType}
                           onChange={(event) =>
                             setHistoryForm((current) => ({
@@ -2688,7 +2916,6 @@ export default function BoxerDashboard() {
                               tournamentType: event.target.value,
                             }))
                           }
-                          placeholder="e.g. State Championship"
                           className="
                             w-full
                             h-12
@@ -2704,9 +2931,20 @@ export default function BoxerDashboard() {
                             focus:ring-4
                             focus:ring-red-50
                           "
-                        />
+                        >
+                          <option value="">Select level (optional)</option>
+                          <option value="DISTRICT">District</option>
+                          <option value="STATE">State</option>
+                          <option value="NATIONAL">National</option>
+                          <option value="INTERNATIONAL">International</option>
+                        </select>
                       </div>
+                      </fieldset>
 
+                      <fieldset
+                        disabled={historyStep !== 1}
+                        className="contents"
+                      >
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2">
                           Weight Category
@@ -2742,11 +2980,12 @@ export default function BoxerDashboard() {
 
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2">
-                          Result
+                          Result *
                         </label>
 
                         <input
                           type="text"
+                          required
                           value={historyForm.result}
                           onChange={(event) =>
                             setHistoryForm((current) => ({
@@ -2875,11 +3114,16 @@ export default function BoxerDashboard() {
                           "
                         />
                       </div>
+                      </fieldset>
 
+                      <fieldset
+                        disabled={historyStep !== 2}
+                        className="contents"
+                      >
                       {/* Supporting document */}
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-semibold text-slate-700 mb-2">
-                          Supporting Document
+                          Supporting proof {historyProofRequired ? "*" : "(optional)"}
                         </label>
 
                         <label
@@ -2895,7 +3139,7 @@ export default function BoxerDashboard() {
                           </span>
 
                           <span className="mt-1 text-xs text-slate-400">
-                            PDF, JPG, JPEG or PNG · Maximum 5 MB · Optional
+                            PDF, JPG, JPEG or PNG · Maximum 5 MB · Private to you and association reviewers
                           </span>
                         </label>
 
@@ -2941,6 +3185,12 @@ export default function BoxerDashboard() {
                           }}
                         />
 
+                        {historyForm.documentPath && !historyDocument && (
+                          <p className="mt-2 text-xs text-emerald-700">
+                            Existing proof attached: {historyForm.documentName || "Supporting document"}
+                          </p>
+                        )}
+
                         {historyDocument && (
                           <button
                             type="button"
@@ -2985,6 +3235,58 @@ export default function BoxerDashboard() {
                           "
                         />
                       </div>
+                      </fieldset>
+
+                      {historyStep === 3 && (
+                        <div className="sm:col-span-2 space-y-4">
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <h4 className="font-bold text-slate-900">
+                              Review your submission
+                            </h4>
+                            <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                              <div>
+                                <dt className="text-slate-500">Tournament</dt>
+                                <dd className="font-semibold text-slate-800">{historyForm.tournamentName || "—"}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-slate-500">Date and location</dt>
+                                <dd className="font-semibold text-slate-800">
+                                  {historyForm.tournamentDate || "—"}
+                                  {historyForm.location ? ` · ${historyForm.location}` : ""}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-slate-500">Level and weight</dt>
+                                <dd className="font-semibold text-slate-800">
+                                  {historyForm.tournamentType || "Not specified"}
+                                  {historyForm.weightCategory ? ` · ${historyForm.weightCategory}` : ""}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-slate-500">Result</dt>
+                                <dd className="font-semibold text-slate-800">
+                                  {historyForm.result || "—"}
+                                  {historyForm.medal !== "NONE"
+                                    ? ` · ${historyForm.medal.toLowerCase()} medal`
+                                    : ""}
+                                  {historyForm.position ? ` · Position ${historyForm.position}` : ""}
+                                </dd>
+                              </div>
+                              <div className="sm:col-span-2">
+                                <dt className="text-slate-500">Supporting proof</dt>
+                                <dd className="font-semibold text-slate-800">
+                                  {historyDocument?.name ||
+                                    historyForm.documentName ||
+                                    "None (participation-only record; no points)"}
+                                </dd>
+                              </div>
+                            </dl>
+                          </div>
+                          <p className="text-xs leading-5 text-slate-500">
+                            Submitting sends this record to the association for verification. Only approved results become verified achievements.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div
@@ -3022,49 +3324,50 @@ export default function BoxerDashboard() {
                         Cancel
                       </button>
 
-                      <button
-                        type="submit"
-                        disabled={historySubmitting}
-                        className="
-                          h-12
-                          rounded-xl
-                          bg-[#ed1c24]
-                          hover:bg-[#d71920]
-                          px-6
-                          text-sm
-                          font-bold
-                          text-white
-                          disabled:opacity-60
-                          disabled:cursor-not-allowed
-                          transition-colors
-                          inline-flex
-                          items-center
-                          justify-center
-                          gap-2
-                        "
-                      >
-                        {historySubmitting ? (
-                          <>
-                            <span
-                              className="
-                                w-4
-                                h-4
-                                rounded-full
-                                border-2
-                                border-white/40
-                                border-t-white
-                                animate-spin
-                              "
-                            />
-                            Submitting...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 size={17} />
-                            Submit for Review
-                          </>
-                        )}
-                      </button>
+                      {historyStep > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHistoryError("");
+                            setHistoryStep((current) => Math.max(0, current - 1));
+                          }}
+                          disabled={historySubmitting}
+                          className="h-12 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                        >
+                          Back
+                        </button>
+                      )}
+
+                      {historyStep < 3 ? (
+                        <button
+                          type="button"
+                          onClick={advanceHistoryStep}
+                          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#ed1c24] px-6 text-sm font-bold text-white transition-colors hover:bg-[#d71920]"
+                        >
+                          Continue
+                          <ArrowRight size={17} />
+                        </button>
+                      ) : (
+                        <button
+                          type="submit"
+                          disabled={historySubmitting}
+                          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#ed1c24] px-6 text-sm font-bold text-white transition-colors hover:bg-[#d71920] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {historySubmitting ? (
+                            <>
+                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 size={17} />
+                              {historyEditingId === null
+                                ? "Submit for Review"
+                                : "Resubmit for Review"}
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </form>
                 </div>
@@ -3206,6 +3509,9 @@ export default function BoxerDashboard() {
                           <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                             QR Status
                           </th>
+                          <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Download
+                          </th>
                         </tr>
                       </thead>
 
@@ -3295,6 +3601,15 @@ export default function BoxerDashboard() {
                                     : certificate.qrStatus || "Pending"}
                                 </span>
                               </td>
+                              <td className="px-4 py-4">
+                                <a
+                                href={`/api/certificates/${certificate.id}`}
+                                className="inline-flex items-center gap-2 text-sm font-semibold text-red-700 hover:underline"
+                                >
+                                <Download size={16} />
+                                PDF
+                                </a>
+                              </td>
                             </tr>
                           );
                         })}
@@ -3382,6 +3697,13 @@ export default function BoxerDashboard() {
                                 {certificate.event || "—"}
                               </p>
                             </div>
+                            <a
+                              href={`/api/certificates/${certificate.id}`}
+                              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-red-700 hover:underline"
+                            >
+                              <Download size={16} />
+                              Download PDF
+                            </a>
 
                             <div className="flex items-center gap-2">
                               <CalendarDays
@@ -3493,7 +3815,7 @@ export default function BoxerDashboard() {
                 )}
               </div>
 
-              {!boxer.medical ? (
+              {!boxer.medical && boxer.medicalDocuments.length === 0 ? (
                 <div
                   className="
                     rounded-xl
@@ -3530,7 +3852,7 @@ export default function BoxerDashboard() {
                     it is added.
                   </p>
                 </div>
-              ) : (
+              ) : boxer.medical ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   <div
                     className="
@@ -3658,6 +3980,47 @@ export default function BoxerDashboard() {
                       </p>
                     </div>
                   </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
+                  No structured fitness assessment is recorded yet. Your uploaded medical documents are listed below with their review status.
+                </div>
+              )}
+              {boxer.medicalDocuments.length > 0 && (
+                <div className="mt-5 space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-700">
+                    Submitted medical documents
+                  </h3>
+                  {boxer.medicalDocuments.map((document) => (
+                    <div
+                      key={document.id}
+                      className="flex flex-col gap-3 rounded-xl border border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">
+                          {document.label.replace(/-/g, " ")}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Submitted {formatDate(document.createdAt)}
+                          {document.rejectionReason
+                            ? ` · ${document.rejectionReason}`
+                            : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-700">
+                          {document.status}
+                        </span>
+                        <a
+                          href={`/api/file?path=${encodeURIComponent(document.filePath)}`}
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-red-700 hover:underline"
+                        >
+                          <Download size={16} />
+                          View
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </section>

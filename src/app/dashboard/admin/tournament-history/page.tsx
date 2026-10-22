@@ -733,9 +733,7 @@ export default function TournamentHistoryReviewPage() {
 
                     {selectedRecord.documentPath ? (
                       <a
-                        href={selectedRecord.documentPath}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/api/tournament-history/${selectedRecord.id}/document`}
                         className="mt-0.5 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:underline"
                       >
                         <span className="truncate">

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
+import {
+  isPrivateTournamentHistoryDocumentPath,
+  requiresTournamentHistoryProof,
+  validateTournamentHistorySubmission,
+} from "@/lib/tournament-history-validation";
+import { privateTournamentHistoryDocumentExists } from "@/lib/tournament-history-documents";
 
 async function getAuthenticatedBoxer(req: NextRequest) {
   const token = req.cookies.get("mba_token")?.value;
@@ -99,117 +105,80 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-
-    const {
-      tournamentName,
-      location,
-      tournamentDate,
-      tournamentType,
-      weightCategory,
-      result,
-      medal,
-      position,
-      coachName,
-      notes,
-      documentPath,
-      documentName,
-    } = body;
-
-    /*
-     * Required field
-     */
-    if (
-      !tournamentName ||
-      typeof tournamentName !== "string" ||
-      !tournamentName.trim()
-    ) {
+    const validation = validateTournamentHistorySubmission(body);
+    if (!validation.success) {
       return NextResponse.json(
-        {
-          error: "Tournament name is required.",
-        },
-        {
-          status: 400,
-        }
+        { error: validation.error },
+        { status: 400 }
       );
     }
 
-    /*
-     * Validate medal if supplied.
-     */
-    const allowedMedals = [
-      "GOLD",
-      "SILVER",
-      "BRONZE",
-      "NONE",
-    ];
-
-    const normalizedMedal =
-      typeof medal === "string"
-        ? medal.trim().toUpperCase()
+    const documentPath =
+      body && typeof body.documentPath === "string"
+        ? body.documentPath
+        : null;
+    const documentName =
+      body && typeof body.documentName === "string"
+        ? body.documentName.trim().slice(0, 190)
         : null;
 
     if (
-      normalizedMedal &&
-      !allowedMedals.includes(normalizedMedal)
+      documentPath &&
+      !isPrivateTournamentHistoryDocumentPath(
+        documentPath,
+        boxer.userId
+      )
+    ) {
+      return NextResponse.json(
+        { error: "The supporting document is invalid. Please upload it again." },
+        { status: 400 }
+      );
+    }
+
+    if (
+      documentPath &&
+      (!documentName ||
+        !(await privateTournamentHistoryDocumentExists(
+          documentPath,
+          boxer.userId
+        )))
+    ) {
+      return NextResponse.json(
+        { error: "The supporting document could not be found. Please upload it again." },
+        { status: 400 }
+      );
+    }
+
+    if (
+      requiresTournamentHistoryProof(validation.data) &&
+      !documentPath
     ) {
       return NextResponse.json(
         {
           error:
-            "Invalid medal. Use GOLD, SILVER, BRONZE or NONE.",
+            "Upload a certificate or official result proof for medal or placing claims.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    /*
-     * Validate position if supplied.
-     */
-    let normalizedPosition: number | null = null;
+    const duplicate = await prisma.boxer_tournament_history.findFirst({
+      where: {
+        boxerId: boxer.id,
+        tournamentDate: validation.data.tournamentDate,
+        tournamentName: validation.data.tournamentName,
+      },
+      select: { id: true },
+    });
 
-    if (
-      position !== undefined &&
-      position !== null &&
-      position !== ""
-    ) {
-      normalizedPosition = Number(position);
-
-      if (
-        !Number.isInteger(normalizedPosition) ||
-        normalizedPosition <= 0
-      ) {
-        return NextResponse.json(
-          {
-            error: "Position must be a positive whole number.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-    }
-
-    /*
-     * Validate date if supplied.
-     */
-    let normalizedDate: Date | null = null;
-
-    if (tournamentDate) {
-      const parsedDate = new Date(tournamentDate);
-
-      if (Number.isNaN(parsedDate.getTime())) {
-        return NextResponse.json(
-          {
-            error: "Invalid tournament date.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      normalizedDate = parsedDate;
+    if (duplicate) {
+      return NextResponse.json(
+        {
+          error:
+            "This tournament and date are already in your history. Open the existing record if it was rejected.",
+        },
+        { status: 409 }
+      );
     }
 
     /*
@@ -223,62 +192,9 @@ export async function POST(req: NextRequest) {
       await prisma.boxer_tournament_history.create({
         data: {
           boxerId: boxer.id,
-
-          tournamentName: tournamentName.trim(),
-
-          location:
-            typeof location === "string" &&
-            location.trim()
-              ? location.trim()
-              : null,
-
-          tournamentDate: normalizedDate,
-
-          tournamentType:
-            typeof tournamentType === "string" &&
-            tournamentType.trim()
-              ? tournamentType.trim()
-              : null,
-
-          weightCategory:
-            typeof weightCategory === "string" &&
-            weightCategory.trim()
-              ? weightCategory.trim()
-              : null,
-
-          result:
-            typeof result === "string" &&
-            result.trim()
-              ? result.trim()
-              : null,
-
-          medal: normalizedMedal,
-
-          position: normalizedPosition,
-
-          coachName:
-            typeof coachName === "string" &&
-            coachName.trim()
-              ? coachName.trim()
-              : null,
-
-          notes:
-            typeof notes === "string" &&
-            notes.trim()
-              ? notes.trim()
-              : null,
-
-          documentPath:
-            typeof documentPath === "string" &&
-            documentPath.trim()
-              ? documentPath.trim()
-              : null,
-
-          documentName:
-            typeof documentName === "string" &&
-            documentName.trim()
-              ? documentName.trim()
-              : null,
+          ...validation.data,
+          documentPath,
+          documentName,
 
           /*
            * Every new submission starts as pending.

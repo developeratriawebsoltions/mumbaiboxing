@@ -1,20 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { jsPDF } from 'jspdf';
 
 // Existing registration APIs are preserved:
 // /api/auth/me, /api/otp/send, /api/otp/verify, /api/register,
 // /api/upload, /api/payments/create-order, /api/payments/verify
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Razorpay: any;
-  }
-}
 
 const ROLES = ['Boxer', 'Coach', 'Academy', 'Referee / Judge'] as const;
 type Role = (typeof ROLES)[number];
@@ -1423,7 +1416,13 @@ function downloadInvoice(
   doc.save(`${payment.invoiceNumber}-invoice.pdf`);
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
+  const searchParams = useSearchParams();
+  const requestedTournamentId = Number(searchParams.get('tournamentId'));
+  const tournamentId =
+    Number.isInteger(requestedTournamentId) && requestedTournamentId > 0
+      ? requestedTournamentId
+      : null;
   const [role, setRole] = useState<Role>('Boxer');
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
@@ -1464,6 +1463,12 @@ export default function RegisterPage() {
   const [paymentInfo, setPaymentInfo] =
     useState<PaymentInfo | null>(null);
 
+  const [certificateEmailSent, setCertificateEmailSent] =
+    useState<boolean | null>(null);
+
+  const [certificateEmailError, setCertificateEmailError] =
+    useState("");
+
   const [paymentDone, setPaymentDone] = useState(false);
 
   const router = useRouter();
@@ -1472,10 +1477,23 @@ export default function RegisterPage() {
     fetch('/api/auth/me')
       .then((r) => r.json())
       .then((d) => {
-        if (d?.role) router.replace('/dashboard');
+        if (!d?.role) return;
+
+        if (tournamentId && d.role === 'boxer') {
+          router.replace(
+            `/dashboard/tournament?tournamentId=${tournamentId}`
+          );
+          return;
+        }
+
+        const dashboard =
+          d.role === 'referee_judge'
+            ? '/dashboard/referee-judge'
+            : `/dashboard/${d.role}`;
+        router.replace(dashboard);
       })
       .catch(() => {});
-  }, [router]);
+  }, [router, tournamentId]);
 
   useEffect(() => {
     const existing = document.querySelector(
@@ -1569,7 +1587,7 @@ function handleFieldChange(
   }
 
   function changeRole(nextRole: Role) {
-    if (step !== 1 || nextRole === role) return;
+    if (step !== 1 || nextRole === role || tournamentId) return;
 
     setRole(nextRole);
     setFormData({});
@@ -1660,16 +1678,6 @@ function handleFieldChange(
 
     if (!e.currentTarget.reportValidity()) return;
 
-   function handleAdditionalNext(
-  e: React.FormEvent<HTMLFormElement>
-) {
-  e.preventDefault();
-  setError("");
-
-  if (!e.currentTarget.reportValidity()) {
-    return;
-  }
-
   if (role === "Boxer") {
     const gender = formData.boxerGender;
 
@@ -1733,9 +1741,6 @@ function handleFieldChange(
 
   setStep(3);
 }
-
-    setStep(3);
-  }
 
   async function handleVerifyOtp() {
     setError('');
@@ -1852,7 +1857,12 @@ function handleFieldChange(
       const json = await res.json();
 
       if (!res.ok) {
-        setError(json.error || 'Registration failed');
+        setError(
+          json.error ||
+            (res.status === 503
+              ? 'Registration is temporarily unavailable. Please try again shortly.'
+              : 'Registration failed. Please try again.')
+        );
         return;
       }
 
@@ -1887,6 +1897,7 @@ function handleFieldChange(
               `Account created. ${uploadJson.failed.length} document(s) failed to upload and can be re-uploaded from your dashboard.`
             );
           }
+
         }
       }
 
@@ -1913,7 +1924,8 @@ function handleFieldChange(
   setLoading(true);
 
   try {
-    if (!window.Razorpay) {
+    const RazorpayCheckout = window.Razorpay;
+    if (!RazorpayCheckout) {
       setError('Payment gateway is still loading. Please try again.');
       setLoading(false);
       return;
@@ -1928,9 +1940,6 @@ function handleFieldChange(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        userId: registeredUser.id,
-      }),
     });
 
     const order = await orderRes.json();
@@ -2022,6 +2031,12 @@ function handleFieldChange(
 
           setMembershipInfo(verifyJson.membership);
           setPaymentInfo(verifyJson.payment);
+          setCertificateEmailSent(verifyJson.certificateEmailSent === true);
+          setCertificateEmailError(
+            typeof verifyJson.certificateEmailError === "string"
+              ? verifyJson.certificateEmailError
+              : ""
+          );
 
           setPaymentDone(true);
 
@@ -2043,7 +2058,7 @@ function handleFieldChange(
       },
     };
 
-    const rzp = new window.Razorpay(options);
+    const rzp = new RazorpayCheckout(options);
 
     rzp.open();
   } catch (error) {
@@ -2097,6 +2112,12 @@ function handleFieldChange(
 
       setMembershipInfo(json.membership);
       setPaymentInfo(json.payment);
+      setCertificateEmailSent(json.certificateEmailSent === true);
+      setCertificateEmailError(
+        typeof json.certificateEmailError === "string"
+          ? json.certificateEmailError
+          : ""
+      );
       setPaymentDone(true);
     } catch {
       setError(
@@ -2165,6 +2186,25 @@ const fee =
               '0 24px 64px rgba(0,0,0,0.1)',
           }}
         >
+          {tournamentId && (
+            <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-bold text-slate-900">
+                You’re starting a tournament entry
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Create a boxer account and activate your membership first.
+                After sign-in, you’ll return to this event to complete entry
+                and any tournament fee.
+              </p>
+              <Link
+                href={`/events/${tournamentId}`}
+                className="mt-2 inline-flex text-xs font-semibold text-red-600 hover:underline"
+              >
+                Review event details
+              </Link>
+            </div>
+          )}
+
           <div className="mb-6">
             <label
               className="mb-2 block text-xs font-bold uppercase tracking-widest"
@@ -2173,33 +2213,40 @@ const fee =
               Register As
             </label>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 gap-2">
-              {ROLES.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => changeRole(r)}
-                  disabled={step !== 1}
-                  className="rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60"
-                  style={
-                    role === r
-                      ? {
-                          background:
-                            'linear-gradient(135deg,#DC2626,#EF4444)',
-                          color: '#FFFFFF',
-                        }
-                      : {
-                          background: '#F1F5F9',
-                          color: '#64748B',
-                          border:
-                            '1px solid rgba(220,38,38,0.12)',
-                        }
-                  }
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
+            {tournamentId ? (
+              <div className="inline-flex items-center rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700">
+                Boxer account
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {ROLES.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => changeRole(r)}
+                    disabled={step !== 1}
+                    aria-pressed={role === r}
+                    className="rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={
+                      role === r
+                        ? {
+                            background:
+                              'linear-gradient(135deg,#DC2626,#EF4444)',
+                            color: '#FFFFFF',
+                          }
+                        : {
+                            background: '#F1F5F9',
+                            color: '#64748B',
+                            border:
+                              '1px solid rgba(220,38,38,0.12)',
+                          }
+                    }
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <Stepper step={step} />
@@ -2453,6 +2500,15 @@ const fee =
                       Your Mumbai Boxing Association
                       membership is now active.
                     </p>
+                    <p
+                      className="mt-2 text-sm"
+                      style={{ color: certificateEmailSent ? '#166534' : '#64748B' }}
+                    >
+                      {certificateEmailSent
+                        ? 'Your membership certificate PDF has been emailed to your registered address.'
+                        : certificateEmailError ||
+                          'Your certificate is available from Certificates in your member dashboard. You can email it again there.'}
+                    </p>
                   </div>
 
                   <div
@@ -2692,12 +2748,24 @@ const fee =
                   <button
                     type="button"
                     onClick={() =>
-                      router.push('/login')
+                      router.push(
+                        tournamentId
+                          ? `/login?tournamentId=${tournamentId}`
+                          : '/login'
+                      )
                     }
                     className="btn-gold w-full rounded-xl py-3 text-sm font-semibold"
                   >
-                    Continue to Login
+                    {tournamentId
+                      ? 'Continue to Tournament Registration'
+                      : 'Continue to Login'}
                   </button>
+                  {tournamentId && (
+                    <p className="text-center text-xs leading-5 text-slate-500">
+                      Next: sign in with this account. We’ll take you back to
+                      the selected event to finish your entry.
+                    </p>
+                  )}
                 </>
               ) : (
                 <>
@@ -2750,6 +2818,10 @@ const fee =
                         1 YEAR
                       </span>
                     </div>
+                    <p className="text-center text-xs leading-5 text-slate-500">
+                      You can safely leave and resume payment later by signing
+                      in with this email and password.
+                    </p>
 
                     <div className="mt-5">
                       <p
@@ -2913,13 +2985,27 @@ const fee =
           >
             Already have an account?{' '}
             <Link
-              href="/login"
+              href={
+                tournamentId
+                  ? `/login?tournamentId=${tournamentId}`
+                  : "/login"
+              }
               style={{ color: '#DC2626' }}
               className="font-semibold hover:underline"
             >
               Sign in here
             </Link>
           </p>
+          {!tournamentId && (
+            <p className="mt-3 text-center text-xs">
+              <Link
+                href="/events"
+                className="font-semibold text-red-600 hover:underline"
+              >
+                Browse tournaments
+              </Link>
+            </p>
+          )}
         </div>
 
         <p
@@ -2930,5 +3016,13 @@ const fee =
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-white" />}>
+      <RegisterForm />
+    </Suspense>
   );
 }

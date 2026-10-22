@@ -96,6 +96,54 @@ const MENUS: Record<string, MenuSection[]> = {
     },
   ],
 
+  admin: [
+    {
+      group: "Overview",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard/admin",
+          icon: LayoutDashboard,
+        },
+      ],
+    },
+    {
+      group: "Members",
+      items: [
+        {
+          name: "All Boxers",
+          href: "/dashboard/admin/boxers",
+          icon: Users,
+        },
+        {
+          name: "All Coaches",
+          href: "/dashboard/admin/coaches",
+          icon: UserRound,
+        },
+        {
+          name: "All Academies",
+          href: "/dashboard/admin/academies",
+          icon: Building2,
+        },
+      ],
+    },
+    {
+      group: "Operations",
+      items: [
+        {
+          name: "Tournaments",
+          href: "/dashboard/admin/tournaments",
+          icon: Trophy,
+        },
+        {
+          name: "Document Review",
+          href: "/dashboard/documents",
+          icon: FileText,
+        },
+      ],
+    },
+  ],
+
   /* =======================================================
      BOXER
      ======================================================= */
@@ -253,6 +301,11 @@ const MENUS: Record<string, MenuSection[]> = {
           href: "/dashboard/coach",
           icon: UserRound,
         },
+        {
+          name: "Certificates",
+          href: "/dashboard/certificates",
+          icon: Award,
+        },
       ],
     },
 
@@ -353,10 +406,6 @@ export default function Sidebar({
      ======================================================= */
 
   useEffect(() => {
-    if (propRole) {
-      setRole(propRole);
-    }
-
     fetch("/api/auth/me")
       .then((response) => response.json())
       .then((data) => {
@@ -369,7 +418,7 @@ export default function Sidebar({
         }
       })
       .catch(() => {});
-  }, [propRole]);
+  }, []);
 
   /* =======================================================
      LOGOUT
@@ -391,9 +440,9 @@ export default function Sidebar({
      ROLE
      ======================================================= */
 
-  const normalizedRole = (role || "superadmin").toLowerCase();
+  const normalizedRole = role.toLowerCase();
 
-  const menu = MENUS[normalizedRole] ?? MENUS.superadmin;
+  const menu = MENUS[normalizedRole] ?? [];
 
   /* =======================================================
      USER INITIAL

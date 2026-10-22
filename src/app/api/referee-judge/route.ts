@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
+import { ensureActiveMemberCertificate } from "@/lib/membership-certificate";
 
 export const runtime = "nodejs";
 
@@ -180,6 +181,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    await ensureActiveMemberCertificate(user.id);
+
     const refereeJudgeId = user.refereeJudge.id;
 
     /* =======================================================
@@ -219,7 +222,7 @@ export async function GET(req: NextRequest) {
 
     const certificates = await prisma.certificate.findMany({
       where: {
-        refereeJudgeId,
+        OR: [{ refereeJudgeId }, { userId: user.id }],
       },
 
       select: {
@@ -228,6 +231,12 @@ export async function GET(req: NextRequest) {
         event: true,
         issuedAt: true,
         qrStatus: true,
+        membershipId: true,
+        memberName: true,
+        membershipRole: true,
+        membershipExpiresAt: true,
+        membershipEmailAttemptedAt: true,
+        membershipEmailSentAt: true,
       },
 
       orderBy: {

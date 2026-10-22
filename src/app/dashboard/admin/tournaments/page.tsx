@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import { useRole } from "@/hooks/useRole";
 
 type Tournament = {
   id: number;
@@ -87,6 +88,7 @@ const FEE_TABLE = [
 
 export default function AdminTournamentsPage() {
   const router = useRouter();
+  const role = useRole();
 
   const [tournaments, setTournaments] = useState<Tournament[]>(
     []
@@ -113,9 +115,6 @@ export default function AdminTournamentsPage() {
   >("tournaments");
 
   function load() {
-    setLoading(true);
-    setError("");
-
     fetch("/api/admin/tournaments", {
       credentials: "include",
     })
@@ -137,6 +136,7 @@ export default function AdminTournamentsPage() {
           return;
         }
 
+        setError("");
         setTournaments(data);
       })
       .catch((err) => {
@@ -284,7 +284,7 @@ export default function AdminTournamentsPage() {
   );
 
   return (
-    <DashboardLayout role="superadmin">
+    <DashboardLayout role={role || undefined}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -457,8 +457,7 @@ export default function AdminTournamentsPage() {
                   </p>
 
                   <p className="text-sm mt-1">
-                    Click "Add Tournament" to create the
-                    first one.
+                    Click Add Tournament to create the first one.
                   </p>
                 </div>
               ) : (

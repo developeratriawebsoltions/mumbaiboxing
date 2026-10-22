@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import { useRole } from "@/hooks/useRole";
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { useSearchParams } from "next/navigation";
 
 type Tournament = {
   id: number;
@@ -26,8 +21,14 @@ type Tournament = {
   };
 };
 
-export default function TournamentDashboard() {
+function TournamentDashboardContent() {
   const role = useRole();
+  const searchParams = useSearchParams();
+  const requestedTournamentId = Number(searchParams.get("tournamentId"));
+  const selectedTournamentId =
+    Number.isInteger(requestedTournamentId) && requestedTournamentId > 0
+      ? requestedTournamentId
+      : null;
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +99,13 @@ export default function TournamentDashboard() {
         alert(
           "Payment gateway failed to load. Please try again."
         );
+        setPaying(null);
         return;
+      }
+      const RazorpayCheckout = window.Razorpay;
+      if (!RazorpayCheckout) {
+        setPaying(null);
+        throw new Error("Payment gateway is unavailable.");
       }
 
       const res = await fetch(
@@ -122,6 +129,7 @@ export default function TournamentDashboard() {
           data?.error ||
             "Tournament registration failed."
         );
+        setPaying(null);
         return;
       }
 
@@ -138,7 +146,7 @@ export default function TournamentDashboard() {
 
         order_id: data.orderId,
 
-        handler: async (response: any) => {
+        handler: async (response: RazorpayResponse) => {
           try {
             const verify = await fetch(
               "/api/tournaments/verify-payment",
@@ -175,6 +183,7 @@ export default function TournamentDashboard() {
                   "Payment verification failed."
               );
             }
+
           } catch {
             alert(
               "Payment verification failed. Please contact support if the amount was deducted."
@@ -197,7 +206,7 @@ export default function TournamentDashboard() {
         },
       };
 
-      const rzp = new window.Razorpay(options);
+      const rzp = new RazorpayCheckout(options);
 
       rzp.open();
     } catch {
@@ -259,7 +268,9 @@ export default function TournamentDashboard() {
           </h2>
 
           <p className="text-gray-500 text-sm">
-            Upcoming events & your registrations
+            {selectedTournamentId
+              ? "Your selected event is highlighted below."
+              : "Upcoming events & your registrations"}
           </p>
         </div>
 
@@ -353,7 +364,11 @@ export default function TournamentDashboard() {
                 {tournaments.map((tournament) => (
                   <div
                     key={tournament.id}
-                    className="bg-white border rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className={`bg-white border rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                      tournament.id === selectedTournamentId
+                        ? "border-red-500 ring-2 ring-red-100"
+                        : ""
+                    }`}
                   >
                     {/* Tournament information */}
                     <div className="min-w-0">
@@ -420,10 +435,7 @@ export default function TournamentDashboard() {
 
                       {role === "boxer" &&
                         !tournament.registered &&
-                        tournament.status.toLowerCase() !==
-                          "completed" &&
-                        tournament.status.toLowerCase() !==
-                          "cancelled" && (
+                        tournament.status.toLowerCase() === "open" && (
                           <button
                             onClick={() =>
                               handleRegister(
@@ -439,7 +451,9 @@ export default function TournamentDashboard() {
                             {paying ===
                             tournament.id
                               ? "Processing..."
-                              : "Register & Pay"}
+                              : tournament.id === selectedTournamentId
+                                ? "Continue registration"
+                                : "Register & Pay"}
                           </button>
                         )}
                     </div>
@@ -451,5 +465,13 @@ export default function TournamentDashboard() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function TournamentDashboard() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading tournaments...</div>}>
+      <TournamentDashboardContent />
+    </Suspense>
   );
 }

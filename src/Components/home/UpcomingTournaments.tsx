@@ -434,11 +434,7 @@ export default function UpcomingTournaments() {
                 <div className="mt-auto border-t border-white/[0.06] px-6 py-5">
 
                   <Link
-                    href={
-                      open
-                        ? "/register"
-                        : "/events"
-                    }
+                    href={`/events/${tournament.id}`}
                     className={`group/btn flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[10px] font-bold uppercase tracking-[0.13em] transition-all duration-200 ${
                       open
                         ? "bg-red-600 !text-white shadow-[0_8px_25px_rgba(220,38,38,0.18)] hover:bg-red-500 hover:shadow-[0_10px_30px_rgba(220,38,38,0.28)]"

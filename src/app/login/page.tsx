@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const ROLES = [
   "Boxer",
@@ -13,8 +14,14 @@ const ROLES = [
 
 type Role = (typeof ROLES)[number];
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedTournamentId = Number(searchParams.get("tournamentId"));
+  const tournamentId =
+    Number.isInteger(requestedTournamentId) && requestedTournamentId > 0
+      ? requestedTournamentId
+      : null;
 
   const [role, setRole] = useState<Role>("Boxer");
   const [email, setEmail] = useState("");
@@ -39,17 +46,31 @@ export default function LoginPage() {
           email,
           password,
           role,
+          ...(tournamentId ? { tournamentId } : {}),
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.code === "PAYMENT_PENDING") {
+          router.push(
+            tournamentId
+              ? `/complete-registration?tournamentId=${tournamentId}`
+              : "/complete-registration"
+          );
+          return;
+        }
+
         setError(data.error || "Login failed.");
         return;
       }
 
-      router.push(data.redirect);
+      router.push(
+        tournamentId && data.role === "boxer"
+          ? `/dashboard/tournament?tournamentId=${tournamentId}`
+          : data.redirect
+      );
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -92,6 +113,15 @@ export default function LoginPage() {
             Sign in to your MBA portal account
           </p>
 
+          {!tournamentId && (
+            <Link
+              href="/events"
+              className="mb-5 inline-flex text-sm font-semibold text-red-600 hover:underline"
+            >
+              Browse tournaments
+            </Link>
+          )}
+
         </div>
 
         {/* ===================================================
@@ -105,6 +135,23 @@ export default function LoginPage() {
             boxShadow: "none",
           }}
         >
+          {tournamentId && (
+            <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-bold text-slate-900">
+                Continue your tournament entry
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">
+                Sign in with the boxer account you want to register. After
+                sign-in, you’ll continue to the selected event.
+              </p>
+              <Link
+                href={`/events/${tournamentId}`}
+                className="mt-2 inline-flex text-xs font-semibold text-red-600 hover:underline"
+              >
+                Back to event details
+              </Link>
+            </div>
+          )}
 
           {/* =================================================
               LOGIN AS
@@ -118,37 +165,42 @@ export default function LoginPage() {
 
             {/* FOUR ROLES — ONE ROW */}
 
-            <div className="grid grid-cols-4 gap-2">
-
-              {ROLES.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => {
-                    setRole(r);
-                    setError("");
-                  }}
-                  className="min-w-0 rounded-full border px-2 py-3 text-[11px] font-semibold transition-colors duration-150 sm:text-xs"
-                  style={
-                    role === r
-                      ? {
-                          background: "#EF3038",
-                          borderColor: "#EF3038",
-                          color: "#FFFFFF",
-                        }
-                      : {
-                          background: "#F1F5F9",
-                          borderColor:
-                            "rgba(220,38,38,0.14)",
-                          color: "#64748B",
-                        }
-                  }
-                >
-                  {r}
-                </button>
-              ))}
-
-            </div>
+            {tournamentId ? (
+              <div className="inline-flex rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">
+                Boxer account
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {ROLES.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => {
+                      setRole(r);
+                      setError("");
+                    }}
+                    aria-pressed={role === r}
+                    className="min-w-0 rounded-full border px-2 py-3 text-[11px] font-semibold transition-colors duration-150 sm:text-xs"
+                    style={
+                      role === r
+                        ? {
+                            background: "#EF3038",
+                            borderColor: "#EF3038",
+                            color: "#FFFFFF",
+                          }
+                        : {
+                            background: "#F1F5F9",
+                            borderColor:
+                              "rgba(220,38,38,0.14)",
+                            color: "#64748B",
+                          }
+                    }
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            )}
 
           </div>
 
@@ -271,7 +323,11 @@ export default function LoginPage() {
               </label>
 
               <Link
-                href="/forgot-password"
+                href={
+                  tournamentId
+                    ? `/forgot-password?tournamentId=${tournamentId}`
+                    : "/forgot-password"
+                }
                 className="text-[#DC2626] hover:underline"
               >
                 Forgot password?
@@ -339,7 +395,11 @@ export default function LoginPage() {
             New to MBA?{" "}
 
             <Link
-              href="/register"
+              href={
+                tournamentId
+                  ? `/register?tournamentId=${tournamentId}`
+                  : "/register"
+              }
               className="font-semibold text-[#DC2626] hover:underline"
             >
               Register here
@@ -360,5 +420,13 @@ export default function LoginPage() {
       </div>
 
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-white" />}>
+      <LoginForm />
+    </Suspense>
   );
 }

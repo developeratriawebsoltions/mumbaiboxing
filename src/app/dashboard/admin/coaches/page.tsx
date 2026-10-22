@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import { useRole } from "@/hooks/useRole";
 
 type Doc = { id: number; label: string; filePath: string; fileType: string };
 
@@ -14,6 +15,7 @@ type Coach = {
 };
 
 export default function AdminCoachesPage() {
+  const role = useRole();
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,7 +41,7 @@ export default function AdminCoachesPage() {
   );
 
   return (
-    <DashboardLayout role="superadmin">
+    <DashboardLayout role={role || undefined}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold">All Coaches</h2>

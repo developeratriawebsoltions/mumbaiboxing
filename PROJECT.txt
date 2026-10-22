@@ -46,11 +46,26 @@ boxer, coach, academy, association, school, taluka, superadmin
 KEY PAGES
 ---------
 - /login, /register            Authentication
+- /forgot-password             Email-OTP password reset
+- /complete-registration       Resume pending membership payment
+- /events/[id]                 Tournament details and boxer entry flow
 - /                           Public landing page (hero, stats, tournaments, rankings, notices)
 - /dashboard/...               Role-specific dashboards:
     boxer, coach, academy, association, school, taluka, superadmin,
     admin, tournament, medical, certificates, documents, ranking,
     payment, reports, public
+
+MEMBER FLOWS
+------------
+- Tournament entry starts from a public event detail page and keeps the
+  selected tournament through boxer sign-up, sign-in, membership payment,
+  and the tournament dashboard.
+- Membership accounts remain payment-pending until payment verification.
+  Pending members can resume payment after signing in.
+- Password reset uses an email OTP before accepting a new password.
+- Admins can manage tournaments, review pending documents, and view member
+  directories; Super Admin retains the broader association dashboard and
+  access. Document review does not currently gate membership activation.
 
 API ROUTES (src/app/api)
 ------------------------

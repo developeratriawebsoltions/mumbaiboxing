@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  issueMembershipCertificate,
+  sendMembershipCertificateEmailOnce,
+} from "@/lib/membership-certificate";
 
 export const runtime = "nodejs";
 
@@ -11,6 +15,17 @@ const ROLE_FEES = {
 } as const;
 
 type RegistrationRole = keyof typeof ROLE_FEES;
+
+async function sendCertificateEmail(
+  email: string,
+  certificate: Awaited<ReturnType<typeof issueMembershipCertificate>>
+) {
+  return sendMembershipCertificateEmailOnce(
+    certificate.id,
+    email,
+    certificate
+  );
+}
 
 function generateMembershipId(userId: number): string {
   const year = new Date().getFullYear();
@@ -129,24 +144,28 @@ export async function POST(req: NextRequest) {
         boxer: {
           select: {
             id: true,
+            name: true,
           },
         },
 
         coach: {
           select: {
             id: true,
+            name: true,
           },
         },
 
         academy: {
           select: {
             id: true,
+            name: true,
           },
         },
 
         refereeJudge: {
           select: {
             id: true,
+            name: true,
           },
         },
       },
@@ -274,6 +293,7 @@ export async function POST(req: NextRequest) {
     membershipExpiry.setFullYear(
       membershipExpiry.getFullYear() + 1
     );
+    const membershipActivatedAt = new Date();
 
     /*
      * ---------------------------------------------------------
@@ -332,7 +352,7 @@ export async function POST(req: NextRequest) {
               membershipId,
               membershipValidFrom,
               membershipExpiry,
-              membershipActivatedAt: new Date(),
+              membershipActivatedAt,
             },
           });
 
@@ -389,11 +409,34 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        const certificate = await issueMembershipCertificate(tx, {
+          userId: updatedUser.id,
+          boxerId,
+          coachId,
+          refereeJudgeId,
+          membershipId,
+          memberName:
+            user.boxer?.name ||
+            user.coach?.name ||
+            user.academy?.name ||
+            user.refereeJudge?.name ||
+            user.email,
+          role: registrationRole,
+          issuedAt: membershipActivatedAt,
+          membershipExpiresAt: membershipExpiry,
+        });
+
         return {
           user: updatedUser,
           payment: updatedPayment,
+          certificate,
         };
       }
+    );
+
+    const certificateEmail = await sendCertificateEmail(
+      user.email,
+      result.certificate
     );
 
     /*
@@ -403,6 +446,9 @@ export async function POST(req: NextRequest) {
      */
     return NextResponse.json({
       success: true,
+      certificate: { id: result.certificate.id },
+      certificateEmailSent: certificateEmail.sent,
+      certificateEmailError: certificateEmail.error,
 
       message:
         "Developer membership activated successfully",

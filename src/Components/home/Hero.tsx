@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -24,20 +24,7 @@ type FeaturedTournament = {
 type TournamentResponse = {
   success: boolean;
   tournament: FeaturedTournament | null;
-};
-
-type Countdown = {
-  d: number;
-  h: number;
-  m: number;
-  s: number;
-};
-
-const EMPTY_COUNTDOWN: Countdown = {
-  d: 0,
-  h: 0,
-  m: 0,
-  s: 0,
+  error?: string;
 };
 
 export default function Hero() {
@@ -46,134 +33,77 @@ export default function Hero() {
 
   const [loadingTournament, setLoadingTournament] =
     useState(true);
+  const [tournamentError, setTournamentError] =
+    useState(false);
 
-  const [countdown, setCountdown] =
-    useState<Countdown>(EMPTY_COUNTDOWN);
-
-  const [hasStarted, setHasStarted] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   /*
    * ============================================================
    * LOAD FEATURED HOMEPAGE TOURNAMENT
    * ============================================================
    */
+  const fetchFeaturedTournament =
+    useCallback(async (): Promise<TournamentResponse> => {
+      const response = await fetch(
+        "/api/public/upcoming-tournament",
+        { cache: "no-store" }
+      );
+      const data: TournamentResponse = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Featured event information is unavailable.");
+      }
+
+      return data;
+    }, []);
+
   useEffect(() => {
     let cancelled = false;
 
-    async function loadFeaturedTournament() {
-      try {
-        const res = await fetch(
-          "/api/public/upcoming-tournament",
-          {
-            cache: "no-store",
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error(
-            "Failed to load featured tournament"
-          );
-        }
-
-        const data: TournamentResponse =
-          await res.json();
-
+    fetchFeaturedTournament()
+      .then((data) => {
         if (!cancelled) {
           setTournament(data.tournament ?? null);
+          setTournamentError(false);
         }
-      } catch (error) {
-        console.error(
-          "Hero tournament loading error:",
-          error
-        );
-
+      })
+      .catch(() => {
         if (!cancelled) {
           setTournament(null);
+          setTournamentError(true);
         }
-      } finally {
-        if (!cancelled) {
-          setLoadingTournament(false);
-        }
-      }
-    }
-
-    loadFeaturedTournament();
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingTournament(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchFeaturedTournament]);
 
-  /*
-   * ============================================================
-   * LIVE COUNTDOWN
-   * ============================================================
-   */
+  function retryFeaturedTournament() {
+    setLoadingTournament(true);
+    setTournamentError(false);
+
+    fetchFeaturedTournament()
+      .then((data) => {
+        setTournament(data.tournament ?? null);
+      })
+      .catch(() => {
+        setTournament(null);
+        setTournamentError(true);
+      })
+      .finally(() => setLoadingTournament(false));
+  }
+
   useEffect(() => {
-    if (!tournament?.startDate) {
-      setCountdown(EMPTY_COUNTDOWN);
-      setHasStarted(false);
-      return;
-    }
+    if (!tournament?.startDate) return;
 
-    const targetTime = new Date(
-      tournament.startDate
-    ).getTime();
-
-    if (Number.isNaN(targetTime)) {
-      setCountdown(EMPTY_COUNTDOWN);
-      setHasStarted(false);
-      return;
-    }
-
-    function updateCountdown() {
-      const now = Date.now();
-      const difference = targetTime - now;
-
-      if (difference <= 0) {
-        setCountdown(EMPTY_COUNTDOWN);
-        setHasStarted(true);
-        return;
-      }
-
-      setHasStarted(false);
-
-      const totalSeconds = Math.floor(
-        difference / 1000
-      );
-
-      const days = Math.floor(
-        totalSeconds / (24 * 60 * 60)
-      );
-
-      const hours = Math.floor(
-        (totalSeconds % (24 * 60 * 60)) /
-          (60 * 60)
-      );
-
-      const minutes = Math.floor(
-        (totalSeconds % (60 * 60)) / 60
-      );
-
-      const seconds = totalSeconds % 60;
-
-      setCountdown({
-        d: days,
-        h: hours,
-        m: minutes,
-        s: seconds,
-      });
-    }
-
-    updateCountdown();
-
-    const timer = setInterval(
-      updateCountdown,
-      1000
-    );
-
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [tournament]);
+  }, [tournament?.startDate]);
 
   /*
    * ============================================================
@@ -182,6 +112,33 @@ export default function Hero() {
    */
   const pad = (number: number) =>
     String(number).padStart(2, "0");
+
+  const targetTime = tournament?.startDate
+    ? new Date(tournament.startDate).getTime()
+    : Number.NaN;
+  const hasValidStartTime = Number.isFinite(targetTime);
+  const hasStarted = hasValidStartTime && targetTime <= now;
+  const totalSeconds = hasValidStartTime
+    ? Math.max(0, Math.floor((targetTime - now) / 1000))
+    : 0;
+  const countdownItems = [
+    {
+      value: pad(Math.floor(totalSeconds / (24 * 60 * 60))),
+      label: "DAYS",
+    },
+    {
+      value: pad(Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60))),
+      label: "HRS",
+    },
+    {
+      value: pad(Math.floor((totalSeconds % (60 * 60)) / 60)),
+      label: "MIN",
+    },
+    {
+      value: pad(totalSeconds % 60),
+      label: "SEC",
+    },
+  ];
 
   const formatDate = (
     date: string | null
@@ -216,25 +173,6 @@ export default function Hero() {
       status.slice(1)
     );
   };
-
-  const countdownItems = [
-    {
-      value: pad(countdown.d),
-      label: "DAYS",
-    },
-    {
-      value: pad(countdown.h),
-      label: "HRS",
-    },
-    {
-      value: pad(countdown.m),
-      label: "MIN",
-    },
-    {
-      value: pad(countdown.s),
-      label: "SEC",
-    },
-  ];
 
   return (
     <section className="relative w-full overflow-hidden bg-[#05070a] px-3 pb-8 pt-4 sm:px-5 sm:pb-10 sm:pt-5 lg:px-6 lg:pb-10 lg:pt-6 xl:px-8">
@@ -661,6 +599,39 @@ export default function Hero() {
                           VIEW EVENT DETAILS
                         </span>
 
+                        <ArrowRight
+                          size={15}
+                          className="!text-white transition-transform duration-200 group-hover:translate-x-1"
+                        />
+                      </Link>
+                    </>
+                  ) : tournamentError ? (
+                    <>
+                      <h2 className="text-[17px] font-bold leading-6 text-white sm:text-lg">
+                        Event information is temporarily unavailable
+                      </h2>
+
+                      <p
+                        role="status"
+                        className="mt-3 text-xs leading-5 text-slate-400"
+                      >
+                        We could not load the featured tournament right now.
+                        Please try again or browse all events.
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={retryFeaturedTournament}
+                        className="mt-5 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-white/10"
+                      >
+                        TRY AGAIN
+                      </button>
+
+                      <Link
+                        href="/events"
+                        className="group mt-3 flex items-center justify-between rounded-xl bg-red-600 px-4 py-3 text-xs font-bold !text-white transition-all duration-200 hover:bg-red-500"
+                      >
+                        <span>VIEW ALL TOURNAMENTS</span>
                         <ArrowRight
                           size={15}
                           className="!text-white transition-transform duration-200 group-hover:translate-x-1"

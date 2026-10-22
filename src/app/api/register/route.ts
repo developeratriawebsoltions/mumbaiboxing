@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { signToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
@@ -240,7 +242,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
+    const paymentToken = await signToken({
+      id: user.id,
+      email: user.email,
+      role: "payment_pending",
+    });
+    const response = NextResponse.json(
       {
         success: true,
         id: user.id,
@@ -250,12 +257,39 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
+    response.cookies.set("mba_payment_token", paymentToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
+    return response;
   } catch (err) {
     console.error("Registration error:", err);
 
+    if (
+      err instanceof Prisma.PrismaClientInitializationError &&
+      (err.errorCode === "P1001" ||
+        err.message.includes("Can't reach database server"))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Registration is temporarily unavailable because the database cannot be reached. Your form details are still here. Please try again after the service is restored.",
+        },
+        {
+          status: 503,
+          headers: {
+            "Retry-After": "30",
+          },
+        },
+      );
+    }
+
     return NextResponse.json(
       {
-        error: "Server error",
+        error: "Registration could not be completed. Please try again.",
       },
       { status: 500 },
     );

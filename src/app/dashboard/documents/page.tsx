@@ -11,7 +11,7 @@ import {
   FileText,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /* =========================================================
    TYPES
@@ -115,62 +115,46 @@ export default function DocumentsDashboard() {
 
   const role = useRole();
 
-  const isAdmin = role === "superadmin";
+  const isAdmin = role === "admin" || role === "superadmin";
 
   /* =======================================================
      LOAD DOCUMENTS
      ======================================================= */
 
-  async function loadDocuments() {
-    if (!role) return;
+  const fetchDocuments = useCallback(async (): Promise<Doc[]> => {
+    if (!role) return [];
 
-    try {
-      setLoading(true);
-      setError("");
+    const url = isAdmin ? "/api/admin/documents" : `/api/${role}`;
+    const response = await fetch(url, { cache: "no-store" });
+    const data = await response.json();
 
-      const url =
-        role === "superadmin"
-          ? "/api/admin/documents"
-          : `/api/${role}`;
-
-      const response = await fetch(url, {
-        cache: "no-store",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error ||
-            "Failed to load documents."
-        );
-      }
-
-      if (role === "superadmin") {
-        setDocs(
-          Array.isArray(data)
-            ? data
-            : []
-        );
-      } else {
-        /*
-         * Boxer / Coach documents
-         */
-        setDocs(
-          Array.isArray(data?.user?.documents)
-            ? data.user.documents
-            : []
-        );
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to load documents."
-      );
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(data?.error || "Failed to load documents.");
     }
+
+    if (isAdmin) {
+      return Array.isArray(data) ? data : [];
+    }
+
+    return Array.isArray(data?.user?.documents)
+      ? data.user.documents
+      : [];
+  }, [role, isAdmin]);
+
+  function loadDocuments() {
+    return fetchDocuments()
+      .then((documents) => {
+        setError("");
+        setDocs(documents);
+      })
+      .catch((err) => {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load documents."
+        );
+      })
+      .finally(() => setLoading(false));
   }
 
   /* =======================================================
@@ -180,8 +164,31 @@ export default function DocumentsDashboard() {
   useEffect(() => {
     if (!role) return;
 
-    loadDocuments();
-  }, [role]);
+    let active = true;
+    fetchDocuments()
+      .then((documents) => {
+        if (active) {
+          setError("");
+          setDocs(documents);
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load documents."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [role, fetchDocuments]);
 
   /* =======================================================
      ADMIN REVIEW QUEUE
@@ -189,7 +196,7 @@ export default function DocumentsDashboard() {
 
      IMPORTANT:
 
-     Super Admin should only see documents that still
+     Admins should only see documents that still
      require review.
 
      Approved / Rejected documents remain in the database
@@ -352,7 +359,7 @@ export default function DocumentsDashboard() {
        *
        * The frontend still filters the result to pending
        * documents, so approved/rejected documents will
-       * remain hidden from Super Admin.
+       *        remain hidden from the admin review queue.
        */
       await loadDocuments();
     } catch (err) {

@@ -34,6 +34,7 @@ const ROLE_ALLOWED: Record<string, string[]> = {
     "/dashboard/academy",
     "/dashboard/boxer",
     "/dashboard/coach",
+    "/dashboard/certificates",
     "/dashboard/tournament",
     "/dashboard/payment",
     "/dashboard/documents",
@@ -84,6 +85,11 @@ const ROLE_ALLOWED: Record<string, string[]> = {
    */
   admin: [
     "/dashboard/admin",
+    "/dashboard/admin/boxers",
+    "/dashboard/admin/coaches",
+    "/dashboard/admin/academies",
+    "/dashboard/admin/tournaments",
+    "/dashboard/documents",
   ],
 
   /*
@@ -91,6 +97,10 @@ const ROLE_ALLOWED: Record<string, string[]> = {
    */
   superadmin: [
     "/dashboard/admin",
+    "/dashboard/admin/boxers",
+    "/dashboard/admin/coaches",
+    "/dashboard/admin/academies",
+    "/dashboard/admin/tournaments",
     "/dashboard/superadmin",
     "/dashboard/boxer",
     "/dashboard/coach",
@@ -147,8 +157,24 @@ export async function middleware(req: NextRequest) {
    */
 
   if (PROTECTED.test(pathname) && !payload) {
+    const requestedTournamentId = Number(
+      req.nextUrl.searchParams.get("tournamentId")
+    );
+    const loginUrl = new URL("/login", req.url);
+
+    if (
+      pathname === "/dashboard/tournament" &&
+      Number.isInteger(requestedTournamentId) &&
+      requestedTournamentId > 0
+    ) {
+      loginUrl.searchParams.set(
+        "tournamentId",
+        String(requestedTournamentId)
+      );
+    }
+
     return NextResponse.redirect(
-      new URL("/login", req.url)
+      loginUrl
     );
   }
 
@@ -163,6 +189,9 @@ export async function middleware(req: NextRequest) {
 
   if (AUTH_PAGES.includes(pathname) && payload) {
     const role = String(payload.role ?? "").toLowerCase();
+    const requestedTournamentId = Number(
+      req.nextUrl.searchParams.get("tournamentId")
+    );
 
     /*
      * SUPER ADMIN
@@ -192,6 +221,19 @@ export async function middleware(req: NextRequest) {
     if (role === "referee_judge") {
       return NextResponse.redirect(
         new URL("/dashboard/referee-judge", req.url)
+      );
+    }
+
+    if (
+      role === "boxer" &&
+      Number.isInteger(requestedTournamentId) &&
+      requestedTournamentId > 0
+    ) {
+      return NextResponse.redirect(
+        new URL(
+          `/dashboard/tournament?tournamentId=${requestedTournamentId}`,
+          req.url
+        )
       );
     }
 

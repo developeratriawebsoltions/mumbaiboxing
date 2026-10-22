@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 type Tournament = {
@@ -40,17 +40,74 @@ const formatDate = (start: string | null, end: string | null) => {
 export default function EventsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [filter, setFilter] = useState("All");
 
-  useEffect(() => {
-    fetch("/api/tournaments")
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d)) setTournaments(d); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const fetchTournaments = useCallback(async () => {
+    const response = await fetch("/api/tournaments", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.error || "Unable to load tournaments.");
+    }
+    if (!Array.isArray(data)) {
+      throw new Error("Tournament data is unavailable right now.");
+    }
+
+    return data as Tournament[];
   }, []);
 
-  const filtered = filter === "All" ? tournaments : tournaments.filter((t) => t.status === filter);
+  useEffect(() => {
+    let active = true;
+
+    fetchTournaments()
+      .then((data) => {
+        if (active) {
+          setTournaments(data);
+          setError("");
+        }
+      })
+      .catch((loadError) => {
+        if (active) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Unable to load tournaments. Please try again."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fetchTournaments]);
+
+  function loadTournaments() {
+    setLoading(true);
+    setError("");
+    fetchTournaments()
+      .then(setTournaments)
+      .catch((loadError) => {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load tournaments. Please try again."
+        );
+      })
+      .finally(() => setLoading(false));
+  }
+
+  const filtered =
+    filter === "All"
+      ? tournaments
+      : tournaments.filter(
+          (t) => t.status.toLowerCase() === filter.toLowerCase()
+        );
 
   return (
     <div className="min-h-screen" style={{ background: "#0B1120" }}>
@@ -74,20 +131,24 @@ export default function EventsPage() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {STATUS_FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="text-xs font-semibold px-4 py-1.5 rounded-full transition-colors capitalize"
-              style={filter === f
-                ? { background: "#D4A017", color: "#0B1120" }
-                : { background: "rgba(212,160,23,0.08)", color: "#94A3B8", border: "1px solid rgba(212,160,23,0.15)" }}
-            >
-              {f === "All" ? `All (${tournaments.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${tournaments.filter((t) => t.status === f).length})`}
-            </button>
-          ))}
-        </div>
+        {!loading && !error && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFilter(f)}
+                aria-pressed={filter === f}
+                className="rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-colors"
+                style={filter === f
+                  ? { background: "#D4A017", color: "#0B1120" }
+                  : { background: "rgba(212,160,23,0.08)", color: "#94A3B8", border: "1px solid rgba(212,160,23,0.15)" }}
+              >
+                {f === "All" ? `All (${tournaments.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${tournaments.filter((t) => t.status.toLowerCase() === f.toLowerCase()).length})`}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Loading */}
         {loading && (
@@ -99,7 +160,21 @@ export default function EventsPage() {
         )}
 
         {/* Empty */}
-        {!loading && filtered.length === 0 && (
+        {!loading && error && (
+          <div className="rounded-2xl border border-red-400/20 bg-red-500/5 px-6 py-10 text-center">
+            <p className="text-lg font-semibold text-white">Events could not load</p>
+            <p role="alert" className="mt-2 text-sm text-slate-400">{error}</p>
+            <button
+              type="button"
+              onClick={loadTournaments}
+              className="mt-5 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && filtered.length === 0 && (
           <div className="text-center py-24" style={{ color: "#94A3B8" }}>
             <p className="text-5xl mb-4">🏆</p>
             <p className="text-lg font-semibold text-white">No tournaments found</p>
@@ -108,7 +183,7 @@ export default function EventsPage() {
         )}
 
         {/* Cards */}
-        {!loading && filtered.length > 0 && (
+        {!loading && !error && filtered.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {filtered.map((t) => (
               <div
@@ -145,11 +220,10 @@ export default function EventsPage() {
                 </div>
 
                 <Link
-                  href={t.status === "open" ? "/register" : "#"}
+                  href={`/events/${t.id}`}
                   className="btn-gold mt-5 block text-center text-sm px-4 py-2.5 rounded-xl"
-                  style={t.status !== "open" ? { opacity: 0.45, pointerEvents: "none" } : {}}
                 >
-                  {t.status === "open" ? "Register Now" : t.status === "completed" ? "Completed" : "Coming Soon"}
+                  View Details
                 </Link>
               </div>
             ))}

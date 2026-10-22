@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
+import { ensureActiveMemberCertificate } from "@/lib/membership-certificate";
+import { isMedicalDocumentLabel } from "@/lib/medical-documents";
 
 async function getAuthenticatedUser(req: NextRequest) {
   const token = req.cookies.get("mba_token")?.value;
@@ -28,6 +30,8 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    await ensureActiveMemberCertificate(payload.id);
 
     /*
      * Find the boxer and all dashboard-related data.
@@ -209,6 +213,9 @@ export async function GET(req: NextRequest) {
        * --------------------------------------------------------
        */
       medical: boxer.medical,
+      medicalDocuments: boxer.user.document.filter((document) =>
+        isMedicalDocumentLabel(document.label)
+      ),
 
       /*
        * --------------------------------------------------------

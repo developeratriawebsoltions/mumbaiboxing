@@ -68,38 +68,49 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const isPdf =
+      extension === ".pdf" &&
+      buffer.subarray(0, 5).toString("ascii") === "%PDF-";
+    const isJpeg =
+      extension === ".jpg" &&
+      buffer[0] === 0xff &&
+      buffer[1] === 0xd8 &&
+      buffer[2] === 0xff;
+    const isPng =
+      extension === ".png" &&
+      buffer.subarray(0, 8).equals(
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+      );
+
+    if (!isPdf && !isJpeg && !isPng) {
+      return NextResponse.json(
+        { success: false, message: "The selected file does not match its file type." },
+        { status: 400 }
+      );
+    }
+
     const uploadDirectory = path.join(
       process.cwd(),
-      "public",
-      "uploads",
-      "tournament-history"
+      "private_uploads",
+      "tournament-history",
+      String(payload.id)
     );
 
     await mkdir(uploadDirectory, { recursive: true });
 
-    const safeBaseName = file.name
-      .replace(/[^a-zA-Z0-9._-]/g, "_")
-      .replace(/\.{2,}/g, ".")
-      .slice(-100);
+    const storedFileName = `${randomUUID()}${extension}`;
+    const filePath = path.join(uploadDirectory, storedFileName);
 
-    const storedFileName = `${randomUUID()}-${safeBaseName || `document${extension}`}`;
+    await writeFile(filePath, buffer, { flag: "wx" });
 
-    const filePath = path.join(
-      uploadDirectory,
-      storedFileName
-    );
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    await writeFile(filePath, buffer);
-
-    const publicPath = `/uploads/tournament-history/${storedFileName}`;
+    const documentPath = `${payload.id}/${storedFileName}`;
 
     return NextResponse.json({
       success: true,
-      filePath: publicPath,
-      fileName: file.name,
+      filePath: documentPath,
+      fileName: file.name.trim().slice(0, 190),
     });
   } catch (error) {
     console.error(

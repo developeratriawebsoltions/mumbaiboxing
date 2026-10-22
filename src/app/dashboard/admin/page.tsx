@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -19,6 +19,8 @@ import {
   CalendarDays,
   RefreshCw,
 } from "lucide-react";
+import DashboardLayout from "@/Components/layout/DashboardLayout";
+import { useRole } from "@/hooks/useRole";
 
 type DashboardData = {
   stats: {
@@ -161,45 +163,68 @@ function statusClasses(status: string) {
   return "bg-slate-50 text-slate-600 border-slate-200";
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function loadDashboard() {
-    try {
-      setLoading(true);
-      setError("");
+  const fetchDashboard = useCallback(async () => {
+    const response = await fetch("/api/admin/overview", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
 
-      const response = await fetch("/api/admin/overview", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      });
+    const result = await response.json();
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Unable to load dashboard");
-      }
-
-      setData(result);
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load admin dashboard"
-      );
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(result.error || "Unable to load dashboard");
     }
+
+    return result as DashboardData;
+  }, []);
+
+  function loadDashboard() {
+    setLoading(true);
+    setError("");
+    fetchDashboard()
+      .then(setData)
+      .catch((err) => {
+        console.error(err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load admin dashboard"
+        );
+      })
+      .finally(() => setLoading(false));
   }
 
   useEffect(() => {
-    loadDashboard();
-  }, []);
+    let active = true;
+
+    fetchDashboard()
+      .then((result) => {
+        if (active) setData(result);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load admin dashboard"
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fetchDashboard]);
 
   if (loading) {
     return (
@@ -232,7 +257,11 @@ export default function AdminDashboard() {
               </p>
 
               <button
-                onClick={loadDashboard}
+                onClick={() => {
+                  setLoading(true);
+                  setError("");
+                  loadDashboard();
+                }}
                 className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -267,7 +296,11 @@ export default function AdminDashboard() {
         </div>
 
         <button
-          onClick={loadDashboard}
+        onClick={() => {
+          setLoading(true);
+          setError("");
+          loadDashboard();
+        }}
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
         >
           <RefreshCw className="w-4 h-4" />
@@ -820,5 +853,15 @@ function SummaryCard({
         {value}
       </p>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  const role = useRole();
+
+  return (
+    <DashboardLayout role={role || undefined}>
+      <AdminDashboardContent />
+    </DashboardLayout>
   );
 }

@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import Razorpay from "razorpay";
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/jwt";
+import {
+  issueMembershipCertificate,
+  sendMembershipCertificateEmailOnce,
+} from "@/lib/membership-certificate";
 
 const ROLE_FEES = {
   boxer: 100,
@@ -11,6 +16,17 @@ const ROLE_FEES = {
 } as const;
 
 type RegistrationRole = keyof typeof ROLE_FEES;
+
+async function sendCertificateEmail(
+  email: string,
+  certificate: Awaited<ReturnType<typeof issueMembershipCertificate>>
+) {
+  return sendMembershipCertificateEmailOnce(
+    certificate.id,
+    email,
+    certificate
+  );
+}
 
 function generateMembershipId(userId: number) {
   const year = new Date().getFullYear();
@@ -50,6 +66,10 @@ function verifyRazorpaySignature(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const paymentTokenValue = req.cookies.get("mba_payment_token")?.value;
+    const paymentToken = paymentTokenValue
+      ? await verifyToken(paymentTokenValue)
+      : null;
 
     const razorpayOrderId = String(
       body?.razorpay_order_id || ""
@@ -63,7 +83,7 @@ export async function POST(req: NextRequest) {
       body?.razorpay_signature || ""
     ).trim();
 
-    const userId = Number(body?.userId);
+    const userId = paymentToken?.id;
 
     /*
      * ---------------------------------------------------------
@@ -84,12 +104,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!Number.isInteger(userId) || userId <= 0) {
+    if (!paymentToken || paymentToken.role !== "payment_pending") {
       return NextResponse.json(
         {
-          error: "Invalid user ID",
+          error: "A valid pending-membership payment session is required",
         },
-        { status: 400 }
+        { status: 401 }
       );
     }
 
@@ -366,9 +386,48 @@ export async function POST(req: NextRequest) {
       user.registrationStatus === "ACTIVE" &&
       user.membershipId
     ) {
-      return NextResponse.json({
+      const existingCertificate = await prisma.certificate.findUnique({
+        where: { membershipId: user.membershipId },
+        select: {
+          id: true,
+          type: true,
+          event: true,
+          issuedAt: true,
+          qrStatus: true,
+          membershipId: true,
+          memberName: true,
+          membershipRole: true,
+          membershipExpiresAt: true,
+        },
+      });
+      const certificate =
+        existingCertificate ||
+        (await prisma.$transaction((tx) =>
+          issueMembershipCertificate(tx, {
+            userId: user.id,
+            boxerId: payment.boxer?.id,
+            coachId: payment.coach?.id,
+            refereeJudgeId: payment.refereeJudge?.id,
+            membershipId: user.membershipId!,
+            memberName:
+              payment.boxer?.name ||
+              payment.coach?.name ||
+              payment.academy?.name ||
+              payment.refereeJudge?.name ||
+              user.email,
+            role: dbRole,
+            issuedAt: user.membershipActivatedAt || new Date(),
+            membershipExpiresAt: user.membershipExpiry || new Date(),
+          })
+        ));
+      const emailResult = await sendCertificateEmail(user.email, certificate);
+
+      const response = NextResponse.json({
         success: true,
         alreadyProcessed: true,
+        certificate: { id: certificate.id },
+        certificateEmailSent: emailResult.sent,
+        certificateEmailError: emailResult.error,
 
         membership: {
           membershipId: user.membershipId,
@@ -391,6 +450,14 @@ export async function POST(req: NextRequest) {
           isDeveloperBypass: payment.isDeveloperBypass,
         },
       });
+      response.cookies.set("mba_payment_token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+      });
+      return response;
     }
 
     /*
@@ -429,6 +496,7 @@ export async function POST(req: NextRequest) {
      */
 
     const membershipId = generateMembershipId(user.id);
+    const membershipActivatedAt = new Date();
 
     /*
      * ---------------------------------------------------------
@@ -513,7 +581,7 @@ export async function POST(req: NextRequest) {
             membershipId,
             membershipValidFrom,
             membershipExpiry,
-            membershipActivatedAt: new Date(),
+            membershipActivatedAt,
           },
 
           select: {
@@ -583,14 +651,37 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        const certificate = await issueMembershipCertificate(tx, {
+          userId: updatedUser.id,
+          boxerId: payment.boxer?.id,
+          coachId: payment.coach?.id,
+          refereeJudgeId: payment.refereeJudge?.id,
+          membershipId,
+          memberName:
+            payment.boxer?.name ||
+            payment.coach?.name ||
+            payment.academy?.name ||
+            payment.refereeJudge?.name ||
+            updatedUser.email,
+          role: dbRole,
+          issuedAt: membershipActivatedAt,
+          membershipExpiresAt: membershipExpiry,
+        });
+
         return {
           user: updatedUser,
           payment: paymentWithInvoice,
+          certificate,
         };
       },
       {
         timeout: 15000,
       }
+    );
+
+    const certificateEmail = await sendCertificateEmail(
+      result.user.email,
+      result.certificate
     );
 
     /*
@@ -599,8 +690,11 @@ export async function POST(req: NextRequest) {
      * ---------------------------------------------------------
      */
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
+      certificate: { id: result.certificate.id },
+      certificateEmailSent: certificateEmail.sent,
+      certificateEmailError: certificateEmail.error,
 
       membership: {
         membershipId: result.user.membershipId!,
@@ -628,6 +722,14 @@ export async function POST(req: NextRequest) {
         isDeveloperBypass: result.payment.isDeveloperBypass,
       },
     });
+    response.cookies.set("mba_payment_token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+    return response;
   } catch (err) {
     console.error("Payment verification error:", err);
 

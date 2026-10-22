@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
+import { ensureActiveMemberCertificate } from "@/lib/membership-certificate";
 
 export async function GET(req: NextRequest) {
   const payload = await verifyToken(req.cookies.get("mba_token")?.value ?? "");
@@ -13,23 +14,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(certs);
   }
 
-  if (payload.role === "coach") {
-    const coach = await prisma.coach.findUnique({ where: { userId: payload.id } });
-    if (!coach) return NextResponse.json({ error: "Coach not found" }, { status: 404 });
-
-    const certs = await prisma.certificate.findMany({
-      where: { coachId: coach.id },
-      orderBy: { issuedAt: "desc" },
-    });
-    return NextResponse.json(certs);
+  if (!["boxer", "coach", "academy", "referee_judge"].includes(payload.role)) {
+    return NextResponse.json({ error: "Member access required." }, { status: 403 });
   }
 
-  // boxer (default)
-  const boxer = await prisma.boxer.findUnique({ where: { userId: payload.id } });
-  if (!boxer) return NextResponse.json({ error: "Boxer not found" }, { status: 404 });
+  await ensureActiveMemberCertificate(payload.id);
 
   const certs = await prisma.certificate.findMany({
-    where: { boxerId: boxer.id },
+    where: {
+      OR: [
+        { userId: payload.id },
+        ...(payload.role === "boxer"
+          ? [{ boxer: { userId: payload.id } }]
+          : []),
+        ...(payload.role === "coach"
+          ? [{ coach: { userId: payload.id } }]
+          : []),
+        ...(payload.role === "referee_judge"
+          ? [{ refereeJudge: { userId: payload.id } }]
+          : []),
+      ],
+    },
     orderBy: { issuedAt: "desc" },
   });
   return NextResponse.json(certs);

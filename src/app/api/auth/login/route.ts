@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
 
     const email = String(body?.email ?? "").trim().toLowerCase();
     const password = String(body?.password ?? "");
+    const requestedTournamentId = Number(body?.tournamentId);
 
     if (!email || !password) {
       return NextResponse.json(
@@ -57,34 +58,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /*
-     * SUPERADMIN / ADMIN
-     *
-     * Superadmins are created directly by the system and
-     * do not need membership payment.
-     */
-    if (user.role === "superadmin") {
-      const token = await signToken({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      });
+    if (
+      Number.isInteger(requestedTournamentId) &&
+      requestedTournamentId > 0 &&
+      user.role !== "boxer"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Tournament entry is for boxer accounts. Please sign in with a boxer account to continue.",
+          code: "BOXER_ACCOUNT_REQUIRED",
+        },
+        { status: 403 }
+      );
+    }
 
-      const res = NextResponse.json({
-        success: true,
-        redirect: "/admin",
-        role: user.role,
-      });
-
-      res.cookies.set("mba_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-
-      return res;
+    if (user.role === "admin" || user.role === "superadmin") {
+      return NextResponse.json(
+        {
+          error: "Use the sign-in page for your account role.",
+          code: "ROLE_SPECIFIC_LOGIN_REQUIRED",
+        },
+        { status: 403 }
+      );
     }
 
     /*
@@ -95,16 +91,29 @@ export async function POST(req: NextRequest) {
      * PAYMENT_PENDING users must not receive a JWT.
      */
     if (user.registrationStatus !== "ACTIVE") {
-      return NextResponse.json(
+      const paymentToken = await signToken({
+        id: user.id,
+        email: user.email,
+        role: "payment_pending",
+      });
+      const res = NextResponse.json(
         {
           error: "Membership payment is pending",
           code: "PAYMENT_PENDING",
           registrationStatus: user.registrationStatus,
           message:
-            "Please complete your membership payment before logging in.",
+            "Please complete your membership payment to activate your account.",
         },
         { status: 403 }
       );
+      res.cookies.set("mba_payment_token", paymentToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24,
+      });
+      return res;
     }
 
     /*

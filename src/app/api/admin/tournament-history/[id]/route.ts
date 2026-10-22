@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 import { calculateTournamentPoints } from "@/lib/points";
+import {
+  isPrivateTournamentHistoryDocumentPath,
+  requiresTournamentHistoryProof,
+} from "@/lib/tournament-history-validation";
+import { privateTournamentHistoryDocumentExists } from "@/lib/tournament-history-documents";
 
 async function getAuthenticatedUser(req: NextRequest) {
   const token = req.cookies.get("mba_token")?.value;
@@ -132,6 +137,30 @@ export async function PATCH(
      * APPROVE
      */
     if (action === "APPROVE") {
+      if (
+        requiresTournamentHistoryProof({
+          medal: existing.medal || "NONE",
+          position: existing.position,
+        }) &&
+        (!isPrivateTournamentHistoryDocumentPath(
+          existing.documentPath,
+          existing.boxer.userId
+        ) ||
+          !(await privateTournamentHistoryDocumentExists(
+            existing.documentPath,
+            existing.boxer.userId
+          )))
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "A private supporting document is required before approving a medal or placing claim.",
+          },
+          { status: 400 }
+        );
+      }
+
       const points = calculateTournamentPoints({
         tournamentType: existing.tournamentType,
         medal: existing.medal,
@@ -190,24 +219,27 @@ export async function PATCH(
          * historyId is UNIQUE in boxer_points, so one
          * tournament history record can only receive points once.
          */
-        const pointsRecord = await tx.boxer_points.create({
-          data: {
-            boxerId: updated.boxer.id,
-            historyId: updated.id,
-            tournamentName: updated.tournamentName,
-            tournamentType:
-              updated.tournamentType?.trim().toUpperCase() ||
-              "DISTRICT",
-            medal:
-              updated.medal?.trim().toUpperCase() ||
-              "NONE",
-            points,
-            season: (
-              updated.tournamentDate ??
-              updated.createdAt
-            ).getFullYear(),
-          },
-        });
+        const pointsRecord =
+          points > 0
+            ? await tx.boxer_points.create({
+                data: {
+                  boxerId: updated.boxer.id,
+                  historyId: updated.id,
+                  tournamentName: updated.tournamentName,
+                  tournamentType:
+                    updated.tournamentType?.trim().toUpperCase() ||
+                    "DISTRICT",
+                  medal:
+                    updated.medal?.trim().toUpperCase() ||
+                    "NONE",
+                  points,
+                  season: (
+                    updated.tournamentDate ??
+                    updated.createdAt
+                  ).getFullYear(),
+                },
+              })
+            : null;
 
         /*
          * Notify boxer.
@@ -232,7 +264,9 @@ export async function PATCH(
       return NextResponse.json({
         success: true,
         message:
-          "Tournament record approved and points awarded successfully",
+          points > 0
+            ? "Tournament record approved and points awarded successfully"
+            : "Participation record approved; no ranking points were awarded",
         history: result.updated,
         points: result.pointsRecord,
       });

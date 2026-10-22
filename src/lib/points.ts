@@ -22,28 +22,28 @@ export const POINTS_TABLE: Record<
     GOLD: 20,
     SILVER: 12,
     BRONZE: 8,
-    NONE: 2,
+    NONE: 0,
   },
 
   STATE: {
     GOLD: 40,
     SILVER: 25,
     BRONZE: 15,
-    NONE: 5,
+    NONE: 0,
   },
 
   NATIONAL: {
     GOLD: 70,
     SILVER: 45,
     BRONZE: 30,
-    NONE: 10,
+    NONE: 0,
   },
 
   INTERNATIONAL: {
     GOLD: 100,
     SILVER: 70,
     BRONZE: 50,
-    NONE: 15,
+    NONE: 0,
   },
 };
 

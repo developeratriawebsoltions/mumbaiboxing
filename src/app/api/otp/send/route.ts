@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTransport } from "nodemailer";
+import { randomInt } from "crypto";
 import { setOtp } from "@/lib/otpStore";
 
 export async function POST(req: NextRequest) {
@@ -16,10 +17,9 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase();
+    const isPasswordReset = body?.purpose === "password-reset";
 
-    const otp = `${Math.floor(
-      100000 + Math.random() * 900000
-    )}`;
+    const otp = `${randomInt(100000, 1000000)}`;
 
     // Always store OTP first.
     setOtp(normalizedEmail, otp);
@@ -62,11 +62,13 @@ export async function POST(req: NextRequest) {
       await transporter.sendMail({
         from,
         to: normalizedEmail,
-        subject: "Your Mumbai Boxing Association OTP",
+        subject: isPasswordReset
+          ? "Reset your Mumbai Boxing Association password"
+          : "Your Mumbai Boxing Association OTP",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">
             <h2>Mumbai Boxing Association</h2>
-            <p>Your OTP for registration is:</p>
+            <p>Your ${isPasswordReset ? "password reset" : "registration"} OTP is:</p>
             <h1 style="letter-spacing: 6px;">${otp}</h1>
             <p>This OTP expires in 5 minutes.</p>
             <p>If you did not request this OTP, please ignore this email.</p>

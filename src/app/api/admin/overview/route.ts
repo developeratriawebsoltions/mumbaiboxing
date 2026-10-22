@@ -22,9 +22,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Admin dashboard is ONLY for admin.
-    // Super Admin has its own dashboard.
-    if (payload.role !== "admin") {
+    if (payload.role !== "admin" && payload.role !== "superadmin") {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }
@@ -240,7 +238,16 @@ export async function GET(req: NextRequest) {
       // Pending documents
       prisma.document.count({
         where: {
-          status: "Pending",
+          status: {
+            in: [
+              "pending",
+              "Pending",
+              "uploaded",
+              "Uploaded",
+              "under_review",
+              "Under Review",
+            ],
+          },
         },
       }),
     ]);

@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const token = req.cookies.get("mba_token")?.value ?? "";
     const payload = await verifyToken(token);
 
-    if (!payload || payload.role !== "superadmin") {
+    if (!payload || (payload.role !== "admin" && payload.role !== "superadmin")) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }

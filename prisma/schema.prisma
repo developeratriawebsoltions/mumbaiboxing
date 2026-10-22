@@ -57,19 +57,28 @@ model boxer {
 
 model certificate {
   id             Int  @id @default(autoincrement())
+  userId         Int?
   boxerId        Int?
   coachId        Int?
   refereeJudgeId Int?
 
-  type     String
-  event    String
-  issuedAt DateTime @default(now())
-  qrStatus String   @default("verified")
+  type                       String
+  event                      String
+  issuedAt                   DateTime  @default(now())
+  qrStatus                   String    @default("verified")
+  membershipId               String?   @unique(map: "Certificate_membershipId_key")
+  memberName                 String?
+  membershipRole             String?
+  membershipExpiresAt        DateTime?
+  membershipEmailAttemptedAt DateTime?
+  membershipEmailSentAt      DateTime?
 
   boxer        boxer?         @relation(fields: [boxerId], references: [id], map: "Certificate_boxerId_fkey")
   coach        coach?         @relation(fields: [coachId], references: [id], map: "Certificate_coachId_fkey")
   refereeJudge referee_judge? @relation(fields: [refereeJudgeId], references: [id], map: "Certificate_refereeJudgeId_fkey")
+  user         user?          @relation(fields: [userId], references: [id], map: "Certificate_userId_fkey")
 
+  @@index([userId], map: "Certificate_userId_fkey")
   @@index([boxerId], map: "Certificate_boxerId_fkey")
   @@index([coachId], map: "Certificate_coachId_fkey")
   @@index([refereeJudgeId], map: "Certificate_refereeJudgeId_fkey")
@@ -250,6 +259,7 @@ model user {
   boxer         boxer?
   coach         coach?
   refereeJudge  referee_judge?
+  certificates  certificate[]
   document      document[]
   notifications notification[]
 }

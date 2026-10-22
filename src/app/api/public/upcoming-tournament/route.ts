@@ -58,8 +58,9 @@ export async function GET() {
       {
         success: false,
         tournament: null,
+        error: "Featured tournament information is temporarily unavailable.",
       },
-      { status: 500 }
+      { status: 503 }
     );
   }
 }

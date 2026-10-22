@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
-
-/* =========================================================
-   EXACT MEDICAL DOCUMENT LABELS
-   ========================================================= */
-
-const MEDICAL_DOCUMENT_LABELS = [
-  "Medical Fitness Certificate by (MBBS) Dr.",
-  "HIV / Hepatitis B & C Test Report",
-];
+import { isMedicalDocumentLabel } from "@/lib/medical-documents";
 
 /* =========================================================
    GET /api/medical
@@ -101,33 +93,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    /* -------------------------------------------------------
-       FILTER APPROVED MEDICAL DOCUMENTS
-
-       We intentionally use the exact labels so that Aadhaar,
-       Birth Certificate and Passport Photo are NOT included.
-    ------------------------------------------------------- */
-
-    const approvedMedicalDocuments =
-      user.document.filter(
-        (document) => {
-          const isMedicalDocument =
-            MEDICAL_DOCUMENT_LABELS.includes(
-              document.label
-            );
-
-          const isApproved =
-            document.status
-              .trim()
-              .toLowerCase() ===
-            "approved";
-
-          return (
-            isMedicalDocument &&
-            isApproved
-          );
-        }
-      );
+    const medicalDocuments = user.document.filter((document) =>
+      isMedicalDocumentLabel(document.label)
+    );
 
     /* -------------------------------------------------------
        FORMAT RESPONSE
@@ -175,33 +143,15 @@ export async function GET(req: NextRequest) {
             }
           : null,
 
-        /* -----------------------------------------------
-           APPROVED MEDICAL DOCUMENTS
-        ----------------------------------------------- */
-
-        documents:
-          approvedMedicalDocuments.map(
-            (document) => ({
-              id: document.id,
-
-              label: document.label,
-
-              filePath:
-                document.filePath,
-
-              fileType:
-                document.fileType,
-
-              status:
-                document.status,
-
-              rejectionReason:
-                document.rejectionReason,
-
-              createdAt:
-                document.createdAt,
-            })
-          ),
+        documents: medicalDocuments.map((document) => ({
+          id: document.id,
+          label: document.label,
+          filePath: document.filePath,
+          fileType: document.fileType,
+          status: document.status,
+          rejectionReason: document.rejectionReason,
+          createdAt: document.createdAt,
+        })),
       },
 
       {

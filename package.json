@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node --project prisma/tsconfig.seed.json prisma/seed.ts",
+    "admin:create": "node scripts/create-admin-users.mjs",
     "db:studio": "prisma studio"
   },
   "prisma": {

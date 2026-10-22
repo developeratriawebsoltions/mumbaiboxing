@@ -19,6 +19,14 @@ import DashboardLayout from "@/Components/layout/DashboardLayout";
 
 type CertificateItem = {
   id: number;
+  type?: string | null;
+  event?: string | null;
+  membershipId?: string | null;
+  memberName?: string | null;
+  membershipRole?: string | null;
+  membershipExpiresAt?: string | null;
+  membershipEmailAttemptedAt?: string | null;
+  membershipEmailSentAt?: string | null;
   certificateNumber?: string | null;
   title?: string | null;
   certificateType?: string | null;
@@ -483,6 +491,8 @@ function CertificateCard({
     value: string | null | undefined
   ) => string;
 }) {
+  const [emailing, setEmailing] = useState(false);
+  const [emailMessage, setEmailMessage] = useState("");
   const title =
     certificate.title ||
     certificate.certificateType ||
@@ -503,13 +513,26 @@ function CertificateCard({
     normalizedStatus === "issued" ||
     normalizedStatus === "verified";
 
-  const fileUrl =
-    certificate.fileUrl ||
-    (certificate.filePath
-      ? `/api/file?path=${encodeURIComponent(
-          certificate.filePath
-        )}`
-      : null);
+  const fileUrl = `/api/certificates/${certificate.id}`;
+
+  const resendCertificate = async () => {
+    setEmailing(true);
+    setEmailMessage("");
+    try {
+      const response = await fetch(fileUrl, { method: "POST" });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.error || "Could not email the certificate.");
+      }
+      setEmailMessage(result.message || "Certificate emailed successfully.");
+    } catch (err) {
+      setEmailMessage(
+        err instanceof Error ? err.message : "Could not email the certificate."
+      );
+    } finally {
+      setEmailing(false);
+    }
+  };
 
   return (
     <div
@@ -575,7 +598,7 @@ function CertificateCard({
                 break-words
               "
             >
-              {title}
+              {certificate.type || title}
             </h3>
 
             <span
@@ -621,7 +644,8 @@ function CertificateCard({
               icon={<FileText size={16} />}
               label="Certificate Number"
               value={
-                certificate.certificateNumber || "—"
+                certificate.certificateNumber ||
+                `MBA-CERT-${String(certificate.id).padStart(6, "0")}`
               }
             />
           </div>
@@ -629,13 +653,10 @@ function CertificateCard({
 
         {/* Action */}
 
-        {fileUrl && (
-          <div className="shrink-0">
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="
+        <div className="flex shrink-0 flex-col items-start gap-2">
+          <a
+            href={fileUrl}
+            className="
                 inline-flex
                 items-center
                 justify-center
@@ -653,12 +674,39 @@ function CertificateCard({
                 hover:text-red-600
                 transition-colors
               "
-            >
-              <Download size={17} />
-              View Certificate
-            </a>
-          </div>
-        )}
+          >
+            <Download size={17} />
+            Download Certificate
+          </a>
+          {certificate.membershipId && (
+            <>
+              <p className="text-xs text-slate-500">
+                {certificate.membershipEmailSentAt
+                  ? "Emailed"
+                  : certificate.membershipEmailAttemptedAt
+                    ? "Email failed"
+                    : "Email pending"}
+              </p>
+              <button
+                type="button"
+                onClick={() => void resendCertificate()}
+                disabled={emailing}
+                className="text-sm font-semibold text-slate-600 hover:text-red-700 disabled:opacity-50"
+              >
+                {emailing
+                  ? "Sending..."
+                  : certificate.membershipEmailSentAt
+                    ? "Email again"
+                    : "Retry email"}
+              </button>
+            </>
+          )}
+          {emailMessage && (
+            <p role="status" className="max-w-56 text-xs text-slate-600">
+              {emailMessage}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -724,7 +772,7 @@ function EmptyCertificates() {
           text-slate-500
         "
       >
-        You don't have any certificates issued to
+        You don&apos;t have any certificates issued to
         your Referee / Judge account yet. Official
         certificates will appear here when they are
         issued by the Mumbai Boxing Association.

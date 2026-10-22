@@ -72,32 +72,34 @@ export async function GET(req: NextRequest) {
     const documents =
       await prisma.document.findMany({
         where: {
-          OR: [
-            {
-              status: "pending",
-            },
-            {
-              status: "uploaded",
-            },
-            {
-              status: "under_review",
-            },
-          ],
+          status: {
+            in: [
+              "pending",
+              "Pending",
+              "uploaded",
+              "Uploaded",
+              "under_review",
+              "Under Review",
+            ],
+          },
         },
 
+        include: {
+          user: {
+            select: {
+              email: true,
+              role: true,
+              boxer: { select: { name: true } },
+              coach: { select: { name: true } },
+              academy: { select: { name: true } },
+              refereeJudge: { select: { name: true } },
+            },
+          },
+        },
         orderBy: {
           createdAt: "desc",
         },
       });
-
-    /* =====================================================
-       FORMAT RESPONSE
-       =====================================================
-
-       Do NOT use document.user here because your generated
-       Prisma client does not expose a user relation on
-       Document.
-       ===================================================== */
 
     const formattedDocuments =
       documents.map((document) => ({
@@ -123,6 +125,13 @@ export async function GET(req: NextRequest) {
          * on your Document model.
          */
         userId: document.userId,
+        userRole: document.user.role,
+        userName:
+          document.user.boxer?.name ??
+          document.user.coach?.name ??
+          document.user.academy?.name ??
+          document.user.refereeJudge?.name ??
+          document.user.email,
       }));
 
     /* =====================================================

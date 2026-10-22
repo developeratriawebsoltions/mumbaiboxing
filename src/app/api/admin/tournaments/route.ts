@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 
-async function adminOnly(req: NextRequest) {
+async function canManageTournaments(req: NextRequest) {
   const payload = await verifyToken(
     req.cookies.get("mba_token")?.value ?? ""
   );
 
-  if (!payload || payload.role !== "superadmin") {
+  if (
+    !payload ||
+    (payload.role !== "admin" && payload.role !== "superadmin")
+  ) {
     return null;
   }
 
@@ -15,7 +18,7 @@ async function adminOnly(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await adminOnly(req))) {
+  if (!(await canManageTournaments(req))) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
@@ -81,7 +84,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await adminOnly(req))) {
+  if (!(await canManageTournaments(req))) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
@@ -168,7 +171,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!(await adminOnly(req))) {
+  if (!(await canManageTournaments(req))) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
@@ -272,7 +275,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!(await adminOnly(req))) {
+  if (!(await canManageTournaments(req))) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }

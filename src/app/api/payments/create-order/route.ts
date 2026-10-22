@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/jwt";
 
 const ROLE_FEES = {
   boxer: 100,
@@ -13,16 +14,15 @@ type RegistrationRole = keyof typeof ROLE_FEES;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    const userId = Number(body?.userId);
-
-    if (!Number.isInteger(userId) || userId <= 0) {
+    const token = req.cookies.get("mba_payment_token")?.value;
+    const payload = token ? await verifyToken(token) : null;
+    if (!payload || payload.role !== "payment_pending") {
       return NextResponse.json(
-        { error: "Invalid user ID" },
-        { status: 400 }
+        { error: "A valid pending-membership payment session is required" },
+        { status: 401 }
       );
     }
+    const userId = payload.id;
 
     /*
      * Get the user and all possible registration profiles.
