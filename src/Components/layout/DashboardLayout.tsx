@@ -9,11 +9,13 @@ export default function DashboardLayout({
   role?: string;
 }) {
   return (
-    <div className="flex bg-white" style={{ minHeight: "100vh" }}>
+    <div className="min-h-screen bg-white">
       <Sidebar role={role} />
-      <div className="flex-1">
+
+      <div className="lg:ml-[270px] min-h-screen">
         <Header />
-        <main className="p-6 min-h-screen bg-white">
+
+        <main className="min-h-screen bg-white p-6">
           {children}
         </main>
       </div>

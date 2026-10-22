@@ -10,12 +10,12 @@ export async function GET(req: NextRequest) {
     where: { userId: payload.id },
     include: {
       user: {
-        include: { documents: { select: { id: true, label: true, filePath: true, fileType: true, createdAt: true } } },
+        include: { document: { select: { id: true, label: true, filePath: true, fileType: true, createdAt: true } } },
       },
       academy: {
         select: {
           name: true,
-          boxers: {
+          boxer: {
             select: {
               id: true, name: true, weight: true, rank: true,
               medical: { select: { fitnessStatus: true } },

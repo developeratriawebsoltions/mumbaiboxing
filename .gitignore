@@ -44,3 +44,6 @@ next-env.d.ts
 login-credentials.txt
 
 /src/generated/prisma
+
+# Private tournament-history evidence
+/private_uploads/

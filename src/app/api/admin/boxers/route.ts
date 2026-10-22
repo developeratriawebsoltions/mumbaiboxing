@@ -4,14 +4,14 @@ import { verifyToken } from "@/lib/jwt";
 
 export async function GET(req: NextRequest) {
   const payload = await verifyToken(req.cookies.get("mba_token")?.value ?? "");
-  if (!payload || payload.role !== "superadmin")
+  if (!payload || (payload.role !== "admin" && payload.role !== "superadmin"))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const boxers = await prisma.boxer.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       user: {
-        include: { documents: { select: { id: true, label: true, filePath: true, fileType: true } } },
+        include: { document: { select: { id: true, label: true, filePath: true, fileType: true } } },
       },
       academy: { select: { name: true } },
       medical: { select: { fitnessStatus: true, expiryDate: true, eligible: true } },

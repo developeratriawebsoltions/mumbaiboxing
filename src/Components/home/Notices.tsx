@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { AlertCircle, Trophy, GraduationCap, HeartPulse } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  CalendarDays,
+  GraduationCap,
+  HeartPulse,
+  Trophy,
+} from "lucide-react";
 
 const notices = [
   {
@@ -8,8 +15,8 @@ const notices = [
     date: "12 AUG 2025",
     type: "IMPORTANT",
     Icon: AlertCircle,
-    iconBg: "rgba(220,38,38,0.15)",
-    iconColor: "#EF4444",
+    iconBg: "bg-red-50",
+    iconColor: "text-[#DC2626]",
   },
   {
     title: "Annual Tournament Schedule Released",
@@ -17,8 +24,8 @@ const notices = [
     date: "08 AUG 2025",
     type: "TOURNAMENT",
     Icon: Trophy,
-    iconBg: "rgba(234,179,8,0.15)",
-    iconColor: "#FBBF24",
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-600",
   },
   {
     title: "Coaches Certification Program",
@@ -26,8 +33,8 @@ const notices = [
     date: "05 AUG 2025",
     type: "NOTICE",
     Icon: GraduationCap,
-    iconBg: "rgba(59,130,246,0.15)",
-    iconColor: "#60A5FA",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-600",
   },
   {
     title: "Free Health Check-up Camp",
@@ -35,96 +42,224 @@ const notices = [
     date: "01 AUG 2025",
     type: "EVENT",
     Icon: HeartPulse,
-    iconBg: "rgba(34,197,94,0.15)",
-    iconColor: "#4ADE80",
+    iconBg: "bg-emerald-50",
+    iconColor: "text-emerald-600",
   },
 ];
 
 export default function Notices() {
   return (
-    <section className="py-16" style={{ background: "#070D14" }}>
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    <section
+      id="news"
+      className="w-full overflow-hidden bg-white"
+    >
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 xl:px-10 2xl:py-24">
 
-          {/* ── Notices panel ── */}
-          <div
-            className="rounded-2xl overflow-hidden"
-            style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            <div
-              className="flex items-center justify-between px-5 py-4"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#DC2626" }}>
-                  Updates
-                </p>
-                <h2 className="text-lg font-extrabold text-white">Official Notices</h2>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.12fr_0.88fr] xl:gap-7">
+
+          {/* =====================================================
+              OFFICIAL NOTICES
+          ===================================================== */}
+          <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_15px_45px_rgba(15,23,42,0.05)]">
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 sm:px-6 lg:px-7">
+
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50">
+                  <AlertCircle
+                    size={19}
+                    strokeWidth={1.8}
+                    className="text-[#DC2626]"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#DC2626]">
+                    Updates
+                  </p>
+
+                  <h2 className="mt-0.5 text-base font-bold text-slate-950 sm:text-lg">
+                    Official Notices
+                  </h2>
+                </div>
               </div>
-              <Link href="/events" className="text-xs font-semibold" style={{ color: "#DC2626" }}>
-                VIEW ALL →
+
+              <Link
+                href="/events"
+                className="group hidden shrink-0 items-center gap-2 !text-slate-500 transition-colors duration-200 hover:!text-[#DC2626] sm:flex"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
+                  View All
+                </span>
+
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
               </Link>
             </div>
 
-            <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-              {notices.map((n, i) => (
-                <div key={i} className="flex items-start gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors cursor-pointer">
+            {/* Notice List */}
+            <div className="divide-y divide-slate-100">
+
+              {notices.map((notice) => {
+                const Icon = notice.Icon;
+
+                return (
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: n.iconBg }}
+                    key={notice.title}
+                    className="group flex gap-3.5 px-5 py-5 transition-colors duration-200 hover:bg-slate-50 sm:gap-4 sm:px-6 lg:px-7"
                   >
-                    <n.Icon size={16} style={{ color: n.iconColor }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-semibold text-white leading-snug">{n.title}</p>
-                      <span className="text-[10px] flex-shrink-0 font-bold" style={{ color: "#6b7280" }}>{n.date}</span>
-                    </div>
-                    <p className="text-xs mt-0.5" style={{ color: "#6b7280" }}>{n.desc}</p>
-                    <span
-                      className="inline-block text-[10px] font-bold mt-1.5 px-2 py-0.5 rounded-full"
-                      style={{ background: n.iconBg, color: n.iconColor }}
+
+                    {/* Icon */}
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${notice.iconBg}`}
                     >
-                      {n.type}
-                    </span>
+                      <Icon
+                        size={17}
+                        strokeWidth={1.8}
+                        className={notice.iconColor}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="min-w-0 flex-1">
+
+                      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-5">
+
+                        <p className="min-w-0 text-sm font-bold leading-5 text-slate-900">
+                          {notice.title}
+                        </p>
+
+                        <div className="flex shrink-0 items-center gap-1.5 text-[9px] font-semibold text-slate-400">
+                          <CalendarDays size={11} />
+                          <span>{notice.date}</span>
+                        </div>
+
+                      </div>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        {notice.desc}
+                      </p>
+
+                      <span
+                        className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.12em] ${notice.iconBg} ${notice.iconColor}`}
+                      >
+                        {notice.type}
+                      </span>
+
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="hidden shrink-0 self-center sm:flex">
+                      <ArrowRight
+                        size={15}
+                        className="text-slate-300 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[#DC2626]"
+                      />
+                    </div>
+
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
+            </div>
+
+            {/* Mobile View All */}
+            <div className="border-t border-slate-100 px-5 py-4 sm:hidden">
+              <Link
+                href="/events"
+                className="flex items-center justify-center gap-2 !text-[#DC2626]"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
+                  View All Notices
+                </span>
+
+                <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
 
-          {/* ── CTA panel ── */}
-          <div
-            className="rounded-2xl overflow-hidden relative flex flex-col justify-between p-8 min-h-[340px]"
-            style={{ background: "linear-gradient(145deg,#070D14 0%,#1a0a0a 100%)", border: "1px solid rgba(220,38,38,0.2)" }}
-          >
-            {/* Glow */}
+          {/* =====================================================
+              JOIN CTA
+          ===================================================== */}
+          <div className="relative min-h-[390px] overflow-hidden rounded-[22px] bg-slate-950 sm:min-h-[410px] lg:min-h-full">
+
+            {/* Background Image */}
             <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse at 60% 40%, rgba(220,38,38,0.18) 0%, transparent 65%)" }}
+              className="absolute inset-0 bg-cover bg-center opacity-45"
+              style={{
+                backgroundImage: "url('/hero.png')",
+              }}
             />
 
-            <div className="relative">
-              <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: "#DC2626" }}>
-                Join Us
-              </p>
-              <h2 className="text-3xl font-extrabold text-white leading-tight">
-                READY TO STEP<br />INTO THE RING?
-              </h2>
-              <p className="mt-4 text-sm leading-relaxed" style={{ color: "#94A3B8" }}>
-                Join Mumbai&apos;s boxing community and be part of something bigger.
-              </p>
+            {/* Dark Overlay */}
+            <div className="absolute inset-0 bg-slate-950/75" />
+
+            {/* Red Gradient */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(127,29,29,0.58) 0%, rgba(17,24,39,0.88) 68%)",
+              }}
+            />
+
+            {/* Content */}
+            <div className="relative z-10 flex min-h-[390px] flex-col justify-between p-6 sm:min-h-[410px] sm:p-8 lg:min-h-full lg:p-9 xl:p-10">
+
+              {/* Top Content */}
+              <div>
+
+                {/* Label */}
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="h-[2px] w-7 bg-[#EF4444]" />
+
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#F87171]">
+                    Join Us
+                  </p>
+                </div>
+
+                {/* Heading */}
+                <h2 className="max-w-[440px] text-3xl font-black leading-[1.03] tracking-[-0.025em] text-white sm:text-4xl xl:text-[42px]">
+                  READY TO STEP
+                  <br />
+                  INTO THE{" "}
+                  <span className="text-[#EF4444]">
+                    RING?
+                  </span>
+                </h2>
+
+                <p className="mt-5 max-w-[390px] text-sm leading-6 text-white/60">
+                  Join Mumbai&apos;s boxing community and be part of
+                  something bigger.
+                </p>
+
+              </div>
+
+              {/* Bottom CTA */}
+              <div className="mt-10">
+                <Link
+                  href="/register"
+                  className="group inline-flex items-center gap-3 rounded-xl bg-[#DC2626] px-6 py-3.5 !text-white shadow-lg shadow-black/20 transition-all duration-200 hover:bg-[#B91C1C] hover:shadow-xl"
+                >
+                  <span className="text-xs font-bold uppercase tracking-[0.12em]">
+                    Register Now
+                  </span>
+
+                  <ArrowRight
+                    size={16}
+                    strokeWidth={2.5}
+                    className="!text-white transition-transform duration-200 group-hover:translate-x-1"
+                  />
+                </Link>
+              </div>
+
             </div>
 
-            <div className="relative mt-8">
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg,#DC2626,#EF4444)", boxShadow: "0 8px 24px rgba(220,38,38,0.3)" }}
-              >
-                REGISTER NOW →
-              </Link>
-            </div>
+            {/* Decorative Corner */}
+            <div className="absolute -bottom-16 -right-16 h-40 w-40 rounded-full border-[30px] border-red-600/10" />
+
           </div>
 
         </div>
