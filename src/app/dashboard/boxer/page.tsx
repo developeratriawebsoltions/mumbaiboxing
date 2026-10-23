@@ -467,6 +467,42 @@ export default function BoxerDashboard() {
   }, [boxer]);
 
   /* =========================================================
+     SAVE PROFILE
+     ========================================================= */
+
+  async function handleSave() {
+    if (!boxer) return;
+    try {
+      setSaving(true);
+      setError("");
+
+      const response = await fetch("/api/boxer", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          dob: form.dob || null,
+          weight: form.weight || null,
+          ageGroup: form.ageGroup || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to save profile.");
+      }
+
+      setBoxer((current) => (current ? { ...current, ...data } : current));
+      setIsEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save profile.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  /* =========================================================
      DOWNLOAD ID CARD
      ========================================================= */
 
