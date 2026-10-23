@@ -289,27 +289,6 @@ const MENUS: Record<string, MenuSection[]> = {
     },
 
     {
-      group: "Academy",
-      items: [
-        {
-          name: "Boxers",
-          href: "/dashboard/boxer",
-          icon: Users,
-        },
-        {
-          name: "Coaches",
-          href: "/dashboard/coach",
-          icon: UserRound,
-        },
-        {
-          name: "Certificates",
-          href: "/dashboard/certificates",
-          icon: Award,
-        },
-      ],
-    },
-
-    {
       group: "Operations",
       items: [
         {
