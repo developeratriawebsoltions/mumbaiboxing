@@ -15,6 +15,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import PageSpinner from "@/Components/ui/PageSpinner";
 
 interface DashboardStats {
   totalBoxers: number;

@@ -21,6 +21,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import PageSpinner from "@/Components/ui/PageSpinner";
 
 type Doc = {
   id: number;
@@ -555,26 +556,7 @@ export default function RefereeJudgeDashboard() {
   if (loading) {
     return (
       <DashboardLayout role="referee_judge">
-        <div className="min-h-[70vh] flex items-center justify-center">
-          <div className="text-center">
-            <div
-              className="
-                w-10
-                h-10
-                border-4
-                border-slate-200
-                border-t-red-600
-                rounded-full
-                animate-spin
-                mx-auto
-              "
-            />
-
-            <p className="mt-4 text-sm text-slate-500">
-              Loading your dashboard...
-            </p>
-          </div>
-        </div>
+        <PageSpinner message="Loading your dashboard..." />
       </DashboardLayout>
     );
   }

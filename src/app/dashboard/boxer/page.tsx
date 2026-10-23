@@ -27,6 +27,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import PageSpinner from "@/Components/ui/PageSpinner";
 
 /* =========================================================
    TYPES
@@ -46,6 +47,7 @@ type Doc = {
   fileType: string;
   status: string;
   rejectionReason: string | null;
+  issueDate: string | null;
   createdAt: string;
 };
 
@@ -974,26 +976,7 @@ export default function BoxerDashboard() {
   if (loading) {
     return (
       <DashboardLayout role="boxer">
-        <div className="min-h-[70vh] flex items-center justify-center">
-          <div className="text-center">
-            <div
-              className="
-                w-10
-                h-10
-                border-4
-                border-slate-200
-                border-t-red-600
-                rounded-full
-                animate-spin
-                mx-auto
-              "
-            />
-
-            <p className="mt-4 text-sm text-slate-500">
-              Loading your dashboard...
-            </p>
-          </div>
-        </div>
+        <PageSpinner message="Loading your dashboard..." />
       </DashboardLayout>
     );
   }
@@ -4053,6 +4036,9 @@ export default function BoxerDashboard() {
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
                           Submitted {formatDate(document.createdAt)}
+                          {document.label.toLowerCase().replace(/[^a-z0-9]/g, "") ===
+                            "hivhepatitisbctestreport" &&
+                            ` · Issue date: ${formatDate(document.issueDate)}`}
                           {document.rejectionReason
                             ? ` · ${document.rejectionReason}`
                             : ""}
