@@ -823,7 +823,25 @@ video {
   backdrop-filter: blur(18px);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mba-hero {
+    min-height: calc(100svh - 80px);
+  }
+
+  .mba-hero-art {
+    background-position: center top;
+  }
+
+  .mba-hero-inner {
+    min-height: auto;
+  }
+
+  .mba-hero-right {
+    padding-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
   .mba-hero {
     min-height: calc(100svh - 80px);
   }

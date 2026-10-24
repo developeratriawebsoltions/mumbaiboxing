@@ -3,10 +3,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowRight,
+  ChevronDown,
   Search,
   Grid2X2,
   LogOut,
@@ -21,9 +22,40 @@ type User = {
   role?: string;
 };
 
-const navLinks = [
+type NavLink = {
+  label: string;
+  href: string;
+  children?: { label: string; href: string }[];
+};
+
+const navLinks: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
+  {
+    label: "Governance",
+    href: "/governance",
+    children: [
+      { label: "Executive Committee", href: "/governance#executive-committee" },
+      { label: "Athletes Commission", href: "/governance#athletes-commission" },
+      {
+        label: "Internal Complaints Committee (POSH / ICC)",
+        href: "/governance#icc",
+      },
+      { label: "Selection Committee", href: "/governance#selection-committee" },
+      {
+        label: "Technical & Officiating Commission",
+        href: "/governance#technical-commission",
+      },
+      {
+        label: "Grievance & Disciplinary Body",
+        href: "/governance#grievance-committee",
+      },
+      {
+        label: "Medical & Athlete Safety Commission",
+        href: "/governance#medical-commission",
+      },
+    ],
+  },
   { label: "Tournaments", href: "/events" },
   { label: "Rankings", href: "/rankings" },
   { label: "Academies", href: "/academies" },
@@ -38,7 +70,10 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [governanceOpen, setGovernanceOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const governanceMenuRef = useRef<HTMLDivElement>(null);
+  const mobileGovernanceMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,8 +111,21 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    function closeGovernanceMenu(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !governanceMenuRef.current?.contains(event.target) &&
+        !mobileGovernanceMenuRef.current?.contains(event.target)
+      ) {
+        setGovernanceOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeGovernanceMenu);
+    return () => {
+      document.removeEventListener("pointerdown", closeGovernanceMenu);
+    };
+  }, []);
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -192,12 +240,75 @@ export default function Navbar() {
           className="
             hidden h-full min-w-0
             items-center justify-center
-            gap-4 lg:flex
-            xl:gap-6 2xl:gap-8
+            gap-2 lg:flex
+            xl:gap-4 2xl:gap-6
           "
         >
           {navLinks.map((link) => {
             const active = isActive(link.href);
+
+            if (link.children) {
+              return (
+                <div
+                  key={link.href}
+                  ref={governanceMenuRef}
+                  className="relative flex h-full shrink-0 items-center"
+                >
+                  <button
+                    type="button"
+                    aria-expanded={governanceOpen}
+                    aria-controls="governance-desktop-menu"
+                    onClick={() => setGovernanceOpen((open) => !open)}
+                    className={`group relative flex h-full items-center gap-1 whitespace-nowrap text-[12px] font-medium tracking-[-0.01em] transition-colors duration-200 xl:text-[14px] ${
+                      active || governanceOpen
+                        ? "text-[#f50919]"
+                        : "text-[#111827] hover:text-[#f50919]"
+                    }`}
+                  >
+                    {link.label}
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform ${
+                        governanceOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                    <span
+                      className={`absolute bottom-0 left-0 h-[3px] rounded-full bg-[#f50919] transition-all duration-200 ${
+                        active
+                          ? "w-full opacity-100"
+                          : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100"
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    id="governance-desktop-menu"
+                    className={`absolute left-1/2 top-full z-[110] w-[320px] -translate-x-1/2 rounded-xl border border-[#e8ebef] bg-white p-2 shadow-[0_20px_45px_rgba(0,0,0,0.16)] ${
+                      governanceOpen ? "block" : "hidden"
+                    }`}
+                  >
+                    <Link
+                      href="/governance"
+                      onClick={() => setGovernanceOpen(false)}
+                      className="block rounded-lg px-3 py-2.5 text-sm font-bold text-[#101820] transition-colors hover:bg-red-50 hover:text-[#f50919]"
+                    >
+                      Governance overview
+                    </Link>
+                    <div className="my-1 border-t border-[#edf0f3]" />
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => setGovernanceOpen(false)}
+                        className="block rounded-lg px-3 py-2 text-[13px] font-medium leading-5 text-[#526174] transition-colors hover:bg-red-50 hover:text-[#f50919]"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
 
             return (
               <Link
@@ -368,9 +479,10 @@ export default function Navbar() {
         {/* MOBILE MENU TOGGLE */}
         <button
           type="button"
-          onClick={() =>
-            setMobileOpen((prev) => !prev)
-          }
+          onClick={() => {
+            setMobileOpen((prev) => !prev);
+            setGovernanceOpen(false);
+          }}
           aria-label={
             mobileOpen ? "Close menu" : "Open menu"
           }
@@ -418,13 +530,76 @@ export default function Navbar() {
               {navLinks.map((link) => {
                 const active = isActive(link.href);
 
+                if (link.children) {
+                  return (
+                    <div
+                      key={link.href}
+                      ref={mobileGovernanceMenuRef}
+                      className="border-b border-[#edf0f3]"
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={governanceOpen}
+                        aria-controls="governance-mobile-menu"
+                        onClick={() =>
+                          setGovernanceOpen((open) => !open)
+                        }
+                        className={`flex w-full items-center justify-between py-3.5 text-left text-[14px] font-semibold transition-colors ${
+                          active || governanceOpen
+                            ? "text-[#f50919]"
+                            : "text-[#101820] hover:text-[#f50919]"
+                        }`}
+                      >
+                        {link.label}
+                        <ChevronDown
+                          size={17}
+                          className={`transition-transform ${
+                            governanceOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {governanceOpen && (
+                        <div
+                          id="governance-mobile-menu"
+                          className="mb-3 ml-3 border-l-2 border-red-100 pl-3"
+                        >
+                          <Link
+                            href="/governance"
+                            onClick={() => {
+                              setMobileOpen(false);
+                              setGovernanceOpen(false);
+                            }}
+                            className="block py-2 text-sm font-bold text-[#101820]"
+                          >
+                            Governance overview
+                          </Link>
+                          {link.children.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={() => {
+                                setMobileOpen(false);
+                                setGovernanceOpen(false);
+                              }}
+                              className="block py-2 text-sm text-[#526174] transition-colors hover:text-[#f50919]"
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
-                    onClick={() =>
-                      setMobileOpen(false)
-                    }
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setGovernanceOpen(false);
+                    }}
                     aria-current={
                       active ? "page" : undefined
                     }
