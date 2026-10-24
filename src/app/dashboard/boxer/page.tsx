@@ -987,39 +987,33 @@ export default function BoxerDashboard() {
 
   return (
     <DashboardLayout role="boxer">
-      <div className="max-w-[1500px] mx-auto space-y-7 text-slate-900">
+      <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-12 text-slate-900">
         {/* ==================================================
-            GREETING
+            BOXER IDENTITY / WELCOME HERO
             ================================================== */}
-
-        <div
-          className="
-            flex
-            flex-col
-            sm:flex-row
-            sm:items-end
-            justify-between
-            gap-4
-          "
-        >
-          <div>
-            <h1
-              className="
-    text-3xl
-    sm:text-[38px]
-    font-extrabold
-    tracking-tight
-    text-[#0b1729]
-  "
-            >
-              {greeting}, {boxer?.name?.split(" ")[0] || "Member"}
-            </h1>
-
-            <p className="mt-1 text-[16px] text-slate-500">
-              Here&apos;s your membership overview
-            </p>
+        <section className="relative isolate overflow-hidden rounded-[28px] bg-[#08182c] text-white shadow-[0_18px_48px_rgba(8,24,44,0.16)]">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full bg-red-600/25 blur-[85px]" />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 hidden h-[160%] w-24 rotate-[24deg] bg-red-600 lg:block" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-20 -top-20 hidden h-[160%] w-7 rotate-[24deg] bg-red-500/40 lg:block" />
+          <div className="relative z-10 flex flex-col gap-7 px-6 py-8 sm:px-9 sm:py-10 lg:flex-row lg:items-center lg:justify-between lg:px-11">
+            <div className="min-w-0 max-w-2xl">
+              <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.18em] text-red-400"><span className="h-2 w-2 rounded-full bg-red-500" /> Mumbai Boxing Association · Boxer Portal</p>
+              <p className="mt-6 text-sm font-medium text-slate-300">{greeting},</p>
+              <h1 className="mt-1 break-words text-[34px] font-black leading-[1.1] tracking-[-.04em] sm:text-[46px]">{boxer?.name || "Boxer"}<span className="text-red-500">.</span></h1>
+              <p className="mt-4 text-sm leading-6 text-slate-300">Your boxing journey, membership and achievements — all in one place.</p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold"><ShieldCheck size={15} className="text-red-400" /> Registered Boxer</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-slate-200"><CreditCard size={15} className="text-red-400" /> {boxerId}</span>
+              </div>
+            </div>
+            <div className="relative z-10 max-w-[270px] border-l-[3px] border-red-500 pl-5 lg:mr-20">
+              <p className="text-xl font-bold italic leading-8 text-white">Train with purpose.<br /><span className="text-red-400">Fight with pride.</span></p>
+              <p className="mt-3 text-xs font-medium uppercase tracking-[.15em] text-slate-400">The champion's mindset</p>
+            </div>
           </div>
-        </div>
+          <div className="h-[3px] bg-gradient-to-r from-red-600 via-red-500 to-transparent" />
+        </section>
 
         {/* ==================================================
             ERROR
@@ -1052,7 +1046,7 @@ export default function BoxerDashboard() {
               className="
                 grid
                 grid-cols-1
-                xl:grid-cols-[1.35fr_0.9fr]
+                xl:grid-cols-[1.25fr_0.9fr]
                 gap-5
               "
             >
@@ -1063,10 +1057,10 @@ export default function BoxerDashboard() {
               <div
                 className="
                   bg-white
-                  rounded-2xl
+                  rounded-[24px]
                   border
-                  border-slate-100
-                  shadow-sm
+                  border-slate-200
+                  shadow-[0_8px_28px_rgba(15,23,42,.04)]
                   p-6
                   sm:p-7
                 "
@@ -1160,8 +1154,8 @@ export default function BoxerDashboard() {
                           px-3
                           py-1
                           rounded-full
-                          bg-emerald-100
-                          text-emerald-700
+                          bg-red-50
+                          text-red-700
                           text-sm
                           font-semibold
                         "
@@ -1214,18 +1208,19 @@ export default function BoxerDashboard() {
               <div
                 className="
                   bg-white
-                  rounded-2xl
+                  rounded-[24px]
                   border
-                  border-slate-100
-                  shadow-sm
+                  border-slate-200
+                  shadow-[0_8px_28px_rgba(15,23,42,.04)]
                   overflow-hidden
                 "
               >
                 <div
                   className="
                     bg-gradient-to-br
-                    from-[#ed1c24]
-                    to-[#c90f17]
+                    from-[#0b1e36]
+                    via-[#102c4b]
+                    to-[#08182c]
                     px-6
                     py-6
                     text-white
@@ -1396,7 +1391,7 @@ export default function BoxerDashboard() {
             >
               <StatCard
                 icon={FolderOpen}
-                iconClass="bg-blue-50 text-blue-600"
+                iconClass="bg-red-50 text-red-600"
                 title={`${boxer.user.documents?.length ?? 0}`}
                 label="Documents"
                 sub="Uploaded"
@@ -1405,7 +1400,7 @@ export default function BoxerDashboard() {
 
               <StatCard
                 icon={Trophy}
-                iconClass="bg-emerald-50 text-emerald-600"
+                iconClass="bg-red-50 text-red-600"
                 title={`${boxer.tournamentEntries?.length ?? 0}`}
                 label="Tournament Entries"
                 sub="View activity"
@@ -1427,7 +1422,7 @@ export default function BoxerDashboard() {
 
               <StatCard
                 icon={Award}
-                iconClass="bg-violet-50 text-violet-600"
+                iconClass="bg-red-50 text-red-600"
                 title={`${boxer.certificates?.length ?? 0}`}
                 label="Certificates"
                 sub="View certificates"
@@ -1492,8 +1487,8 @@ export default function BoxerDashboard() {
                     text-sm
                     sm:text-base
                     font-semibold
-                    text-blue-600
-                    hover:text-blue-700
+                    text-red-600
+                    hover:text-red-700
                     whitespace-nowrap
                     inline-flex
                     items-center
@@ -3624,7 +3619,7 @@ export default function BoxerDashboard() {
                                     font-semibold
                                     ${
                                       isActive
-                                        ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+                                        ? "border-emerald-200 bg-red-50 text-red-600"
                                         : "border-amber-200 bg-amber-50 text-amber-600"
                                     }
                                   `}
@@ -3713,7 +3708,7 @@ export default function BoxerDashboard() {
                                 font-semibold
                                 ${
                                   isActive
-                                    ? "border-emerald-200 bg-emerald-50 text-emerald-600"
+                                    ? "border-emerald-200 bg-red-50 text-red-600"
                                     : "border-amber-200 bg-amber-50 text-amber-600"
                                 }
                               `}
@@ -3837,7 +3832,7 @@ export default function BoxerDashboard() {
                       w-fit
                       ${
                         boxer.medical.eligible
-                          ? "bg-emerald-50 text-emerald-600"
+                          ? "bg-red-50 text-red-600"
                           : "bg-red-50 text-red-600"
                       }
                     `}
@@ -4153,19 +4148,9 @@ export default function BoxerDashboard() {
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0">
-      <p className="text-sm text-slate-400 mb-1">{label}</p>
-
-      <p
-        className="
-          text-sm
-          font-semibold
-          text-slate-900
-          break-words
-        "
-      >
-        {value}
-      </p>
+    <div className="min-w-0 rounded-xl border border-slate-100 bg-[#f8fafc] px-4 py-3.5">
+      <p className="text-[10px] font-extrabold uppercase tracking-[.1em] text-slate-400">{label}</p>
+      <p className="mt-1.5 break-words text-sm font-bold text-[#102039]">{value}</p>
     </div>
   );
 }
@@ -4190,66 +4175,17 @@ function StatCard({
   subClass: string;
 }) {
   return (
-    <div
-      className="
-        bg-white
-        rounded-2xl
-        border
-        border-slate-100
-        shadow-sm
-        p-5
-        flex
-        items-center
-        gap-5
-      "
-    >
-      <div
-        className={`
-          w-16
-          h-16
-          shrink-0
-          rounded-full
-          flex
-          items-center
-          justify-center
-          ${iconClass}
-        `}
-      >
-        <Icon size={27} strokeWidth={1.8} />
-      </div>
-
-      <div className="min-w-0">
-        <p
-          className="
-            text-2xl
-            font-extrabold
-            text-slate-900
-          "
-        >
-          {title}
-        </p>
-
-        <p
-          className="
-            text-sm
-            font-medium
-            text-slate-700
-            mt-0.5
-          "
-        >
-          {label}
-        </p>
-
-        <p
-          className={`
-            text-sm
-            font-medium
-            mt-1
-            ${subClass}
-          `}
-        >
-          {sub}
-        </p>
+    <div className="group relative overflow-hidden rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_6px_24px_rgba(15,23,42,.04)] transition-all duration-200 hover:-translate-y-1 hover:border-red-200 hover:shadow-lg">
+      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-red-600 to-transparent opacity-80" />
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-extrabold uppercase tracking-[.09em] text-slate-500">{label}</p>
+          <p className="mt-3 break-words text-[29px] font-black leading-none tracking-tight text-[#0b1729]">{title}</p>
+          <p className={`mt-3 text-xs font-semibold ${subClass}`}>{sub}</p>
+        </div>
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] ${iconClass}`}>
+          <Icon size={23} strokeWidth={1.9} />
+        </div>
       </div>
     </div>
   );
