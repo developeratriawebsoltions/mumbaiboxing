@@ -231,7 +231,7 @@ export default function Hero() {
           </div>
 
           {/* Tournament card */}
-          <div className="mba-tournament-card w-full mr-[-70] mt-10 max-w-[390px] rounded-[20px] border border-white/20 bg-[#080e14]/95 p-5 text-white shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-6">
+          <div className="mba-tournament-card w-full mt-10 max-w-[390px] rounded-[20px] border border-white/20 bg-[#080e14]/95 p-5 text-white shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-6 md:ml-auto">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff1728] shadow-[0_0_12px_#ff1728]" />
