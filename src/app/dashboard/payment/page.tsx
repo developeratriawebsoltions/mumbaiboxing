@@ -97,21 +97,29 @@ export default function PaymentDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.role) setRole(d.role);
-        if (d.name) setUserName(d.name);
-        else if (d.email) setUserName(d.email);
-        if (d.membershipExpiry) setMembershipExpiry(d.membershipExpiry);
-      })
-      .catch(() => {});
+    async function load() {
+      try {
+        const [meRes, payRes] = await Promise.all([
+          fetch("/api/auth/me", { cache: "no-store" }),
+          fetch("/api/payments", { cache: "no-store" }),
+        ]);
 
-    fetch("/api/payments")
-      .then((r) => r.json())
-      .then((d) => { if (d?.error) setError(d.error); else setPayments(d); })
-      .catch(() => setError("Failed to load payments."))
-      .finally(() => setLoading(false));
+        const me = await meRes.json();
+        if (me.role) setRole(me.role);
+        if (me.name) setUserName(me.name);
+        else if (me.email) setUserName(me.email);
+        if (me.membershipExpiry) setMembershipExpiry(me.membershipExpiry);
+
+        const pay = await payRes.json();
+        if (pay?.error) setError(pay.error);
+        else setPayments(Array.isArray(pay) ? pay : []);
+      } catch {
+        setError("Failed to load payments.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, []);
 
   const membershipStatus = () => {
@@ -132,6 +140,19 @@ export default function PaymentDashboard() {
   const filtered = filter === "All" ? payments : payments.filter((p) => p.status === filter);
   const totalPaid = payments.filter((p) => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
   const totalPending = payments.filter((p) => p.status === "Pending").reduce((s, p) => s + p.amount, 0);
+
+  if (loading) {
+    return (
+      <DashboardLayout role={role || undefined}>
+        <div className="min-h-[70vh] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin mx-auto" />
+            <p className="mt-4 text-sm text-slate-500">Loading payments...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout role={role || undefined}>
@@ -165,10 +186,9 @@ export default function PaymentDashboard() {
           </div>
         )}
 
-        {loading && <p className="text-gray-400 text-sm">Loading...</p>}
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        {!loading && !error && (
+        {!error && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {[

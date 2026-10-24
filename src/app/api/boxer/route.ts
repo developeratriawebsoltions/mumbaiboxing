@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
-import { ensureActiveMemberCertificate } from "@/lib/membership-certificate";
 import { isMedicalDocumentLabel } from "@/lib/medical-documents";
 
 async function getAuthenticatedUser(req: NextRequest) {
@@ -31,8 +30,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    await ensureActiveMemberCertificate(payload.id);
-
     /*
      * Find the boxer and all dashboard-related data.
      */
@@ -55,6 +52,7 @@ export async function GET(req: NextRequest) {
                 fileType: true,
                 status: true,
                 rejectionReason: true,
+                issueDate: true,
                 createdAt: true,
               },
 

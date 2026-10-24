@@ -72,18 +72,12 @@ export async function ensureActiveMemberCertificate(userId: number) {
     })
   );
 
-  const emailResult = await sendMembershipCertificateEmailOnce(
+  // Fire-and-forget — do not block dashboard load on email
+  sendMembershipCertificateEmailOnce(
     certificate.id,
     user.email,
     certificate
-  );
-  if (emailResult.error) {
-    console.error("Automatic membership certificate email failed.", {
-      userId: user.id,
-      certificateId: certificate.id,
-      error: emailResult.error,
-    });
-  }
+  ).catch(() => {});
 
   return certificate;
 }

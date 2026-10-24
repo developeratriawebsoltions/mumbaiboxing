@@ -533,6 +533,49 @@ function BasicDetails({
   );
 }
 
+type AcademyOption = { id: number; name: string };
+
+function AcademyDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+}) {
+  const [academies, setAcademies] = useState<AcademyOption[]>([]);
+
+  useEffect(() => {
+    fetch("/api/public/academies")
+      .then((r) => r.json())
+      .then((data) => Array.isArray(data) && setAcademies(data))
+      .catch(() => {});
+  }, []);
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold" style={{ color: '#94A3B8' }}>
+        Academy / Club <span style={{ color: '#DC2626' }}>*</span>
+      </label>
+      <select
+        name="academyName"
+        required
+        value={value}
+        onChange={onChange}
+        className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
+        style={{ ...inputStyle, appearance: 'none' }}
+        onFocus={(e) => (e.target.style.borderColor = '#DC2626')}
+        onBlur={(e) => (e.target.style.borderColor = 'rgba(220,38,38,0.18)')}
+      >
+        <option value="">Select academy...</option>
+        <option value="__none__">Not joined any academy</option>
+        {academies.map((a) => (
+          <option key={a.id} value={a.name}>{a.name}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function BoxerAdditionalDetails({
   formData,
   files,
@@ -667,10 +710,7 @@ function BoxerAdditionalDetails({
         )}
       </div>
 
-      <Field
-        label="Academy / Club"
-        placeholder="Academy name"
-        name="academyName"
+      <AcademyDropdown
         value={formData.academyName || ""}
         onChange={onChange}
       />
@@ -720,12 +760,28 @@ function BoxerAdditionalDetails({
             onFileSelect={onFileSelect}
           />
 
+          <Field
+            label="Medical Certificate Issue Date"
+            type="date"
+            name="medicalCertIssueDate"
+            value={formData.medicalCertIssueDate || ""}
+            onChange={onChange}
+          />
+
           <FileField
             label="HIV / Hepatitis B & C Test Report"
             selectedFile={
               files["hiv-hepatitis-b-c-test-report"]
             }
             onFileSelect={onFileSelect}
+          />
+
+          <Field
+            label="HIV / Hepatitis Report Issue Date"
+            type="date"
+            name="hivReportIssueDate"
+            value={formData.hivReportIssueDate || ""}
+            onChange={onChange}
           />
         </div>
       </div>
@@ -756,10 +812,7 @@ function CoachAdditionalDetails({
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Academy / Club / School Name"
-          placeholder="Enter academy or club name"
-          name="academyName"
+        <AcademyDropdown
           value={formData.academyName || ''}
           onChange={onChange}
         />
@@ -1887,6 +1940,8 @@ function handleFieldChange(
       const uploadFd = new FormData();
 
       uploadFd.append('userId', String(json.id));
+      uploadFd.append('medicalCertIssueDate', formData.medicalCertIssueDate || '');
+      uploadFd.append('hivReportIssueDate', formData.hivReportIssueDate || '');
 
       let hasFiles = false;
 

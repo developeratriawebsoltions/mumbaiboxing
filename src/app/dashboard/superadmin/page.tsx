@@ -14,6 +14,8 @@ import {
   ArrowRight,
   CalendarDays,
 } from "lucide-react";
+import DashboardLayout from "@/Components/layout/DashboardLayout";
+import PageSpinner from "@/Components/ui/PageSpinner";
 
 interface DashboardStats {
   totalBoxers: number;
@@ -114,50 +116,32 @@ export default function SuperAdminPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F3F3F1] p-6 lg:p-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="animate-pulse">
-            <div className="h-8 w-64 rounded bg-gray-200" />
-            <div className="mt-3 h-4 w-96 rounded bg-gray-200" />
-
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="h-32 rounded-2xl bg-white"
-                />
-              ))}
-            </div>
+      <DashboardLayout role="superadmin">
+        <div className="min-h-[70vh] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin mx-auto" />
+            <p className="mt-4 text-sm text-slate-500">Loading dashboard...</p>
           </div>
         </div>
-      </main>
+      </DashboardLayout>
     );
   }
 
   if (error || !data) {
     return (
-      <main className="min-h-screen bg-[#F3F3F1] p-6 lg:p-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-2xl border border-red-200 bg-white p-8 text-center">
-            <XCircle className="mx-auto h-10 w-10 text-red-500" />
-
-            <h2 className="mt-4 text-xl font-bold text-gray-900">
-              Unable to load dashboard
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              {error || "Something went wrong."}
-            </p>
-
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-5 rounded-xl bg-[#ed1c24] px-5 py-2.5 text-sm font-semibold text-white"
-            >
-              Try Again
-            </button>
-          </div>
+      <DashboardLayout role="superadmin">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center max-w-lg mx-auto mt-12">
+          <XCircle className="mx-auto h-10 w-10 text-red-500" />
+          <h2 className="mt-4 text-xl font-bold text-gray-900">Unable to load dashboard</h2>
+          <p className="mt-2 text-sm text-gray-500">{error || "Something went wrong."}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-5 rounded-xl bg-[#ed1c24] px-5 py-2.5 text-sm font-semibold text-white"
+          >
+            Try Again
+          </button>
         </div>
-      </main>
+      </DashboardLayout>
     );
   }
 
@@ -191,7 +175,7 @@ export default function SuperAdminPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#F3F3F1] p-6 lg:p-10">
+    <DashboardLayout role="superadmin">
       <div className="mx-auto max-w-7xl">
 
         {/* HEADER */}
@@ -464,6 +448,6 @@ export default function SuperAdminPage() {
           </div>
         </section>
       </div>
-    </main>
+    </DashboardLayout>
   );
 }
