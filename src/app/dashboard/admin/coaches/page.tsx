@@ -77,7 +77,7 @@ export default function AdminCoachesPage() {
             <p className="text-xs text-gray-400">{filtered.length} of {coaches.length} coaches</p>
 
             <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[750px] text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                   <tr>
                     {["ID", "Name", "Email", "Phone", "Academy", "Status", "Documents", "Registered"].map((h) => (

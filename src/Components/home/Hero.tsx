@@ -219,7 +219,7 @@ export default function Hero() {
         </div>
 
         {/* RIGHT CONTENT */}
-        <div className="mba-hero-right relative z-10 flex w-full flex-col items-end justify-center md:min-h-[530px]">
+        <div className="mba-hero-right relative z-10 flex w-full flex-col items-end justify-center">
           <div className="mba-motivation mb-7 mr-3 hidden rotate-[-8deg] self-end font-serif text-[22px] italic leading-[1.05] text-white drop-shadow-lg lg:block">
             Discipline
             <br />

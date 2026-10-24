@@ -22,7 +22,7 @@ import styles from './register.module.css';
 
 const ROLES = ['Boxer', 'Coach', 'Academy', 'Referee / Judge'] as const;
 type Role = (typeof ROLES)[number];
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 const ROLE_ICONS: Record<Role, LucideIcon> = {
   Boxer: Dumbbell,
@@ -40,8 +40,9 @@ const inputStyle = {
 const steps = [
   { number: 1, title: 'Basic Details', short: 'Profile' },
   { number: 2, title: 'Additional Details', short: 'Details' },
-  { number: 3, title: 'Verify & Documents', short: 'Verification' },
-  { number: 4, title: 'Payment', short: 'Payment' },
+  { number: 3, title: 'Review', short: 'Review' },
+  { number: 4, title: 'Verify Email', short: 'OTP' },
+  { number: 5, title: 'Payment', short: 'Payment' },
 ] as const;
 
 function Field({
@@ -377,7 +378,7 @@ function Stepper({ step }: { step: Step }) {
         className={`${styles.stepMeta} mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em]`}
         style={{ color: '#94A3B8' }}
       >
-        <span>Step {step} of 4</span>
+        <span>Step {step} of 5</span>
         <span>{steps[step - 1].title}</span>
       </div>
     </div>
@@ -1686,7 +1687,7 @@ function handleFieldChange(
     return true;
   }
 
-  async function handleSendOtp(
+  function handleSendOtp(
     e: React.FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
@@ -1694,54 +1695,19 @@ function handleFieldChange(
 
     if (!validateStep1(e.currentTarget)) return;
 
-    const values = {
-      ...formData,
-      role,
-    };
-
     const emailValue = (formData.email ?? '').trim();
-
     if (!emailValue) {
       setError('Please provide an email address.');
       return;
     }
 
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: emailValue,
-        }),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        setError(json.error || 'Unable to send OTP');
-        return;
-      }
-
-      setEmail(emailValue);
-      setFormData(values);
-      setOtpVerified(false);
-      setStep(2);
-
-      if (json.devOtp) {
-        setOtp(json.devOtp);
-      }
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setEmail(emailValue);
+    setFormData({ ...formData, role });
+    setOtpVerified(false);
+    setStep(2);
   }
 
-  function handleAdditionalNext(
+  async function handleAdditionalNext(
     e: React.FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
@@ -1749,69 +1715,18 @@ function handleFieldChange(
 
     if (!e.currentTarget.reportValidity()) return;
 
-  if (role === "Boxer") {
-    const gender = formData.boxerGender;
-
-    if (!gender) {
-      setError("Please select your gender.");
-      return;
+    if (role === "Boxer") {
+      const gender = formData.boxerGender;
+      if (!gender) { setError("Please select your gender."); return; }
+      if (!formData.weight) { setError(`Please select a weight category for ${gender.toLowerCase()} boxers.`); return; }
+      const maleW = ["47–50 kg","50–55 kg","55–60 kg","60–65 kg","65–70 kg","70–75 kg","75–80 kg","80–85 kg","85–90 kg","+90 kg"];
+      const femaleW = ["45–48 kg","48–51 kg","51–54 kg","54–57 kg","57–60 kg","60–65 kg","65–70 kg","70–75 kg","75–80 kg","+80 kg"];
+      const valid = gender === "Male" ? maleW : gender === "Female" ? femaleW : [];
+      if (!valid.includes(formData.weight)) { setError("Please select a valid weight category for the selected gender."); return; }
     }
 
-    if (!formData.weight) {
-      setError(
-        `Please select a weight category for ${gender.toLowerCase()} boxers.`
-      );
-      return;
-    }
-
-    /* -----------------------------------------------------
-       Extra safety validation
-       Prevent manually manipulated/inconsistent values.
-    ----------------------------------------------------- */
-
-    const maleWeightCategories = [
-      "47–50 kg",
-      "50–55 kg",
-      "55–60 kg",
-      "60–65 kg",
-      "65–70 kg",
-      "70–75 kg",
-      "75–80 kg",
-      "80–85 kg",
-      "85–90 kg",
-      "+90 kg",
-    ];
-
-    const femaleWeightCategories = [
-      "45–48 kg",
-      "48–51 kg",
-      "51–54 kg",
-      "54–57 kg",
-      "57–60 kg",
-      "60–65 kg",
-      "65–70 kg",
-      "70–75 kg",
-      "75–80 kg",
-      "+80 kg",
-    ];
-
-    const validCategories =
-      gender === "Male"
-        ? maleWeightCategories
-        : gender === "Female"
-          ? femaleWeightCategories
-          : [];
-
-    if (!validCategories.includes(formData.weight)) {
-      setError(
-        "Please select a valid weight category for the selected gender."
-      );
-      return;
-    }
+    setStep(3);
   }
-
-  setStep(3);
-}
 
   async function handleVerifyOtp() {
     setError('');
@@ -1982,7 +1897,7 @@ function handleFieldChange(
       setMembershipInfo(null);
       setPaymentInfo(null);
       setPaymentDone(false);
-      setStep(4);
+      setStep(5);
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -2458,77 +2373,6 @@ const fee =
 
           {step === 3 && (
             <div className="space-y-5">
-              <SectionTitle
-                title="Verify your email"
-                description={`We sent a one-time password to ${email}. Verify it before creating your account.`}
-              />
-
-              <div
-                className="rounded-2xl border p-4"
-                style={{
-                  borderColor:
-                    'rgba(220,38,38,0.18)',
-                  background: '#F8FAFC',
-                }}
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                  <div className="flex-1">
-                    <label
-                      className="mb-1.5 block text-xs font-semibold"
-                      style={{ color: '#94A3B8' }}
-                    >
-                      Enter 6-digit OTP
-                      <span style={{ color: '#DC2626' }}>
-                        {' '}
-                        *
-                      </span>
-                    </label>
-
-                    <input
-                      value={otp}
-                      onChange={(e) => {
-                        setOtp(
-                          e.target.value
-                            .replace(/\D/g, '')
-                            .slice(0, 6)
-                        );
-                        setOtpVerified(false);
-                      }}
-                      inputMode="numeric"
-                      maxLength={6}
-                      placeholder="Enter OTP"
-                      className="w-full rounded-xl px-4 py-3 text-sm tracking-[0.3em] outline-none transition-all"
-                      style={inputStyle}
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleVerifyOtp}
-                    disabled={
-                      loading || otpVerified
-                    }
-                    className="rounded-xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{
-                      background: otpVerified
-                        ? '#166534'
-                        : '#F1F5F9',
-                      color: otpVerified
-                        ? '#FFFFFF'
-                        : '#1E293B',
-                      border:
-                        '1px solid rgba(220,38,38,0.16)',
-                    }}
-                  >
-                    {otpVerified
-                      ? 'Verified ✓'
-                      : loading
-                        ? 'Checking...'
-                        : 'Verify OTP'}
-                  </button>
-                </div>
-              </div>
-
               <Review
                 role={role}
                 formData={formData}
@@ -2544,16 +2388,12 @@ const fee =
               <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setError('');
-                    setStep(2);
-                  }}
+                  onClick={() => { setError(''); setStep(2); }}
                   className="w-full rounded-xl py-3 text-sm font-semibold"
                   style={{
                     background: '#F1F5F9',
                     color: '#64748B',
-                    border:
-                      '1px solid rgba(220,38,38,0.12)',
+                    border: '1px solid rgba(220,38,38,0.12)',
                   }}
                 >
                   Back
@@ -2561,21 +2401,156 @@ const fee =
 
                 <button
                   type="button"
-                  onClick={handleSubmitRegistration}
-                  disabled={
-                    loading || !otpVerified
-                  }
+                  disabled={loading}
+                  onClick={async () => {
+                    setError('');
+                    setOtp('');
+                    setOtpVerified(false);
+                    setLoading(true);
+                    try {
+                      const res = await fetch('/api/otp/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok) { setError(json.error || 'Unable to send OTP'); return; }
+                      if (json.devOtp) setOtp(json.devOtp);
+                      setStep(4);
+                    } catch {
+                      setError('Network error. Please try again.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
                   className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loading
-                    ? 'Creating Account...'
-                    : roleLabel}
+                  {loading ? 'Sending OTP...' : 'Confirm & Send OTP'}
                 </button>
               </div>
             </div>
           )}
 
           {step === 4 && (
+            <div className="space-y-5">
+              <SectionTitle
+                title="Verify your email"
+                description={`We sent a one-time password to ${email}. Enter it below to create your account.`}
+              />
+
+              <div
+                className="rounded-2xl border p-4"
+                style={{
+                  borderColor: 'rgba(220,38,38,0.18)',
+                  background: '#F8FAFC',
+                }}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex-1">
+                    <label
+                      className="mb-1.5 block text-xs font-semibold"
+                      style={{ color: '#94A3B8' }}
+                    >
+                      Enter 6-digit OTP
+                      <span style={{ color: '#DC2626' }}> *</span>
+                    </label>
+
+                    <input
+                      value={otp}
+                      onChange={(e) => {
+                        setOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
+                        setOtpVerified(false);
+                      }}
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="Enter OTP"
+                      className="w-full rounded-xl px-4 py-3 text-sm tracking-[0.3em] outline-none transition-all"
+                      style={inputStyle}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    disabled={loading || otpVerified}
+                    className="rounded-xl px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      background: otpVerified ? '#166534' : '#F1F5F9',
+                      color: otpVerified ? '#FFFFFF' : '#1E293B',
+                      border: '1px solid rgba(220,38,38,0.16)',
+                    }}
+                  >
+                    {otpVerified ? 'Verified ✓' : loading ? 'Checking...' : 'Verify OTP'}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setError(''); setStep(3); }}
+                  className="w-full rounded-xl py-3 text-sm font-semibold"
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#64748B',
+                    border: '1px solid rgba(220,38,38,0.12)',
+                  }}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={async () => {
+                    setError('');
+                    setOtp('');
+                    setOtpVerified(false);
+                    setLoading(true);
+                    try {
+                      const res = await fetch('/api/otp/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok) { setError(json.error || 'Unable to resend OTP'); return; }
+                      if (json.devOtp) setOtp(json.devOtp);
+                    } catch {
+                      setError('Network error. Please try again.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#DC2626',
+                    border: '1px solid rgba(220,38,38,0.2)',
+                  }}
+                >
+                  Resend OTP
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSubmitRegistration}
+                disabled={loading || !otpVerified}
+                className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? 'Creating Account...' : roleLabel}
+              </button>
+            </div>
+          )}
+
+          {step === 5 && (
             <div className="space-y-5">
               {paymentDone &&
               membershipInfo &&
