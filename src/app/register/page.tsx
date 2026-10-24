@@ -4,6 +4,17 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { jsPDF } from 'jspdf';
+import {
+  Dumbbell,
+  Landmark,
+  Scale,
+  Star,
+  Trophy,
+  UserRound,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
+import styles from './register.module.css';
 
 // Existing registration APIs are preserved:
 // /api/auth/me, /api/otp/send, /api/otp/verify, /api/register,
@@ -12,6 +23,13 @@ import { jsPDF } from 'jspdf';
 const ROLES = ['Boxer', 'Coach', 'Academy', 'Referee / Judge'] as const;
 type Role = (typeof ROLES)[number];
 type Step = 1 | 2 | 3 | 4;
+
+const ROLE_ICONS: Record<Role, LucideIcon> = {
+  Boxer: Dumbbell,
+  Coach: UserRound,
+  Academy: Landmark,
+  'Referee / Judge': Scale,
+};
 
 const inputStyle = {
   background: '#F1F5F9',
@@ -297,7 +315,7 @@ function SectionTitle({
 
 function Stepper({ step }: { step: Step }) {
   return (
-    <div className="mb-7">
+    <div className={styles.stepper}>
       <div className="flex items-start justify-between gap-1">
         {steps.map((item, index) => {
           const completed = step > item.number;
@@ -306,11 +324,11 @@ function Stepper({ step }: { step: Step }) {
           return (
             <div
               key={item.number}
-              className="flex min-w-0 flex-1 items-start"
+              className={`${styles.stepItem} flex min-w-0 flex-1 items-start`}
             >
               <div className="flex min-w-0 flex-1 flex-col items-center">
                 <div
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all"
+                  className={`${styles.stepCircle} flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all`}
                   style={
                     active || completed
                       ? {
@@ -330,7 +348,7 @@ function Stepper({ step }: { step: Step }) {
                 </div>
 
                 <span
-                  className="mt-2 hidden text-center text-[10px] font-semibold sm:block"
+                  className={`${styles.stepName} mt-2 text-center text-[10px] font-semibold`}
                   style={{
                     color: active ? '#1E293B' : '#64748B',
                   }}
@@ -341,7 +359,7 @@ function Stepper({ step }: { step: Step }) {
 
               {index < steps.length - 1 && (
                 <div
-                  className="mt-[18px] h-px flex-1"
+                  className={`${styles.stepLine} mt-[18px] h-px flex-1`}
                   style={{
                     background:
                       step > item.number
@@ -356,7 +374,7 @@ function Stepper({ step }: { step: Step }) {
       </div>
 
       <div
-        className="mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em]"
+        className={`${styles.stepMeta} mt-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em]`}
         style={{ color: '#94A3B8' }}
       >
         <span>Step {step} of 4</span>
@@ -2147,104 +2165,131 @@ const fee =
       : '1,500';
 
   return (
-    <div
-      className="relative flex h-screen flex-col overflow-y-auto overflow-x-hidden px-4 py-8"
-      style={{ background: '#FFFFFF' }}
-    >
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full animate-glow-pulse"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 70%)',
-        }}
-      />
+    <main className={styles.registerPage}>
+      <div className={styles.registerLayout}>
+        <aside className={styles.registerHero}>
+          <div className={styles.heroRedSplash} />
+          <div className={`${styles.heroLight} ${styles.heroLightOne}`} />
+          <div className={`${styles.heroLight} ${styles.heroLightTwo}`} />
 
-      <div className="relative mx-auto w-full max-w-xl animate-fade-up">
-        <div className="mb-7 text-center sm:mb-8">
-          <h1
-            className="text-2xl font-extrabold sm:text-3xl"
-            style={{ color: '#1E293B' }}
-          >
-            Create Account
-          </h1>
+          <Link className={styles.registerBrand} href="/" aria-label="MBA home">
+            <span className={styles.registerBrandLogo}>MBA</span>
+            <span className={styles.registerBrandDivider} />
+            <span className={styles.registerBrandName}>
+              MUMBAI
+              <br />
+              BOXING
+              <br />
+              ASSOCIATION
+            </span>
+          </Link>
 
-          <p
-            className="mt-1 text-sm"
-            style={{ color: '#64748B' }}
-          >
-            Register with Mumbai Boxing Association
-          </p>
-        </div>
+          <div className={styles.registerHeroCopy}>
+            <div className={styles.heroKicker}>
+              BUILD <span>•</span> TRAIN <span>•</span> COMPETE
+            </div>
+            <h1>
+              Stronger
+              <br />
+              Athletes
+              <br />
+              <span>Bigger</span>
+              <br />
+              <span>Dreams</span>
+            </h1>
+            <p>
+              Join Mumbai Boxing Association
+              <br className={styles.desktopBreak} />
+              and be part of a community
+              <br className={styles.desktopBreak} />
+              that builds champions.
+            </p>
+            <div className={styles.heroCtaLine}>
+              <span />
+              YOUR JOURNEY STARTS HERE
+            </div>
+          </div>
 
-        <div
-          className="rounded-3xl p-5 sm:p-8"
-          style={{
-            background: '#FFFFFF',
-            border:
-              '1px solid rgba(220,38,38,0.2)',
-            boxShadow:
-              '0 24px 64px rgba(0,0,0,0.1)',
-          }}
-        >
+          <div className={styles.heroFeatures}>
+            <div className={styles.heroFeature}>
+              <Trophy aria-hidden="true" />
+              <span>Professional<br />Training</span>
+            </div>
+            <div className={styles.heroFeature}>
+              <Users aria-hidden="true" />
+              <span>Expert<br />Coaches</span>
+            </div>
+            <div className={styles.heroFeature}>
+              <Star aria-hidden="true" />
+              <span>National &amp;<br />International Exposure</span>
+            </div>
+          </div>
+        </aside>
+
+        <section className={styles.registerContent}>
+          <div className={styles.registerCard}>
+            <header className={styles.registerHeading}>
+              <span className={styles.registerHeadingIcon}>
+                <UserRound size={22} aria-hidden="true" />
+              </span>
+              <div>
+                <h1>Create Account</h1>
+                <p>Register with Mumbai Boxing Association</p>
+              </div>
+            </header>
+
           {tournamentId && (
-            <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4">
-              <p className="text-sm font-bold text-slate-900">
+            <div className={styles.tournamentNotice}>
+              <p className={styles.tournamentNoticeTitle}>
                 You’re starting a tournament entry
               </p>
-              <p className="mt-1 text-xs leading-5 text-slate-600">
+              <p>
                 Create a boxer account and activate your membership first.
                 After sign-in, you’ll return to this event to complete entry
                 and any tournament fee.
               </p>
               <Link
                 href={`/events/${tournamentId}`}
-                className="mt-2 inline-flex text-xs font-semibold text-red-600 hover:underline"
+                className={styles.tournamentNoticeLink}
               >
                 Review event details
               </Link>
             </div>
           )}
 
-          <div className="mb-6">
+          <div className={styles.registrationProgress}>
             <label
-              className="mb-2 block text-xs font-bold uppercase tracking-widest"
+              className={styles.registerSectionLabel}
               style={{ color: '#DC2626' }}
             >
               Register As
             </label>
 
             {tournamentId ? (
-              <div className="inline-flex items-center rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700">
+              <div className={styles.tournamentRole}>
                 Boxer account
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {ROLES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => changeRole(r)}
-                    disabled={step !== 1}
-                    aria-pressed={role === r}
-                    className="rounded-xl py-2.5 text-xs font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60"
-                    style={
-                      role === r
-                        ? {
-                            background:
-                              'linear-gradient(135deg,#DC2626,#EF4444)',
-                            color: '#FFFFFF',
-                          }
-                        : {
-                            background: '#F1F5F9',
-                            color: '#64748B',
-                            border:
-                              '1px solid rgba(220,38,38,0.12)',
-                          }
-                    }
-                  >
-                    {r}
-                  </button>
-                ))}
+              <div className={styles.registerRoles}>
+                {ROLES.map((r) => {
+                  const RoleIcon = ROLE_ICONS[r];
+
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => changeRole(r)}
+                      disabled={step !== 1}
+                      aria-pressed={role === r}
+                      className={`${styles.registerRole} ${
+                        role === r ? styles.selected : ''
+                      }`}
+                    >
+                      <RoleIcon size={19} aria-hidden="true" />
+                      <span>{r}</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -2979,10 +3024,7 @@ const fee =
             </div>
           )}
 
-          <p
-            className="mt-6 text-center text-xs"
-            style={{ color: '#64748B' }}
-          >
+          <p className={styles.signInPrompt}>
             Already have an account?{' '}
             <Link
               href={
@@ -2990,32 +3032,28 @@ const fee =
                   ? `/login?tournamentId=${tournamentId}`
                   : "/login"
               }
-              style={{ color: '#DC2626' }}
-              className="font-semibold hover:underline"
+              className={styles.signInLink}
             >
               Sign in here
             </Link>
           </p>
           {!tournamentId && (
-            <p className="mt-3 text-center text-xs">
+            <p className={styles.browseLink}>
               <Link
                 href="/events"
-                className="font-semibold text-red-600 hover:underline"
+                className={styles.signInLink}
               >
                 Browse tournaments
               </Link>
             </p>
           )}
-        </div>
-
-        <p
-          className="mt-6 text-center text-xs"
-          style={{ color: '#94A3B8' }}
-        >
+          </div>
+          <p className={styles.registerFooter}>
           © 2025 Mumbai Boxing Association. All rights reserved.
-        </p>
+          </p>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 

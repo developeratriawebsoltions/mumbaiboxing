@@ -12,6 +12,24 @@ export async function POST(req: NextRequest) {
     const selectedRole = String(body?.role ?? "").trim().toLowerCase();
     const requestedTournamentId = Number(body?.tournamentId);
 
+    const roleMap: Record<string, string> = {
+      boxer: "boxer",
+      coach: "coach",
+      academy: "academy",
+      "referee/judge": "referee_judge",
+    };
+    const expectedRole = roleMap[selectedRole];
+
+    if (!expectedRole) {
+      return NextResponse.json(
+        {
+          error: "Please select a valid account role.",
+          code: "INVALID_ROLE",
+        },
+        { status: 400 }
+      );
+    }
+
     if (!email || !password) {
       return NextResponse.json(
         {
@@ -87,16 +105,7 @@ export async function POST(req: NextRequest) {
     /*
      * Validate selected role matches actual DB role.
      */
-    const roleMap: Record<string, string> = {
-      "boxer": "boxer",
-      "coach": "coach",
-      "academy": "academy",
-      "referee/judge": "referee_judge",
-    };
-
-    const expectedRole = roleMap[selectedRole];
-
-    if (expectedRole && user.role !== expectedRole) {
+    if (user.role !== expectedRole) {
       return NextResponse.json(
         {
           error: `This account is not registered as ${body?.role}. Please select the correct role.`,

@@ -5,36 +5,45 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const now = new Date();
-
+    const tournaments = await prisma.tournament.findMany({
+      where: {
+        status: {
+          notIn: ["completed", "cancelled"],
+        },
+      },
+      orderBy: [
+        { isFeatured: "desc" },
+        { startDate: "asc" },
+      ],
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        location: true,
+        startDate: true,
+        endDate: true,
+        weightClass: true,
+        status: true,
+        isFeatured: true,
+      },
+    });
+    const now = Date.now();
     const tournament =
-      await prisma.tournament.findFirst({
-        where: {
-          isFeatured: true,
-
-          startDate: {
-            gt: now,
-          },
-
-          status: {
-            not: "completed",
-          },
-        },
-
-        orderBy: {
-          startDate: "asc",
-        },
-
-        select: {
-          id: true,
-          name: true,
-          location: true,
-          startDate: true,
-          endDate: true,
-          weightClass: true,
-          status: true,
-        },
-      });
+      tournaments.find(
+        (item) =>
+          item.startDate &&
+          item.startDate.getTime() > now &&
+          item.isFeatured
+      ) ??
+      tournaments.find(
+        (item) =>
+          item.startDate &&
+          item.startDate.getTime() > now
+      ) ??
+      tournaments.find((item) => item.isFeatured) ??
+      tournaments.find((item) => item.status === "open") ??
+      tournaments[0] ??
+      null;
 
     return NextResponse.json(
       {

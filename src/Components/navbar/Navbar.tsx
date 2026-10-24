@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -6,6 +7,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowRight,
+  Search,
   Grid2X2,
   LogOut,
   Menu,
@@ -19,6 +21,16 @@ type User = {
   role?: string;
 };
 
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Tournaments", href: "/events" },
+  { label: "Rankings", href: "/rankings" },
+  { label: "Academies", href: "/academies" },
+  { label: "News", href: "/news" },
+  { label: "Contact", href: "/contact" },
+];
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -27,12 +39,6 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-
-  /*
-   * ------------------------------------------------------------
-   * AUTH
-   * ------------------------------------------------------------
-   */
 
   useEffect(() => {
     let cancelled = false;
@@ -46,9 +52,7 @@ export default function Navbar() {
         });
 
         if (!res.ok) {
-          if (!cancelled) {
-            setUser(null);
-          }
+          if (!cancelled) setUser(null);
           return;
         }
 
@@ -58,13 +62,9 @@ export default function Navbar() {
           setUser(data?.user || data || null);
         }
       } catch {
-        if (!cancelled) {
-          setUser(null);
-        }
+        if (!cancelled) setUser(null);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
@@ -75,21 +75,9 @@ export default function Navbar() {
     };
   }, []);
 
-  /*
-   * ------------------------------------------------------------
-   * CLOSE MOBILE MENU ON PAGE CHANGE
-   * ------------------------------------------------------------
-   */
-
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
-  /*
-   * ------------------------------------------------------------
-   * LOGOUT
-   * ------------------------------------------------------------
-   */
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -103,101 +91,59 @@ export default function Navbar() {
         cache: "no-store",
       });
     } catch {
-      // Continue to home even if the request fails.
+      // Continue with local logout.
     } finally {
       setUser(null);
       setMobileOpen(false);
       setLoggingOut(false);
-
       router.replace("/");
       router.refresh();
     }
   }
 
-  /*
-   * ------------------------------------------------------------
-   * NAVIGATION
-   * ------------------------------------------------------------
-   */
-
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Tournaments", href: "/events" },
-    { label: "Rankings", href: "/rankings" },
-    { label: "Academies", href: "/academies" },
-    { label: "News", href: "/news" },
-    { label: "Contact", href: "/contact" },
-  ];
-
   function isActive(href: string) {
-    if (href === "/") {
-      return pathname === "/";
-    }
+    if (href === "/") return pathname === "/";
 
-    if (href === "/about") {
-      return pathname === "/about" || pathname.startsWith("/about/");
-    }
-
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return (
+      pathname === href ||
+      pathname.startsWith(`${href}/`)
+    );
   }
-
-  /*
-   * ------------------------------------------------------------
-   * RENDER
-   * ------------------------------------------------------------
-   */
 
   return (
     <header
       className="
-        sticky
-        top-0
-        z-[100]
-        w-full
-        h-[76px]
-        shrink-0
-        border-b
-        border-white/[0.08]
-        bg-[#05070a]/95
-        backdrop-blur-xl
+        sticky top-0 z-[100]
+        h-[76px] w-full
+        border-b border-[#e8ebef]
+        bg-white
+        shadow-[0_3px_18px_rgba(0,0,0,0.045)]
       "
     >
       <div
         className="
-          mx-auto
-          flex
-          h-full
-          max-w-[1440px]
-          items-center
-          justify-between
-          px-6
-          lg:px-10
+          mx-auto flex h-full
+          w-full max-w-[1920px]
+          items-center justify-between
+          gap-4 px-5
+          md:px-8 lg:px-10
+          xl:px-12 2xl:px-16
         "
       >
-        {/* =====================================================
-            LOGO
-        ===================================================== */}
-
+        {/* LOGO */}
         <Link
           href="/"
-          className="group flex shrink-0 items-center gap-3"
+          className="
+            group flex shrink-0
+            items-center gap-3
+          "
         >
-          {/* Actual MBA Logo */}
-
           <div
             className="
-              relative
-              flex
-              h-15
-              w-15
-              shrink-0
-              items-center
-              justify-center
-              overflow-hidden
+              relative h-[54px] w-[54px]
+              shrink-0 overflow-hidden
               rounded-full
-              transition-transform
-              duration-200
+              transition-transform duration-200
               group-hover:scale-105
             "
           >
@@ -206,76 +152,87 @@ export default function Navbar() {
               alt="Mumbai Boxing Association"
               fill
               priority
-              sizes="60px"
+              sizes="54px"
               className="object-contain"
             />
           </div>
 
-          {/* Brand */}
-
           <div className="leading-none">
-            <div className="text-[17px] font-extrabold tracking-[0.06em] text-white sm:text-[19px]">
+            <div
+              className="
+                whitespace-nowrap
+                text-[16px] font-black
+                tracking-[0.015em]
+                text-[#071015]
+                xl:text-[19px]
+              "
+            >
               MUMBAI{" "}
-              <span className="text-red-500">
+              <span className="text-[#f50919]">
                 BOXING
               </span>
             </div>
 
-            <div className="mt-1 text-[9px] font-semibold tracking-[0.28em] text-slate-400 sm:text-[10px]">
+            <div
+              className="
+                mt-1.5 text-[9px]
+                font-bold uppercase
+                tracking-[0.30em]
+                text-[#536174]
+              "
+            >
               ASSOCIATION
             </div>
           </div>
         </Link>
 
-        {/* =====================================================
-            DESKTOP NAVIGATION
-        ===================================================== */}
-
-        <nav className="hidden h-full items-center gap-7 lg:flex">
+        {/* DESKTOP NAVIGATION */}
+        <nav
+          aria-label="Main navigation"
+          className="
+            hidden h-full min-w-0
+            items-center justify-center
+            gap-4 lg:flex
+            xl:gap-6 2xl:gap-8
+          "
+        >
           {navLinks.map((link) => {
             const active = isActive(link.href);
 
             return (
               <Link
-                key={link.label}
+                key={link.href}
                 href={link.href}
+                aria-current={
+                  active ? "page" : undefined
+                }
                 className={`
-                  group
-                  relative
-                  flex
-                  h-full
-                  items-center
-                  text-[17px]
-                  font-medium
-                  transition-colors
-                  duration-200
+                  group relative flex h-full
+                  shrink-0 items-center
+                  whitespace-nowrap
+                  text-[12px] font-medium
+                  tracking-[-0.01em]
+                  transition-colors duration-200
+                  xl:text-[14px]
                   ${
                     active
-                      ? "!text-red-500"
-                      : "!text-slate-400 hover:!text-white"
+                      ? "!text-[#f50919]"
+                      : "!text-[#111827] hover:!text-[#f50919]"
                   }
                 `}
               >
                 {link.label}
 
-                {/* Active indicator */}
-
                 <span
                   className={`
-                    absolute
-                    bottom-0
-                    left-1/2
-                    h-[2px]
-                    -translate-x-1/2
-                    rounded-full
-                    bg-red-500
-                    shadow-[0_0_8px_rgba(239,68,68,0.5)]
-                    transition-all
-                    duration-200
+                    absolute bottom-0 left-0
+                    h-[3px] rounded-full
+                    bg-[#f50919]
+                    transition-all duration-200
                     ${
                       active
-                        ? "w-8 opacity-100"
-                        : "w-0 opacity-0 group-hover:w-8 group-hover:opacity-100"
+                        ? "w-full opacity-100"
+                        : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100"
                     }
                   `}
                 />
@@ -284,247 +241,202 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* =====================================================
-            DESKTOP ACTIONS
-            Stable layout — prevents auth state jumping
-        ===================================================== */}
-
+        {/* DESKTOP RIGHT ACTIONS */}
         <div
           className="
-            hidden
-            h-10
-            w-[230px]
-            shrink-0
-            items-center
-            justify-end
+            hidden shrink-0 items-center
+            justify-end gap-3
             lg:flex
           "
         >
-          {/* Keep container mounted at all times */}
+          {/* Search icon */}
+          <Link
+            href="/search"
+            aria-label="Search"
+            className="
+              flex h-[42px] w-[42px]
+              shrink-0 items-center justify-center
+              rounded-full
+              border border-[#d8dde4]
+              bg-white !text-[#101820]
+              transition-all duration-200
+              hover:border-[#f50919]
+              hover:!text-[#f50919]
+            "
+          >
+            <Search size={19} strokeWidth={2.2} />
+          </Link>
+
+          <div
+            className="
+              mx-1 h-[30px] w-px
+              bg-[#e1e5ea]
+            "
+          />
 
           {loading ? (
             <div
-              className="
-                h-10
-                w-[190px]
-                shrink-0
-              "
+              className="h-[42px] w-[195px]"
               aria-hidden="true"
             />
           ) : user ? (
-            <div
-              className="
-                flex
-                h-10
-                shrink-0
-                items-center
-                justify-end
-              "
-            >
-              {/* Dashboard */}
-
+            <>
               <Link
                 href="/dashboard"
                 className="
-                  flex
-                  h-10
-                  shrink-0
-                  items-center
-                  gap-2
-                  rounded-full
-                  border
-                  border-white/10
-                  bg-white/[0.03]
-                  px-5
-                  text-sm
-                  font-medium
-                  !text-slate-300
+                  flex h-[42px] items-center
+                  justify-center gap-2
+                  whitespace-nowrap rounded-full
+                  border border-[#aab3bf]
+                  bg-white px-4
+                  text-[13px] font-semibold
+                  !text-[#101820]
                   transition-all
-                  duration-200
-                  hover:border-white/20
-                  hover:bg-white/[0.06]
-                  hover:!text-white
+                  hover:border-[#f50919]
+                  hover:!text-[#f50919]
                 "
               >
-                <Grid2X2 size={15} />
-
+                <Grid2X2 size={16} />
                 Dashboard
               </Link>
-
-              {/* Logout */}
 
               <button
                 type="button"
                 onClick={handleLogout}
                 disabled={loggingOut}
                 className="
-                  ml-3
-                  flex
-                  h-10
-                  shrink-0
-                  items-center
-                  gap-2
-                  rounded-full
-                  bg-red-600
-                  px-5
-                  text-sm
-                  font-semibold
+                  flex h-[42px] items-center
+                  justify-center gap-2
+                  whitespace-nowrap rounded-full
+                  bg-[#f50919] px-5
+                  text-[13px] font-bold
                   !text-white
-                  shadow-[0_5px_20px_rgba(220,38,38,0.16)]
-                  transition-all
-                  duration-200
-                  hover:bg-red-500
-                  hover:shadow-[0_8px_25px_rgba(220,38,38,0.25)]
-                  disabled:cursor-not-allowed
+                  transition-all duration-200
+                  hover:bg-[#d50012]
                   disabled:opacity-60
                 "
               >
-                <LogOut size={15} />
-
-                {loggingOut ? "Logging out..." : "Logout"}
+                <LogOut size={16} />
+                {loggingOut
+                  ? "Logging out..."
+                  : "Logout"}
               </button>
-            </div>
+            </>
           ) : (
-            <div
-              className="
-                flex
-                h-10
-                shrink-0
-                items-center
-                justify-end
-              "
-            >
-              {/* Login */}
-
+            <>
               <Link
                 href="/login"
                 className="
-                  flex
-                  h-10
-                  shrink-0
-                  items-center
+                  flex h-[42px] items-center
+                  justify-center
                   rounded-full
-                  px-4
-                  text-sm
-                  font-medium
-                  !text-slate-400
-                  transition-colors
-                  hover:!text-white
+                  border border-[#aab3bf]
+                  bg-white px-5
+                  text-[13px] font-semibold
+                  !text-[#101820]
+                  transition-all duration-200
+                  hover:border-[#f50919]
+                  hover:!text-[#f50919]
                 "
               >
                 Login
               </Link>
 
-              {/* Register */}
-
               <Link
                 href="/register"
                 className="
-                  ml-1
-                  flex
-                  h-10
-                  shrink-0
-                  items-center
-                  gap-2
+                  flex h-[42px] items-center
+                  justify-center gap-3
+                  whitespace-nowrap
                   rounded-full
-                  bg-red-600
-                  px-5
-                  text-sm
-                  font-semibold
+                  bg-[#f50919] px-6
+                  text-[13px] font-bold
                   !text-white
-                  shadow-[0_5px_20px_rgba(220,38,38,0.16)]
-                  transition-all
-                  duration-200
-                  hover:bg-red-500
-                  hover:shadow-[0_8px_25px_rgba(220,38,38,0.25)]
+                  shadow-[0_5px_18px_rgba(245,9,25,0.18)]
+                  transition-all duration-200
+                  hover:bg-[#d50012]
+                  hover:shadow-[0_7px_22px_rgba(245,9,25,0.28)]
                 "
               >
                 Register
-
-                <ArrowRight size={15} />
+                <ArrowRight size={17} />
               </Link>
-            </div>
+            </>
           )}
         </div>
 
-        {/* =====================================================
-            MOBILE MENU BUTTON
-        ===================================================== */}
-
+        {/* MOBILE MENU TOGGLE */}
         <button
           type="button"
-          onClick={() => setMobileOpen((prev) => !prev)}
+          onClick={() =>
+            setMobileOpen((prev) => !prev)
+          }
+          aria-label={
+            mobileOpen ? "Close menu" : "Open menu"
+          }
+          aria-expanded={mobileOpen}
+          aria-controls="mba-mobile-menu"
           className="
-            flex
-            h-10
-            w-10
-            shrink-0
-            items-center
-            justify-center
+            flex h-10 w-10
+            shrink-0 items-center justify-center
             rounded-lg
-            border
-            border-white/10
-            bg-white/[0.03]
-            !text-slate-300
-            transition-all
-            duration-200
-            hover:border-white/20
-            hover:bg-white/[0.06]
-            hover:!text-white
+            border border-[#e1e5ea]
+            bg-white !text-[#101820]
+            transition-colors
+            hover:border-[#f50919]
             lg:hidden
           "
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileOpen}
         >
           {mobileOpen ? (
-            <X size={21} />
+            <X size={22} />
           ) : (
-            <Menu size={21} />
+            <Menu size={22} />
           )}
         </button>
       </div>
 
-      {/* =======================================================
-          MOBILE MENU
-      ======================================================= */}
-
+      {/* MOBILE NAVIGATION */}
       {mobileOpen && (
         <div
+          id="mba-mobile-menu"
           className="
-            absolute
-            left-0
-            right-0
-            top-[76px]
-            border-t
-            border-white/[0.07]
-            bg-[#07090d]
-            shadow-[0_20px_40px_rgba(0,0,0,0.35)]
+            absolute left-0 right-0
+            top-full z-50
+            max-h-[calc(100dvh-76px)]
+            overflow-y-auto
+            border-t border-[#e8ebef]
+            bg-white
+            shadow-[0_20px_40px_rgba(0,0,0,0.12)]
             lg:hidden
           "
         >
           <div className="mx-auto max-w-[1440px] px-6 py-5">
-            {/* Navigation */}
-
-            <nav className="flex flex-col">
+            <nav
+              aria-label="Mobile navigation"
+              className="flex flex-col"
+            >
               {navLinks.map((link) => {
                 const active = isActive(link.href);
 
                 return (
                   <Link
-                    key={link.label}
+                    key={link.href}
                     href={link.href}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() =>
+                      setMobileOpen(false)
+                    }
+                    aria-current={
+                      active ? "page" : undefined
+                    }
                     className={`
-                      border-b
-                      border-white/[0.06]
-                      py-3.5
-                      text-sm
-                      font-medium
+                      border-b border-[#edf0f3]
+                      py-3.5 text-[14px]
+                      font-semibold
                       transition-colors
                       ${
                         active
-                          ? "!text-red-500"
-                          : "!text-slate-400 hover:!text-white"
+                          ? "!text-[#f50919]"
+                          : "!text-[#101820] hover:!text-[#f50919]"
                       }
                     `}
                   >
@@ -534,117 +446,87 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* =================================================
-                MOBILE ACTIONS
-            ================================================= */}
+            {/* MOBILE ACTIONS */}
+            {!loading && (
+              <div className="mt-6 flex gap-3">
+                {user ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      onClick={() =>
+                        setMobileOpen(false)
+                      }
+                      className="
+                        flex h-11 flex-1
+                        items-center justify-center gap-2
+                        rounded-full
+                        border border-[#b8c0ca]
+                        text-sm font-semibold
+                        !text-[#101820]
+                      "
+                    >
+                      <Grid2X2 size={16} />
+                      Dashboard
+                    </Link>
 
-            {!loading && user ? (
-              <div className="mt-5 flex gap-3">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className="
-                    flex
-                    flex-1
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-lg
-                    border
-                    border-white/10
-                    bg-white/[0.03]
-                    py-3
-                    text-sm
-                    font-medium
-                    !text-slate-300
-                    transition-all
-                    hover:bg-white/[0.06]
-                    hover:!text-white
-                  "
-                >
-                  <Grid2X2 size={15} />
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                      className="
+                        flex h-11 flex-1
+                        items-center justify-center gap-2
+                        rounded-full bg-[#f50919]
+                        text-sm font-bold
+                        !text-white
+                        disabled:opacity-60
+                      "
+                    >
+                      <LogOut size={16} />
+                      {loggingOut
+                        ? "Logging out..."
+                        : "Logout"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() =>
+                        setMobileOpen(false)
+                      }
+                      className="
+                        flex h-11 flex-1
+                        items-center justify-center
+                        rounded-full
+                        border border-[#b8c0ca]
+                        text-sm font-semibold
+                        !text-[#101820]
+                      "
+                    >
+                      Login
+                    </Link>
 
-                  Dashboard
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  disabled={loggingOut}
-                  className="
-                    flex
-                    flex-1
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-lg
-                    bg-red-600
-                    py-3
-                    text-sm
-                    font-semibold
-                    !text-white
-                    transition-all
-                    hover:bg-red-500
-                    disabled:cursor-not-allowed
-                    disabled:opacity-60
-                  "
-                >
-                  <LogOut size={15} />
-
-                  {loggingOut ? "Logging out..." : "Logout"}
-                </button>
+                    <Link
+                      href="/register"
+                      onClick={() =>
+                        setMobileOpen(false)
+                      }
+                      className="
+                        flex h-11 flex-1
+                        items-center justify-center gap-2
+                        rounded-full bg-[#f50919]
+                        text-sm font-bold
+                        !text-white
+                      "
+                    >
+                      Register
+                      <ArrowRight size={16} />
+                    </Link>
+                  </>
+                )}
               </div>
-            ) : !loading ? (
-              <div className="mt-5 flex gap-3">
-                <Link
-                  href="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="
-                    flex
-                    flex-1
-                    items-center
-                    justify-center
-                    rounded-lg
-                    border
-                    border-white/10
-                    bg-white/[0.03]
-                    py-3
-                    text-sm
-                    font-medium
-                    !text-slate-300
-                    transition-all
-                    hover:bg-white/[0.06]
-                    hover:!text-white
-                  "
-                >
-                  Login
-                </Link>
-
-                <Link
-                  href="/register"
-                  onClick={() => setMobileOpen(false)}
-                  className="
-                    flex
-                    flex-1
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-lg
-                    bg-red-600
-                    py-3
-                    text-sm
-                    font-semibold
-                    !text-white
-                    transition-all
-                    hover:bg-red-500
-                  "
-                >
-                  Register
-
-                  <ArrowRight size={15} />
-                </Link>
-              </div>
-            ) : null}
+            )}
           </div>
         </div>
       )}

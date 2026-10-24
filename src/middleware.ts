@@ -9,6 +9,7 @@ const AUTH_PAGES = [
   "/admin/login",
   "/login/admin",
   "/login/superadmin",
+  "/superadmin/login",
 ];
 
 const ROLE_ALLOWED: Record<string, string[]> = {
@@ -294,5 +295,6 @@ export const config = {
     "/login/superadmin",
     "/register",
     "/admin/login",
+    "/superadmin/login",
   ],
 };

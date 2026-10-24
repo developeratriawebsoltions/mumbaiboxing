@@ -1,6 +1,17 @@
 "use client";
+
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  MapPin,
+  UserRound,
+  Wallet,
+} from "lucide-react";
+import { tournamentUrl } from "@/lib/tournament-url";
 
 type Tournament = {
   id: number;
@@ -15,27 +26,52 @@ type Tournament = {
 
 const STATUS_FILTERS = ["All", "upcoming", "open", "ongoing", "completed"];
 
-const statusLabel = (s: string) => {
-  if (s === "open") return "Registration Open";
-  if (s === "ongoing") return "Ongoing";
-  if (s === "completed") return "Completed";
+function statusLabel(status: string) {
+  if (status === "open") return "Registration Open";
+  if (status === "ongoing") return "Ongoing";
+  if (status === "completed") return "Completed";
   return "Upcoming";
-};
+}
 
-const statusStyle = (s: string) => {
-  if (s === "open") return { background: "rgba(34,197,94,0.15)", color: "#4ADE80", border: "1px solid rgba(34,197,94,0.25)" };
-  if (s === "ongoing") return { background: "rgba(59,130,246,0.15)", color: "#60A5FA", border: "1px solid rgba(59,130,246,0.25)" };
-  if (s === "completed") return { background: "rgba(100,116,139,0.15)", color: "#94A3B8", border: "1px solid rgba(100,116,139,0.25)" };
-  return { background: "rgba(212,160,23,0.12)", color: "#F0C040", border: "1px solid rgba(212,160,23,0.25)" };
-};
+function formatDate(start: string | null, end: string | null) {
+  if (!start) return "Date to be announced";
 
-const formatDate = (start: string | null, end: string | null) => {
-  if (!start) return "Date TBD";
-  const s = new Date(start).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-  if (!end) return s;
-  const e = new Date(end).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-  return `${s} – ${e}`;
-};
+  const startDate = new Date(start);
+  if (Number.isNaN(startDate.getTime())) return "Date to be announced";
+
+  const format = (date: Date) =>
+    date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  const formattedStart = format(startDate);
+  if (!end) return formattedStart;
+
+  const endDate = new Date(end);
+  if (Number.isNaN(endDate.getTime())) return formattedStart;
+  return `${formattedStart} – ${format(endDate)}`;
+}
+
+function EventDetail({
+  icon: Icon,
+  children,
+}: {
+  icon: typeof CalendarDays;
+  children: React.ReactNode;
+}) {
+  return (
+    <p className="flex min-w-0 items-center gap-3 text-sm leading-6 text-[#52647a] sm:text-[15px]">
+      <Icon
+        size={18}
+        strokeWidth={2.6}
+        aria-hidden="true"
+        className="shrink-0 text-[#f50919]"
+      />
+      <span className="min-w-0 break-words">{children}</span>
+    </p>
+  );
+}
 
 export default function EventsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -91,7 +127,9 @@ export default function EventsPage() {
     setLoading(true);
     setError("");
     fetchTournaments()
-      .then(setTournaments)
+      .then((data) => {
+        setTournaments(data);
+      })
       .catch((loadError) => {
         setError(
           loadError instanceof Error
@@ -106,68 +144,98 @@ export default function EventsPage() {
     filter === "All"
       ? tournaments
       : tournaments.filter(
-          (t) => t.status.toLowerCase() === filter.toLowerCase()
+          (tournament) =>
+            tournament.status.toLowerCase() === filter.toLowerCase()
         );
 
   return (
-    <div className="min-h-screen" style={{ background: "#0B1120" }}>
-      {/* Header */}
-      <div className="border-b" style={{ borderColor: "rgba(212,160,23,0.15)" }}>
-        <div className="container mx-auto px-6 py-5 flex items-center justify-between">
-          <Link href="/" className="text-xl font-extrabold" style={{ color: "#D4A017" }}>MBA</Link>
-          <div className="flex gap-4">
-            <Link href="/login" className="text-sm font-semibold px-4 py-2 rounded-xl" style={{ color: "#94A3B8" }}>Login</Link>
-            <Link href="/register" className="btn-gold text-sm font-semibold px-4 py-2 rounded-xl">Register</Link>
-          </div>
-        </div>
-      </div>
+    <main className="min-h-screen bg-[radial-gradient(ellipse_at_50%_15%,#ffffff_0%,#f8fafd_65%,#f0f4f9_100%)] text-[#101b2d]">
+      <div className="mx-auto max-w-[1488px] px-5 pb-20 pt-8 sm:px-8 sm:pt-10 lg:px-0">
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-8 flex items-center gap-2 text-xs font-medium text-[#75849a] sm:text-sm"
+        >
+          <Link href="/" className="transition-colors hover:text-[#f50919]">
+            Home
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="font-semibold text-[#f50919]">Tournaments</span>
+        </nav>
 
-      <div className="container mx-auto px-6 py-16">
-        {/* Page title */}
-        <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#D4A017" }}>Events</p>
-          <h1 className="text-4xl font-extrabold" style={{ color: "#F8F9FA" }}>All Tournaments</h1>
-          <p className="mt-2 text-sm" style={{ color: "#94A3B8" }}>Browse all events and register for open tournaments</p>
-        </div>
+        <header className="mb-7">
+          <p className="mb-2 flex items-center gap-3 text-xs font-extrabold uppercase tracking-[0.2em] text-[#f50919] sm:text-sm">
+            <span className="h-[3px] w-7 rounded-full bg-[#f50919]" />
+            Events
+          </p>
+          <h1 className="text-[clamp(38px,4vw,52px)] font-black leading-[1.08] tracking-[-0.055em] text-[#101b2d]">
+            All <span className="text-[#f50919]">Tournaments</span>
+          </h1>
+          <p className="mt-2 text-base leading-7 text-[#75849a] sm:text-lg">
+            Browse all events and register for open tournaments.
+          </p>
+        </header>
 
-        {/* Filter tabs */}
         {!loading && !error && (
-          <div className="mb-8 flex flex-wrap gap-2">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setFilter(f)}
-                aria-pressed={filter === f}
-                className="rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-colors"
-                style={filter === f
-                  ? { background: "#D4A017", color: "#0B1120" }
-                  : { background: "rgba(212,160,23,0.08)", color: "#94A3B8", border: "1px solid rgba(212,160,23,0.15)" }}
-              >
-                {f === "All" ? `All (${tournaments.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${tournaments.filter((t) => t.status.toLowerCase() === f.toLowerCase()).length})`}
-              </button>
-            ))}
+          <div
+            className="mb-5 flex flex-wrap gap-2 pb-1"
+            aria-label="Filter tournaments by status"
+          >
+            {STATUS_FILTERS.map((status) => {
+              const selected = filter === status;
+              const count =
+                status === "All"
+                  ? tournaments.length
+                  : tournaments.filter(
+                      (tournament) =>
+                        tournament.status.toLowerCase() ===
+                        status.toLowerCase()
+                    ).length;
+
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setFilter(status)}
+                  aria-pressed={selected}
+                  className={`min-h-[46px] shrink-0 rounded-full border px-4 text-sm font-semibold capitalize transition sm:px-6 ${
+                    selected
+                      ? "border-[#f50919] bg-[#f50919] text-white shadow-[0_8px_20px_rgba(245,9,25,0.18)]"
+                      : "border-[#e0e6ee] bg-white text-[#53657b] hover:border-[#f50919] hover:text-[#f50919]"
+                  }`}
+                >
+                  {status === "All"
+                    ? `All (${count})`
+                    : `${status.charAt(0).toUpperCase()}${status.slice(1)} (${count})`}
+                </button>
+              );
+            })}
           </div>
         )}
 
-        {/* Loading */}
         {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl p-6 border animate-pulse" style={{ background: "#111827", borderColor: "rgba(212,160,23,0.15)", height: 240 }} />
+          <div className="grid max-w-[840px] gap-5">
+            {[1, 2].map((item) => (
+              <div
+                key={item}
+                className="h-[326px] animate-pulse rounded-[18px] border border-[#e3e9f1] bg-white shadow-[0_14px_40px_rgba(20,38,62,0.06)]"
+                aria-label="Loading tournaments"
+              />
             ))}
           </div>
         )}
 
-        {/* Empty */}
         {!loading && error && (
-          <div className="rounded-2xl border border-red-400/20 bg-red-500/5 px-6 py-10 text-center">
-            <p className="text-lg font-semibold text-white">Events could not load</p>
-            <p role="alert" className="mt-2 text-sm text-slate-400">{error}</p>
+          <div className="max-w-[840px] rounded-[18px] border border-red-100 bg-white px-6 py-12 text-center shadow-[0_14px_40px_rgba(20,38,62,0.06)]">
+            <h2 className="text-lg font-bold text-[#101b2d]">
+              Events could not load
+            </h2>
+            <p role="alert" className="mt-2 text-sm text-[#64748b]">
+              {error}
+            </p>
             <button
               type="button"
               onClick={loadTournaments}
-              className="mt-5 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+              className="mt-5 rounded-full bg-[#f50919] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#d60013]"
             >
               Try again
             </button>
@@ -175,61 +243,98 @@ export default function EventsPage() {
         )}
 
         {!loading && !error && filtered.length === 0 && (
-          <div className="text-center py-24" style={{ color: "#94A3B8" }}>
-            <p className="text-5xl mb-4">🏆</p>
-            <p className="text-lg font-semibold text-white">No tournaments found</p>
-            <p className="text-sm mt-1">Check back soon for upcoming events.</p>
+          <div className="max-w-[840px] rounded-[18px] border border-[#e3e9f1] bg-white px-6 py-16 text-center shadow-[0_14px_40px_rgba(20,38,62,0.06)]">
+            <CalendarDays size={36} className="mx-auto text-[#f50919]" />
+            <h2 className="mt-4 text-lg font-bold text-[#101b2d]">
+              No tournaments found
+            </h2>
+            <p className="mt-2 text-sm text-[#75849a]">
+              Check back soon for upcoming events.
+            </p>
           </div>
         )}
 
-        {/* Cards */}
         {!loading && !error && filtered.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filtered.map((t) => (
-              <div
-                key={t.id}
-                className="rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
-                style={{ background: "#111827", borderColor: "rgba(212,160,23,0.15)" }}
-              >
-                <span className="inline-block text-xs font-bold px-3 py-1 rounded-full mb-4" style={statusStyle(t.status)}>
-                  {statusLabel(t.status)}
-                </span>
+          <div className="grid max-w-[840px] gap-5">
+            {filtered.map((tournament) => {
+              const isOpen = tournament.status.toLowerCase() === "open";
+              const badgeStyle = isOpen
+                ? "bg-[#e2f8ec] text-[#119453]"
+                : tournament.status.toLowerCase() === "ongoing"
+                  ? "bg-blue-50 text-blue-700"
+                  : "bg-slate-100 text-slate-600";
 
-                <h3 className="font-bold text-lg text-white leading-snug">{t.name}</h3>
-
-                <div className="mt-4 space-y-2 text-sm" style={{ color: "#94A3B8" }}>
-                  <div className="flex items-center gap-2">
-                    <span style={{ color: "#D4A017" }}>📅</span>
-                    {formatDate(t.startDate, t.endDate)}
-                  </div>
-                  {t.location && (
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: "#D4A017" }}>📍</span> {t.location}
-                    </div>
-                  )}
-                  {t.weightClass && (
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: "#D4A017" }}>🥊</span> {t.weightClass}
-                    </div>
-                  )}
-                  {t.entryFee != null && (
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: "#D4A017" }}>💰</span> Entry Fee: ₹{t.entryFee}
-                    </div>
-                  )}
-                </div>
-
-                <Link
-                  href={`/events/${t.id}`}
-                  className="btn-gold mt-5 block text-center text-sm px-4 py-2.5 rounded-xl"
+              return (
+                <article
+                  key={tournament.id}
+                  className="group flex flex-col gap-5 rounded-[18px] border border-[#e3e9f1] bg-white p-3 shadow-[0_14px_40px_rgba(20,38,62,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(20,38,62,0.12)] sm:flex-row sm:gap-7 sm:p-3"
                 >
-                  View Details
-                </Link>
-              </div>
-            ))}
+                  <div className="relative h-[230px] w-full shrink-0 overflow-hidden rounded-[13px] bg-[#e8edf3] sm:h-[304px] sm:w-[292px]">
+                    <Image
+                      src="/home/hero-bg-mobile.png"
+                      alt="Boxer in the ring"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 292px"
+                      loading="eager"
+                      fetchPriority="high"
+                      className="object-cover object-[72%_center] transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  </div>
+
+                  <div className="flex min-w-0 flex-1 flex-col px-2 pb-2 pt-1 sm:py-3 sm:pr-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span
+                        className={`inline-flex min-h-[34px] items-center gap-2 rounded-full px-3.5 text-xs font-bold ${badgeStyle}`}
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full ${
+                            isOpen ? "bg-[#12a150]" : "bg-current"
+                          }`}
+                        />
+                        {statusLabel(tournament.status)}
+                      </span>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff0f1] text-[#f50919]">
+                        <ArrowUpRight size={17} aria-hidden="true" />
+                      </span>
+                    </div>
+
+                    <h2 className="mt-3 text-[23px] font-black leading-tight tracking-[-0.035em] text-[#101b2d] sm:text-[25px]">
+                      {tournament.name}
+                    </h2>
+
+                    <div className="mt-3 space-y-1.5">
+                      <EventDetail icon={CalendarDays}>
+                        {formatDate(tournament.startDate, tournament.endDate)}
+                      </EventDetail>
+                      {tournament.location && (
+                        <EventDetail icon={MapPin}>
+                          {tournament.location}
+                        </EventDetail>
+                      )}
+                      {tournament.weightClass && (
+                        <EventDetail icon={UserRound}>
+                          {tournament.weightClass}
+                        </EventDetail>
+                      )}
+                      <EventDetail icon={Wallet}>
+                        Entry Fee: ₹{tournament.entryFee ?? 500}
+                      </EventDetail>
+                    </div>
+
+                    <Link
+                      href={tournamentUrl(tournament)}
+                      className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-4 rounded-full bg-[#f50919] px-6 text-sm font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_10px_22px_rgba(245,9,25,0.15)] transition hover:bg-[#d60013] sm:mt-auto sm:w-fit sm:min-w-[208px]"
+                    >
+                      View details
+                      <ArrowRight size={17} aria-hidden="true" />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

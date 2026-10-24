@@ -1,0 +1,902 @@
+.loginPage {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  padding: 30px;
+  overflow: hidden;
+  background: transparent;
+  color: #101f37;
+  font-family: var(--font-inter), Arial, sans-serif;
+}
+
+.loginPage::before,
+.loginPage::after {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.loginPage::before {
+  background:
+    radial-gradient(
+      circle at 16% 86%,
+      transparent 0 215px,
+      rgba(237, 32, 41, 0.2) 216px 217px,
+      transparent 218px 245px,
+      rgba(237, 32, 41, 0.045) 246px 275px,
+      transparent 276px 305px,
+      rgba(237, 32, 41, 0.035) 306px 335px,
+      transparent 336px
+    ),
+    linear-gradient(150deg, transparent 0 57%, rgba(237, 32, 41, 0.12) 57.2% 58%, transparent 58.2%),
+    linear-gradient(135deg, transparent 0 21%, rgba(237, 32, 41, 0.94) 21.2% 29%, transparent 29.2% 100%),
+    linear-gradient(145deg, #fffaf7 5%, #fff0eb 60%, #fbe0d9);
+}
+
+.loginPage::after {
+  background-image: repeating-linear-gradient(
+    120deg,
+    transparent 0,
+    transparent 45px,
+    rgba(255, 255, 255, 0.24) 46px,
+    transparent 48px
+  );
+  mask-image: linear-gradient(135deg, #000, transparent 75%);
+}
+
+.loginShell {
+  width: min(1440px, 100%);
+  min-height: calc(100vh - 60px);
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(490px, 1.12fr);
+  align-items: center;
+  gap: clamp(30px, 4.3vw, 75px);
+}
+
+.heroPanel {
+  position: relative;
+  min-height: 700px;
+  height: min(900px, calc(100vh - 60px));
+  overflow: hidden;
+  border-radius: 24px;
+  isolation: isolate;
+  background: transparent;
+}
+
+.heroPanel::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: none;
+  content: "";
+}
+
+.heroPanel::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: none;
+  content: "";
+}
+
+.heroRings {
+  position: absolute;
+  z-index: -1;
+  bottom: -100px;
+  left: -170px;
+  width: 510px;
+  height: 510px;
+  display: none;
+}
+
+.brand {
+  position: absolute;
+  z-index: 2;
+  top: 45px;
+  left: 42px;
+  display: flex;
+  align-items: center;
+  gap: 19px;
+}
+
+.brandLogo {
+  color: #c71c24;
+  font-size: clamp(46px, 4.2vw, 66px);
+  font-weight: 900;
+  letter-spacing: -7px;
+  line-height: 1;
+}
+
+.brandDivider {
+  width: 2px;
+  height: 66px;
+  background: #ec9c9b;
+}
+
+.brandName {
+  color: #15233b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2.7px;
+  line-height: 1.8;
+}
+
+.heroCopy {
+  position: absolute;
+  top: 37%;
+  right: 7%;
+  width: 48%;
+}
+
+.heroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #a72a31;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.heroCopy h1 {
+  margin: 22px 0 13px;
+  color: #101f37;
+  font-size: clamp(39px, 4.1vw, 59px);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -2.8px;
+}
+
+.heroCopy h1 span {
+  display: inline-block;
+  margin-top: 5px;
+  color: #dc222b;
+}
+
+.heroUnderline {
+  width: 48px;
+  height: 5px;
+  margin: 20px 0;
+  border-radius: 10px;
+  background: #ed2029;
+}
+
+.heroCopy > p {
+  color: #6e7c96;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 36px;
+}
+
+.heroStats div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.heroStats strong {
+  color: #d9232c;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.heroStats span {
+  color: #71809a;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.heroBottom {
+  position: absolute;
+  bottom: 32px;
+  left: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6e7c96;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.loginPanel {
+  min-width: 0;
+  padding: 15px 0;
+}
+
+.loginCard {
+  width: 100%;
+  padding: clamp(28px, 3.4vw, 48px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 29px;
+  background: rgba(255, 255, 255, 0.91);
+  box-shadow:
+    0 24px 85px rgba(230, 65, 62, 0.1),
+    0 3px 18px rgba(16, 31, 55, 0.025);
+  backdrop-filter: blur(16px);
+}
+
+.loginHeader {
+  text-align: center;
+}
+
+.welcomeMark {
+  display: none;
+}
+
+.loginHeader h2 {
+  margin: 4px 0 9px;
+  color: #101f37;
+  font-size: clamp(34px, 3.2vw, 46px);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1.15;
+}
+
+.loginHeader > p {
+  margin: 0;
+  color: #6c7c99;
+  font-size: 16px;
+}
+
+.tournamentLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 12px;
+  color: #e21f29;
+  font-size: 14px;
+  font-weight: 600;
+  transition: gap 180ms ease;
+}
+
+.tournamentLink:hover {
+  gap: 10px;
+}
+
+.formDivider {
+  height: 1px;
+  margin: 27px 0;
+  background: #e9edf3;
+}
+
+.tournamentNotice {
+  margin-bottom: 22px;
+  padding: 16px;
+  border: 1px solid #f4d9d9;
+  border-radius: 16px;
+  background: #fff7f7;
+  color: #5f6d82;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.tournamentNotice p {
+  margin: 0;
+}
+
+.tournamentNotice .tournamentTitle {
+  margin-bottom: 4px;
+  color: #15233b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tournamentNotice a {
+  display: inline-block;
+  margin-top: 8px;
+  color: #e21f29;
+  font-weight: 600;
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: 13px;
+  color: #657692;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.roleSelector {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 34px;
+}
+
+.roleOption {
+  min-width: 0;
+  min-height: 53px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 7px;
+  border: 1px solid #d7deea;
+  border-radius: 28px;
+  background: #f7f8fb;
+  color: #60718e;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.roleOption:hover:not(:disabled) {
+  border-color: #f08a8e;
+  transform: translateY(-1px);
+}
+
+.roleOption span {
+  white-space: nowrap;
+}
+
+.roleOption:disabled {
+  cursor: wait;
+}
+
+.roleActive {
+  border-color: #ed2029;
+  background: linear-gradient(135deg, #f42b35, #e91d29);
+  color: #fff;
+  box-shadow: 0 6px 15px rgba(237, 32, 41, 0.17);
+}
+
+.roleActive:hover:not(:disabled) {
+  border-color: #c91420;
+  background: #df1c27;
+}
+
+.tournamentRole {
+  display: inline-flex;
+  margin-bottom: 28px;
+  padding: 10px 16px;
+  border-radius: 28px;
+  background: #fff0f0;
+  color: #b91c27;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.formGroup {
+  margin-bottom: 22px;
+}
+
+.formGroup > label {
+  display: block;
+  margin-bottom: 9px;
+  color: #657692;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.inputWrap {
+  width: 100%;
+  height: 59px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 17px;
+  border: 1px solid #d5deeb;
+  border-radius: 19px;
+  background: #fff;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.inputWrap:focus-within {
+  border-color: #ef777d;
+  box-shadow: 0 0 0 4px rgba(237, 32, 41, 0.07);
+}
+
+.inputIcon {
+  flex-shrink: 0;
+  color: #6a7d9e;
+}
+
+.inputWrap input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #101f37;
+  font-size: 15px;
+}
+
+.inputWrap input::placeholder {
+  color: #a0a9ba;
+}
+
+.passwordToggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 6px 4px;
+  border: 0;
+  background: transparent;
+  color: #6a7d9e;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.passwordToggle:hover {
+  color: #ed2029;
+}
+
+.formOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 23px 0 28px;
+}
+
+.rememberOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #6c7c99;
+  cursor: pointer;
+  font-size: 13px;
+  user-select: none;
+}
+
+.rememberOption input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.customCheckbox {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 1.5px solid #8090ab;
+  border-radius: 5px;
+  background: #fff;
+  transition: all 160ms ease;
+}
+
+.rememberOption input:checked + .customCheckbox {
+  border-color: #ed2029;
+  background: #ed2029;
+}
+
+.rememberOption input:checked + .customCheckbox::after {
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.rememberOption input:focus-visible + .customCheckbox {
+  outline: 3px solid #ff9ca1;
+  outline-offset: 3px;
+}
+
+.forgotLink {
+  color: #e51f29;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.forgotLink:hover,
+.registerPrompt a:hover,
+.tournamentNotice a:hover {
+  color: #a90f18;
+  text-decoration: underline;
+}
+
+.formMessage {
+  margin: -8px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #f4c8c9;
+  border-radius: 12px;
+  background: #fff5f5;
+  color: #b91c27;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.submitButton {
+  width: 100%;
+  min-height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  padding: 15px 24px;
+  border: 0;
+  border-radius: 32px;
+  background: linear-gradient(105deg, #ef202a, #e71924);
+  box-shadow: 0 8px 20px rgba(237, 32, 41, 0.13);
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: linear-gradient(105deg, #df1722, #c91420);
+  box-shadow: 0 12px 25px rgba(237, 32, 41, 0.23);
+  transform: translateY(-2px);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.registerPrompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+  margin-top: 37px;
+}
+
+.registerPrompt > span {
+  height: 1px;
+  flex: 1;
+  background: #e9edf3;
+}
+
+.registerPrompt p {
+  flex-shrink: 0;
+  margin: 0;
+  color: #687996;
+  font-size: 13px;
+}
+
+.registerPrompt a {
+  color: #e21f29;
+  font-weight: 600;
+}
+
+.mobileBrand {
+  display: none;
+}
+
+.loginFooter {
+  padding-top: 25px;
+  color: #7c8aa4;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1050px) {
+  .loginPage {
+    padding: 20px;
+  }
+
+  .loginShell {
+    min-height: calc(100vh - 40px);
+    grid-template-columns: minmax(0, 0.8fr) minmax(460px, 1.2fr);
+    gap: 25px;
+  }
+
+  .heroPanel {
+    min-height: 680px;
+    height: calc(100vh - 40px);
+  }
+
+  .brand {
+    top: 35px;
+    left: 24px;
+    gap: 12px;
+  }
+
+  .brandLogo {
+    font-size: 46px;
+  }
+
+  .brandDivider {
+    height: 52px;
+  }
+
+  .brandName {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+
+  .heroCopy {
+    top: 39%;
+    right: 6%;
+    width: 58%;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(34px, 4.2vw, 48px);
+  }
+
+  .heroCopy > p {
+    font-size: 15px;
+  }
+
+  .heroStats {
+    gap: 15px;
+  }
+
+  .heroStats span {
+    font-size: 7px;
+  }
+
+  .loginCard {
+    padding: 30px 25px;
+  }
+
+  .roleSelector {
+    gap: 6px;
+  }
+
+  .roleOption {
+    gap: 5px;
+    padding: 9px 4px;
+    font-size: 11px;
+  }
+
+  .roleOption svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .loginPage {
+    min-height: 100vh;
+    padding: 20px 16px;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .loginPage::before {
+    background:
+      radial-gradient(
+        circle at 16% 86%,
+        transparent 0 150px,
+        rgba(237, 32, 41, 0.16) 151px 152px,
+        transparent 153px 178px,
+        rgba(237, 32, 41, 0.04) 179px 200px,
+        transparent 201px
+      ),
+      linear-gradient(150deg, transparent 0 57%, rgba(237, 32, 41, 0.1) 57.2% 58%, transparent 58.2%),
+      linear-gradient(135deg, transparent 0 20%, rgba(237, 32, 41, 0.9) 20.2% 29%, transparent 29.2% 100%),
+      linear-gradient(145deg, #fffaf7 5%, #fff0eb 60%, #fbe0d9);
+  }
+
+  .loginPage::after {
+    background-image: repeating-linear-gradient(
+      120deg,
+      transparent 0,
+      transparent 45px,
+      rgba(255, 255, 255, 0.2) 46px,
+      transparent 48px
+    );
+  }
+
+  .loginShell {
+    width: 100%;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .heroPanel {
+    display: none;
+  }
+
+  .loginPanel {
+    width: 100%;
+    padding: 0;
+  }
+
+  .loginCard {
+    padding: 27px 22px;
+    border: 1px solid #f2dedd;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 15px 45px rgba(205, 54, 54, 0.08);
+  }
+
+  .mobileBrand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 23px;
+    color: #26334a;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+  }
+
+  .mobileLogo {
+    color: #cf1f28;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -2px;
+  }
+
+  .loginHeader h2 {
+    font-size: clamp(32px, 8vw, 39px);
+    letter-spacing: -1.5px;
+  }
+
+  .loginHeader > p {
+    font-size: 14px;
+  }
+
+  .tournamentLink {
+    font-size: 13px;
+  }
+
+  .formDivider {
+    margin: 23px 0;
+  }
+
+  .roleSelector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 27px;
+  }
+
+  .roleOption {
+    min-height: 49px;
+    gap: 8px;
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .roleOption svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .formGroup {
+    margin-bottom: 20px;
+  }
+
+  .inputWrap {
+    height: 55px;
+    gap: 10px;
+    padding: 0 13px;
+    border-radius: 15px;
+  }
+
+  .inputWrap input {
+    font-size: 14px;
+  }
+
+  .formOptions {
+    margin: 22px 0 25px;
+  }
+
+  .rememberOption {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .customCheckbox {
+    width: 20px;
+    height: 20px;
+  }
+
+  .forgotLink {
+    font-size: 12px;
+  }
+
+  .submitButton {
+    min-height: 57px;
+    font-size: 15px;
+  }
+
+  .registerPrompt {
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .registerPrompt p {
+    font-size: 12px;
+  }
+
+  .loginFooter {
+    padding: 20px 8px 4px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 380px) {
+  .loginPage {
+    padding: 12px 10px;
+  }
+
+  .loginCard {
+    padding: 24px 15px;
+    border-radius: 20px;
+  }
+
+  .mobileBrand {
+    font-size: 8px;
+    letter-spacing: 0.8px;
+  }
+
+  .sectionLabel {
+    font-size: 10px;
+  }
+
+  .roleOption {
+    font-size: 11px;
+  }
+
+  .roleOption svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .formOptions {
+    align-items: flex-start;
+  }
+
+  .rememberOption {
+    gap: 6px;
+  }
+
+  .forgotLink {
+    font-size: 11px;
+  }
+
+  .registerPrompt > span {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tournamentLink,
+  .roleOption,
+  .inputWrap,
+  .customCheckbox,
+  .submitButton {
+    transition-duration: 0.01ms;
+  }
+}
