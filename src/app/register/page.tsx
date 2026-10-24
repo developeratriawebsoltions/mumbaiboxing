@@ -40,8 +40,8 @@ const inputStyle = {
 const steps = [
   { number: 1, title: 'Basic Details', short: 'Profile' },
   { number: 2, title: 'Additional Details', short: 'Details' },
-  { number: 3, title: 'Verify Email', short: 'OTP' },
-  { number: 4, title: 'Review & Register', short: 'Review' },
+  { number: 3, title: 'Review', short: 'Review' },
+  { number: 4, title: 'Verify Email', short: 'OTP' },
   { number: 5, title: 'Payment', short: 'Payment' },
 ] as const;
 
@@ -1725,24 +1725,7 @@ function handleFieldChange(
       if (!valid.includes(formData.weight)) { setError("Please select a valid weight category for the selected gender."); return; }
     }
 
-    // Send OTP now — right before OTP step, minimising expire window.
-    setLoading(true);
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const json = await res.json();
-      if (!res.ok) { setError(json.error || 'Unable to send OTP'); return; }
-      if (json.devOtp) setOtp(json.devOtp);
-      setOtpVerified(false);
-      setStep(3);
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setStep(3);
   }
 
   async function handleVerifyOtp() {
@@ -1779,7 +1762,6 @@ function handleFieldChange(
       }
 
       setOtpVerified(true);
-      setStep(4);
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -2391,9 +2373,69 @@ const fee =
 
           {step === 3 && (
             <div className="space-y-5">
+              <Review
+                role={role}
+                formData={formData}
+                files={files}
+              />
+
+              {error && (
+                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => { setError(''); setStep(2); }}
+                  className="w-full rounded-xl py-3 text-sm font-semibold"
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#64748B',
+                    border: '1px solid rgba(220,38,38,0.12)',
+                  }}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={async () => {
+                    setError('');
+                    setOtp('');
+                    setOtpVerified(false);
+                    setLoading(true);
+                    try {
+                      const res = await fetch('/api/otp/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok) { setError(json.error || 'Unable to send OTP'); return; }
+                      if (json.devOtp) setOtp(json.devOtp);
+                      setStep(4);
+                    } catch {
+                      setError('Network error. Please try again.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? 'Sending OTP...' : 'Confirm & Send OTP'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-5">
               <SectionTitle
                 title="Verify your email"
-                description={`We sent a one-time password to ${email}. Enter it below to continue.`}
+                description={`We sent a one-time password to ${email}. Enter it below to create your account.`}
               />
 
               <div
@@ -2449,10 +2491,10 @@ const fee =
                 </p>
               )}
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => { setError(''); setStep(2); }}
+                  onClick={() => { setError(''); setStep(3); }}
                   className="w-full rounded-xl py-3 text-sm font-semibold"
                   style={{
                     background: '#F1F5F9',
@@ -2486,7 +2528,7 @@ const fee =
                       setLoading(false);
                     }
                   }}
-                  className="ml-2 shrink-0 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
+                  className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
                   style={{
                     background: '#F1F5F9',
                     color: '#DC2626',
@@ -2496,46 +2538,15 @@ const fee =
                   Resend OTP
                 </button>
               </div>
-            </div>
-          )}
 
-          {step === 4 && (
-            <div className="space-y-5">
-              <Review
-                role={role}
-                formData={formData}
-                files={files}
-              />
-
-              {error && (
-                <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
-                  {error}
-                </p>
-              )}
-
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => { setError(''); setStep(3); }}
-                  className="w-full rounded-xl py-3 text-sm font-semibold"
-                  style={{
-                    background: '#F1F5F9',
-                    color: '#64748B',
-                    border: '1px solid rgba(220,38,38,0.12)',
-                  }}
-                >
-                  Back
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSubmitRegistration}
-                  disabled={loading}
-                  className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading ? 'Creating Account...' : roleLabel}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleSubmitRegistration}
+                disabled={loading || !otpVerified}
+                className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? 'Creating Account...' : roleLabel}
+              </button>
             </div>
           )}
 
