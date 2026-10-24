@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ElementType, ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Clock3,
-  FileCheck2,
-  FileText,
-  FolderOpen,
-  Image as ImageIcon,
-  ShieldAlert,
-  Upload,
-  UserRound,
+  ArrowLeft, ArrowUpRight, BadgeCheck, CalendarDays, CheckCircle2,
+  Clock3, FileCheck2, FileText, FolderOpen, Image as ImageIcon,
+  RefreshCw, Search, ShieldAlert, UploadCloud, UserRound, XCircle,
 } from "lucide-react";
-
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 
 type DocumentItem = {
@@ -27,1114 +19,131 @@ type DocumentItem = {
   rejectionReason: string | null;
   createdAt: string;
 };
-
 type DashboardData = {
   success: boolean;
-
-  user: {
-    id: number;
-    email: string;
-    role: string;
-    registrationStatus: string;
-  };
-
-  membership: {
-    id: string | null;
-    validFrom: string | null;
-    expiry: string | null;
-    activatedAt: string | null;
-    active: boolean;
-  };
-
+  user: { id: number; email: string; role: string; registrationStatus: string };
+  membership: { id: string | null; validFrom: string | null; expiry: string | null; activatedAt: string | null; active: boolean };
   documents: DocumentItem[];
 };
-
-/* =========================================================
-   REQUIRED DOCUMENTS
-   ========================================================= */
-
-const REQUIRED_DOCUMENTS = [
-  {
-    key: "referee-judge-passport-size-photo",
-    title: "Passport Size Photo",
-    fullTitle: "Referee / Judge Passport size Photo",
-    description:
-      "Your passport-size photograph submitted during registration.",
-    icon: UserRound,
-  },
-  {
-    key: "referee-judge-id-proof",
-    title: "ID Proof",
-    fullTitle: "Referee / Judge ID Proof",
-    description:
-      "Your identity document submitted during registration.",
-    icon: FileCheck2,
-  },
-  {
-    key: "referee-judge-certificate",
-    title: "Referee / Judge Certificate",
-    fullTitle: "Referee / Judge Certificate",
-    description:
-      "Your official Referee / Judge certification document.",
-    icon: ShieldAlert,
-  },
-  {
-    key: "referee-judge-experience-proof",
-    title: "Experience Proof",
-    fullTitle: "Referee / Judge Experience Proof",
-    description:
-      "Proof of your officiating experience.",
-    icon: FileText,
-  },
+const REQUIRED_DOCUMENTS: { key: string; title: string; description: string; icon: ElementType }[] = [
+  { key: "referee-judge-passport-size-photo", title: "Passport Size Photo", description: "Your registration photograph", icon: UserRound },
+  { key: "referee-judge-id-proof", title: "ID Proof", description: "Government-issued identity proof", icon: FileCheck2 },
+  { key: "referee-judge-certificate", title: "Referee / Judge Certificate", description: "Your officiating certification", icon: BadgeCheck },
+  { key: "referee-judge-experience-proof", title: "Experience Proof", description: "Supporting officiating experience", icon: FileText },
 ];
-
-/* =========================================================
-   PAGE
-   ========================================================= */
+const normalize = (s?: string | null) => (s || "").trim().toLowerCase();
+const statusOf = (doc?: DocumentItem | null) => !doc ? "missing" : normalize(doc.status) === "approved" ? "approved" : normalize(doc.status) === "rejected" ? "rejected" : "pending";
+const statusMeta = {
+  approved: { label: "Approved", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircle2 },
+  rejected: { label: "Rejected", cls: "bg-rose-50 text-rose-700 border-rose-200", icon: XCircle },
+  pending: { label: "Pending review", cls: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock3 },
+  missing: { label: "Not uploaded", cls: "bg-slate-100 text-slate-600 border-slate-200", icon: UploadCloud },
+} as const;
+type Status = keyof typeof statusMeta;
+const formatDate = (value?: string | null) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
+const fileUrl = (doc: DocumentItem) => `/api/file?path=${encodeURIComponent(doc.filePath)}`;
 
 export default function RefereeJudgeDocumentsPage() {
-  const [data, setData] = useState<DashboardData | null>(
-    null
-  );
-
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-
-  /* =======================================================
-     LOAD DATA
-     ======================================================= */
-
-  useEffect(() => {
-    async function loadDocuments() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch(
-          "/api/referee-judge",
-          {
-            cache: "no-store",
-          }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            result?.error ||
-              "Failed to load your documents."
-          );
-        }
-
-        setData(result);
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load documents."
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadDocuments();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | Status>("all");
+  const load = useCallback(async (refresh = false) => {
+    if (refresh) setRefreshing(true); else setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/referee-judge", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok || result?.success === false) throw new Error(result?.error || "Unable to load documents.");
+      setData(result as DashboardData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load documents.");
+    } finally { setLoading(false); setRefreshing(false); }
   }, []);
+  useEffect(() => { void load(); }, [load]);
 
-  /* =======================================================
-     DATE FORMAT
-     ======================================================= */
-
-  const formatDate = (
-    value: string | null | undefined
-  ) => {
-    if (!value) return "—";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return "—";
-    }
-
-    return date.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  /* =======================================================
-     DOCUMENT MAP
-     ======================================================= */
-
-  const documentMap = useMemo(() => {
-    const map = new Map<string, DocumentItem>();
-
-    for (const document of data?.documents ?? []) {
-      map.set(document.label.toLowerCase(), document);
-    }
-
-    return map;
-  }, [data]);
-
-  /* =======================================================
-     FIND DOCUMENT
-     ======================================================= */
-
-  const findDocument = (
-    key: string
-  ): DocumentItem | null => {
-    const exact = documentMap.get(key.toLowerCase());
-
-    if (exact) {
-      return exact;
-    }
-
+  const entries = useMemo(() => {
     const documents = data?.documents ?? [];
-
-    return (
-      documents.find(
-        (document) =>
-          document.label.toLowerCase() ===
-          key.toLowerCase()
-      ) || null
-    );
-  };
-
-  /* =======================================================
-     LOADING
-     ======================================================= */
-
-  if (loading) {
-    return (
-      <DashboardLayout role="referee_judge">
-        <div className="min-h-[70vh] flex items-center justify-center">
-          <div className="text-center">
-            <div
-              className="
-                w-10
-                h-10
-                border-4
-                border-slate-200
-                border-t-red-600
-                rounded-full
-                animate-spin
-                mx-auto
-              "
-            />
-
-            <p className="mt-4 text-sm text-slate-500">
-              Loading your documents...
-            </p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  /* =======================================================
-     ERROR
-     ======================================================= */
-
-  if (error || !data) {
-    return (
-      <DashboardLayout role="referee_judge">
-        <div className="max-w-[1200px] mx-auto">
-          <div
-            className="
-              rounded-2xl
-              border
-              border-red-200
-              bg-red-50
-              px-5
-              py-4
-              text-sm
-              text-red-600
-            "
-          >
-            {error || "Unable to load documents."}
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  /* =======================================================
-     COUNTS
-     ======================================================= */
-
-  const totalRequired = REQUIRED_DOCUMENTS.length;
-
-  const uploadedCount = REQUIRED_DOCUMENTS.filter(
-    (item) => findDocument(item.key)
-  ).length;
-
-  const approvedCount = REQUIRED_DOCUMENTS.filter(
-    (item) => {
-      const document = findDocument(item.key);
-
-      return (
-        document &&
-        document.status.toLowerCase() === "approved"
-      );
-    }
-  ).length;
-
-  const pendingCount = REQUIRED_DOCUMENTS.filter(
-    (item) => {
-      const document = findDocument(item.key);
-
-      return (
-        document &&
-        document.status.toLowerCase() !==
-          "approved" &&
-        document.status.toLowerCase() !==
-          "rejected"
-      );
-    }
-  ).length;
-
-  /* =======================================================
-     MAIN
-     ======================================================= */
+    const required = REQUIRED_DOCUMENTS.map((item) => ({
+      key: item.key, title: item.title, description: item.description, icon: item.icon,
+      doc: documents.find((d) => normalize(d.label) === item.key) ?? null, required: true,
+    }));
+    const extras = documents.filter((doc) => !REQUIRED_DOCUMENTS.some((r) => r.key === normalize(doc.label)))
+      .map((doc) => ({ key: `extra-${doc.id}`, title: doc.label.replace(/-/g, " "), description: "Additional account document", icon: FileText, doc, required: false }));
+    return [...required, ...extras];
+  }, [data]);
+  const required = entries.filter((entry) => entry.required);
+  const uploaded = required.filter((entry) => !!entry.doc).length;
+  const approved = required.filter((entry) => statusOf(entry.doc) === "approved").length;
+  const pending = required.filter((entry) => statusOf(entry.doc) === "pending").length;
+  const rejected = required.filter((entry) => statusOf(entry.doc) === "rejected").length;
+  const visible = entries.filter((entry) => (filter === "all" || statusOf(entry.doc) === filter) && `${entry.title} ${entry.description} ${entry.doc?.label || ""}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <DashboardLayout role="referee_judge">
-      <div className="max-w-[1500px] mx-auto space-y-7 text-slate-900">
-
-        {/* ==================================================
-            HEADER
-            ================================================== */}
-
-        <div
-          className="
-            flex
-            flex-col
-            sm:flex-row
-            sm:items-end
-            justify-between
-            gap-4
-          "
-        >
-          <div>
-            <Link
-              href="/dashboard/referee-judge"
-              className="
-                inline-flex
-                items-center
-                gap-2
-                text-sm
-                font-semibold
-                text-slate-500
-                hover:text-red-600
-                transition-colors
-                mb-4
-              "
-            >
-              <ArrowLeft size={17} />
-              Back to Dashboard
-            </Link>
-
-            <h1
-              className="
-                text-3xl
-                sm:text-[38px]
-                font-extrabold
-                tracking-tight
-                text-[#0b1729]
-              "
-            >
-              My Documents
-            </h1>
-
-            <p className="mt-1 text-[16px] text-slate-500">
-              View your Referee / Judge registration
-              documents and verification status
-            </p>
-          </div>
-
-          <span
-            className="
-              inline-flex
-              items-center
-              gap-2
-              rounded-full
-              bg-red-50
-              px-4
-              py-2
-              text-sm
-              font-semibold
-              text-red-600
-              w-fit
-            "
-          >
-            <FolderOpen size={17} />
-            Documents
-          </span>
-        </div>
-
-        {/* ==================================================
-            SUMMARY
-            ================================================== */}
-
-        <div
-          className="
-            grid
-            grid-cols-1
-            sm:grid-cols-2
-            lg:grid-cols-4
-            gap-4
-          "
-        >
-          <SummaryCard
-            icon={<FolderOpen size={21} />}
-            title={String(uploadedCount)}
-            label="Documents Uploaded"
-            description={`of ${totalRequired} required`}
-            iconClass="bg-blue-50 text-blue-600"
-          />
-
-          <SummaryCard
-            icon={<CheckCircle2 size={21} />}
-            title={String(approvedCount)}
-            label="Approved"
-            description="Verified documents"
-            iconClass="bg-emerald-50 text-emerald-600"
-          />
-
-          <SummaryCard
-            icon={<Clock3 size={21} />}
-            title={String(pendingCount)}
-            label="Pending Review"
-            description="Awaiting verification"
-            iconClass="bg-amber-50 text-amber-600"
-          />
-
-          <SummaryCard
-            icon={<FileText size={21} />}
-            title={String(totalRequired)}
-            label="Required Documents"
-            description="Registration requirements"
-            iconClass="bg-violet-50 text-violet-600"
-          />
-        </div>
-
-        {/* ==================================================
-            INFORMATION
-            ================================================== */}
-
-        <div
-          className="
-            rounded-2xl
-            border
-            border-blue-100
-            bg-blue-50/60
-            px-5
-            py-4
-            flex
-            items-start
-            gap-3
-          "
-        >
-          <div
-            className="
-              w-10
-              h-10
-              shrink-0
-              rounded-xl
-              bg-white
-              text-blue-600
-              border
-              border-blue-100
-              flex
-              items-center
-              justify-center
-            "
-          >
-            <FileText size={19} />
-          </div>
-
-          <div>
-            <p className="font-semibold text-blue-900">
-              Document verification
-            </p>
-
-            <p className="mt-1 text-sm leading-6 text-blue-700">
-              Documents submitted during registration are
-              reviewed by the Mumbai Boxing Association.
-              A rejected document will show the reason
-              provided by the reviewer.
-            </p>
-          </div>
-        </div>
-
-        {/* ==================================================
-            DOCUMENT GRID
-            ================================================== */}
-
-        <section
-          className="
-            bg-white
-            rounded-2xl
-            border
-            border-slate-100
-            shadow-sm
-            p-5
-            sm:p-6
-          "
-        >
-          <div
-            className="
-              flex
-              items-center
-              gap-3
-              mb-6
-            "
-          >
-            <div
-              className="
-                w-10
-                h-10
-                rounded-xl
-                bg-red-50
-                text-red-600
-                flex
-                items-center
-                justify-center
-              "
-            >
-              <FolderOpen size={21} />
-            </div>
-
+      <main className="mx-auto max-w-[1440px] space-y-6 pb-12 text-[#07172c]">
+        <div className="relative overflow-hidden rounded-[28px] bg-[#07172c] px-6 py-7 text-white sm:px-9 sm:py-9">
+          <div className="pointer-events-none absolute -right-12 -top-28 h-72 w-72 rounded-full border-[45px] border-white/[0.04]" />
+          <div className="pointer-events-none absolute bottom-0 right-0 h-2 w-1/3 skew-x-[-30deg] bg-[#ed1c24]" />
+          <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
-              <h2
-                className="
-                  text-2xl
-                  font-bold
-                  text-[#0b1729]
-                "
-              >
-                Registration Documents
-              </h2>
-
-              <p className="text-sm text-slate-500 mt-0.5">
-                Documents associated with your membership
-                application
-              </p>
+              <Link href="/dashboard/referee-judge" className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"><ArrowLeft size={16} /> Back to dashboard</Link>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white/85"><ShieldAlert size={13} /> Referee / Judge Portal</div>
+              <h1 className="text-3xl font-black tracking-tight sm:text-4xl">My Documents<span className="text-[#ed1c24]">.</span></h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Track your registration documents, verification progress and reviewer feedback in one place.</p>
             </div>
+            <button type="button" onClick={() => void load(true)} disabled={refreshing || loading} className="inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/20 disabled:opacity-50"><RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Refresh documents</button>
           </div>
-
-          <div
-            className="
-              grid
-              grid-cols-1
-              md:grid-cols-2
-              xl:grid-cols-4
-              gap-5
-            "
-          >
-            {REQUIRED_DOCUMENTS.map((required) => {
-              const document = findDocument(
-                required.key
-              );
-
-              return (
-                <DocumentCard
-                  key={required.key}
-                  required={required}
-                  document={document}
-                  formatDate={formatDate}
-                />
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ==================================================
-            ALL OTHER DOCUMENTS
-            ================================================== */}
-
-        {data.documents.filter(
-          (document) =>
-            !REQUIRED_DOCUMENTS.some(
-              (required) =>
-                required.key.toLowerCase() ===
-                document.label.toLowerCase()
-            )
-        ).length > 0 && (
-          <section
-            className="
-              bg-white
-              rounded-2xl
-              border
-              border-slate-100
-              shadow-sm
-              p-5
-              sm:p-6
-            "
-          >
-            <div
-              className="
-                flex
-                items-center
-                gap-3
-                mb-6
-              "
-            >
-              <div
-                className="
-                  w-10
-                  h-10
-                  rounded-xl
-                  bg-slate-50
-                  text-slate-600
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
-                <FileText size={21} />
-              </div>
-
-              <div>
-                <h2
-                  className="
-                    text-2xl
-                    font-bold
-                    text-[#0b1729]
-                  "
-                >
-                  Other Documents
-                </h2>
-
-                <p className="text-sm text-slate-500 mt-0.5">
-                  Additional documents associated with
-                  your account
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {data.documents
-                .filter(
-                  (document) =>
-                    !REQUIRED_DOCUMENTS.some(
-                      (required) =>
-                        required.key.toLowerCase() ===
-                        document.label.toLowerCase()
-                    )
-                )
-                .map((document) => (
-                  <ExistingDocumentRow
-                    key={document.id}
-                    document={document}
-                    formatDate={formatDate}
-                  />
-                ))}
-            </div>
-          </section>
-        )}
-
-        {/* ==================================================
-            FOOTER LINK
-            ================================================== */}
-
-        <div className="flex justify-start">
-          <Link
-            href="/dashboard/referee-judge"
-            className="
-              inline-flex
-              items-center
-              gap-2
-              rounded-xl
-              bg-[#ed1c24]
-              px-5
-              py-3
-              text-sm
-              font-bold
-              text-white
-              hover:bg-[#d71920]
-              transition-colors
-            "
-          >
-            Back to Dashboard
-            <ArrowRight size={17} />
-          </Link>
         </div>
-      </div>
+
+        {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700"><span>{error}</span><button type="button" onClick={() => void load(true)} className="font-bold underline">Try again</button></div>}
+        {loading ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <div key={i} className="h-36 animate-pulse rounded-2xl bg-slate-100" />)}</div> : !data ? null : <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <Stat icon={FolderOpen} label="Uploaded" value={`${uploaded}/${REQUIRED_DOCUMENTS.length}`} caption="Required documents submitted" />
+            <Stat icon={CheckCircle2} label="Approved" value={approved} caption="Verified and accepted" />
+            <Stat icon={Clock3} label="Pending review" value={pending} caption="Awaiting verification" />
+            <Stat icon={ShieldAlert} label="Rejected" value={rejected} caption="Need your attention" />
+          </div>
+          <section className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-[0.13em] text-[#ed1c24]">Verification progress</p><h2 className="mt-1 text-xl font-extrabold">Registration checklist</h2></div><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">{approved} of {REQUIRED_DOCUMENTS.length} approved</span></div>
+              <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#ed1c24] transition-all" style={{ width: `${(approved / REQUIRED_DOCUMENTS.length) * 100}%` }} /></div>
+              <p className="mt-3 text-sm text-slate-500">{approved === REQUIRED_DOCUMENTS.length ? "All required documents have been approved." : `${REQUIRED_DOCUMENTS.length - approved} required document${REQUIRED_DOCUMENTS.length - approved === 1 ? "" : "s"} not yet approved.`}</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-[#ed1c24]"><FileCheck2 size={22} /></div><div><h2 className="font-extrabold">Membership details</h2><p className="text-xs text-slate-500">Referee / Judge account</p></div></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><SmallDetail label="Membership ID" value={data.membership.id || "—"} /><SmallDetail label="Valid until" value={formatDate(data.membership.expiry)} /></div></div>
+          </section>
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 px-5 py-5 sm:px-6"><div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center"><div><h2 className="text-xl font-extrabold">Registration Documents</h2><p className="mt-1 text-sm text-slate-500">Select a document to view the uploaded file and its review status.</p></div><div className="relative w-full lg:w-72"><Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" /><input aria-label="Search documents" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents..." className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-[#ed1c24] focus:ring-2 focus:ring-red-100" /></div></div>
+              <div className="mt-5 flex flex-wrap gap-2">{(["all", "approved", "pending", "rejected", "missing"] as const).map((value) => <button key={value} type="button" onClick={() => setFilter(value)} className={`rounded-full px-3.5 py-2 text-xs font-bold transition ${filter === value ? "bg-[#07172c] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{value === "all" ? "All documents" : statusMeta[value].label}</button>)}</div>
+            </div>
+            {visible.length ? <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3 sm:p-6">{visible.map((entry) => <DocumentCard key={entry.key} title={entry.title} description={entry.description} icon={entry.icon} doc={entry.doc} />)}</div> : <div className="px-5 py-16 text-center"><Search className="mx-auto text-slate-300" size={30} /><h3 className="mt-3 font-bold">No matching documents</h3><p className="mt-1 text-sm text-slate-500">Try a different search or status filter.</p><button onClick={() => { setFilter("all"); setQuery(""); }} className="mt-4 text-sm font-bold text-[#ed1c24]">Clear filters</button></div>}
+          </section>
+          <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600"><ShieldAlert size={19} className="mt-0.5 shrink-0 text-[#ed1c24]" /><p>Documents are reviewed by the Mumbai Boxing Association. Rejected documents display the reviewer's reason. This page is read-only; submitting replacements requires an existing upload workflow.</p></div>
+        </>}
+      </main>
     </DashboardLayout>
   );
 }
-
-/* =========================================================
-   DOCUMENT CARD
-   ========================================================= */
-
-function DocumentCard({
-  required,
-  document,
-  formatDate,
-}: {
-  required: {
-    key: string;
-    title: string;
-    fullTitle: string;
-    description: string;
-    icon: React.ElementType;
-  };
-  document: DocumentItem | null;
-  formatDate: (
-    value: string | null | undefined
-  ) => string;
-}) {
-  const Icon = required.icon;
-
-  if (!document) {
-    return (
-      <div
-        className="
-          rounded-2xl
-          border
-          border-dashed
-          border-slate-200
-          bg-slate-50/50
-          overflow-hidden
-        "
-      >
-        {/* Preview */}
-
-        <div
-          className="
-            h-44
-            bg-slate-50
-            flex
-            items-center
-            justify-center
-          "
-        >
-          <div
-            className="
-              w-16
-              h-16
-              rounded-2xl
-              bg-white
-              border
-              border-slate-100
-              text-slate-300
-              flex
-              items-center
-              justify-center
-            "
-          >
-            <Upload size={30} />
-          </div>
-        </div>
-
-        <div className="p-5">
-          <p className="font-bold text-slate-900">
-            {required.title}
-          </p>
-
-          <p className="mt-2 text-sm leading-5 text-slate-500">
-            {required.description}
-          </p>
-
-          <div
-            className="
-              mt-4
-              flex
-              items-center
-              gap-2
-              text-xs
-              font-semibold
-              text-amber-600
-            "
-          >
-            <Clock3 size={15} />
-            Not uploaded
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const fileUrl = `/api/file?path=${encodeURIComponent(
-    document.filePath
-  )}`;
-
-  const status = (
-    document.status || "Pending"
-  ).toLowerCase();
-
-  const isApproved = status === "approved";
-  const isRejected = status === "rejected";
-
-  return (
-    <a
-      href={fileUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="
-        group
-        rounded-2xl
-        border
-        border-slate-100
-        bg-white
-        overflow-hidden
-        hover:shadow-lg
-        hover:-translate-y-0.5
-        transition-all
-      "
-    >
-      {/* Preview */}
-
-      <div
-        className="
-          h-44
-          bg-slate-50
-          flex
-          items-center
-          justify-center
-          overflow-hidden
-        "
-      >
-        {document.fileType === "image" ? (
-          <img
-            src={fileUrl}
-            alt={required.fullTitle}
-            className="
-              w-full
-              h-full
-              object-contain
-              group-hover:scale-[1.02]
-              transition-transform
-            "
-          />
-        ) : (
-          <div className="text-center">
-            <div
-              className="
-                w-16
-                h-16
-                rounded-2xl
-                bg-white
-                shadow-sm
-                text-red-500
-                flex
-                items-center
-                justify-center
-                mx-auto
-              "
-            >
-              <FileText
-                size={34}
-                strokeWidth={1.5}
-              />
-            </div>
-
-            <p className="text-xs text-slate-400 mt-2">
-              Document
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Information */}
-
-      <div className="p-5">
-        <div className="flex items-start gap-3">
-          <div
-            className="
-              w-10
-              h-10
-              shrink-0
-              rounded-xl
-              bg-red-50
-              text-red-600
-              flex
-              items-center
-              justify-center
-            "
-          >
-            <Icon size={19} />
-          </div>
-
-          <div className="min-w-0">
-            <p className="font-bold text-sm text-slate-900">
-              {required.title}
-            </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              Uploaded {formatDate(document.createdAt)}
-            </p>
-          </div>
-        </div>
-
-        {/* Status */}
-
-        <div className="mt-4">
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2
-              size={16}
-              strokeWidth={2}
-              className={
-                isApproved
-                  ? "text-emerald-600"
-                  : isRejected
-                    ? "text-red-600"
-                    : "text-amber-500"
-              }
-            />
-
-            <span
-              className={`
-                text-xs
-                font-bold
-                ${
-                  isApproved
-                    ? "text-emerald-600"
-                    : isRejected
-                      ? "text-red-600"
-                      : "text-amber-600"
-                }
-              `}
-            >
-              {isApproved
-                ? "Approved"
-                : isRejected
-                  ? "Rejected"
-                  : "Pending Review"}
-            </span>
-          </div>
-
-          {isRejected &&
-            document.rejectionReason && (
-              <div
-                className="
-                  mt-3
-                  rounded-xl
-                  border
-                  border-red-100
-                  bg-red-50
-                  px-3
-                  py-3
-                "
-              >
-                <p className="text-xs font-semibold text-red-700">
-                  Rejection reason
-                </p>
-
-                <p className="mt-1 text-xs leading-5 text-red-600">
-                  {document.rejectionReason}
-                </p>
-              </div>
-            )}
-        </div>
-
-        <p
-          className="
-            mt-4
-            text-sm
-            font-semibold
-            text-blue-600
-            group-hover:text-blue-700
-            inline-flex
-            items-center
-            gap-1.5
-          "
-        >
-          View Document
-          <ArrowRight size={16} />
-        </p>
-      </div>
-    </a>
-  );
-}
-
-/* =========================================================
-   EXISTING DOCUMENT ROW
-   ========================================================= */
-
-function ExistingDocumentRow({
-  document,
-  formatDate,
-}: {
-  document: DocumentItem;
-  formatDate: (
-    value: string | null | undefined
-  ) => string;
-}) {
-  const fileUrl = `/api/file?path=${encodeURIComponent(
-    document.filePath
-  )}`;
-
-  const status = (
-    document.status || "Pending"
-  ).toLowerCase();
-
-  const isApproved = status === "approved";
-  const isRejected = status === "rejected";
-
-  return (
-    <a
-      href={fileUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="
-        group
-        flex
-        flex-col
-        sm:flex-row
-        sm:items-center
-        gap-4
-        rounded-xl
-        border
-        border-slate-100
-        bg-slate-50/50
-        p-4
-        hover:bg-white
-        hover:shadow-sm
-        transition-all
-      "
-    >
-      <div
-        className="
-          w-11
-          h-11
-          rounded-xl
-          bg-white
-          border
-          border-slate-100
-          text-red-600
-          flex
-          items-center
-          justify-center
-          shrink-0
-        "
-      >
-        {document.fileType === "image" ? (
-          <ImageIcon size={20} />
-        ) : (
-          <FileText size={20} />
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-slate-900 break-words">
-          {document.label.replace(/-/g, " ")}
-        </p>
-
-        <p className="text-xs text-slate-400 mt-1">
-          Uploaded {formatDate(document.createdAt)}
-        </p>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span
-          className={`
-            inline-flex
-            items-center
-            gap-1.5
-            rounded-full
-            px-3
-            py-1.5
-            text-xs
-            font-bold
-            ${
-              isApproved
-                ? "bg-emerald-50 text-emerald-700"
-                : isRejected
-                  ? "bg-red-50 text-red-700"
-                  : "bg-amber-50 text-amber-700"
-            }
-          `}
-        >
-          {isApproved ? (
-            <CheckCircle2 size={14} />
-          ) : isRejected ? (
-            <ShieldAlert size={14} />
-          ) : (
-            <Clock3 size={14} />
-          )}
-
-          {isApproved
-            ? "Approved"
-            : isRejected
-              ? "Rejected"
-              : "Pending"}
-        </span>
-
-        <ArrowRight
-          size={18}
-          className="
-            text-slate-400
-            group-hover:text-blue-600
-            transition-colors
-          "
-        />
-      </div>
-    </a>
-  );
-}
-
-/* =========================================================
-   SUMMARY CARD
-   ========================================================= */
-
-function SummaryCard({
-  icon,
-  title,
-  label,
-  description,
-  iconClass,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  label: string;
-  description: string;
-  iconClass: string;
-}) {
-  return (
-    <div
-      className="
-        bg-white
-        rounded-2xl
-        border
-        border-slate-100
-        shadow-sm
-        p-5
-      "
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-2xl font-extrabold text-[#0b1729]">
-            {title}
-          </p>
-
-          <p className="mt-1 text-sm font-semibold text-slate-600">
-            {label}
-          </p>
-
-          <p className="mt-1 text-xs font-semibold text-slate-400">
-            {description}
-          </p>
-        </div>
-
-        <div
-          className={`
-            w-11
-            h-11
-            rounded-xl
-            flex
-            items-center
-            justify-center
-            shrink-0
-            ${iconClass}
-          `}
-        >
-          {icon}
-        </div>
-      </div>
+function Stat({ icon: Icon, label, value, caption }: { icon: ElementType; label: string; value: ReactNode; caption: string }) { return <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-slate-500">{label}</span><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-[#ed1c24]"><Icon size={20} /></div></div><p className="mt-2 text-3xl font-black tracking-tight text-[#07172c]">{value}</p><p className="mt-1 text-xs text-slate-500">{caption}</p></div>; }
+function SmallDetail({ label, value }: { label: string; value: string }) { return <div className="rounded-xl bg-slate-50 px-4 py-3"><p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">{label}</p><p className="mt-1 break-all text-sm font-bold text-[#07172c]">{value}</p></div>; }
+function DocumentCard({ title, description, icon: Icon, doc }: { title: string; description: string; icon: ElementType; doc: DocumentItem | null }) {
+  const status = statusOf(doc);
+  const meta = statusMeta[status];
+  const StatusIcon = meta.icon;
+  const isImage = doc && (normalize(doc.fileType) === "image" || /\.(png|jpe?g|webp|gif)$/i.test(doc.filePath));
+  return <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-md">
+    <div className="relative flex h-40 items-center justify-center overflow-hidden bg-[#f5f7fb]">
+      {doc && isImage ? <img src={fileUrl(doc)} alt={title} className="h-full w-full object-contain p-2" /> : <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 bg-white text-[#ed1c24] shadow-sm">{doc ? <FileText size={30} /> : <UploadCloud size={30} className="text-slate-300" />}</div>}
+      <span className={`absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.cls}`}><StatusIcon size={13} />{meta.label}</span>
     </div>
-  );
+    <div className="p-4 sm:p-5"><div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#ed1c24]"><Icon size={20} /></div><div className="min-w-0"><h3 className="font-extrabold leading-6 text-[#07172c]">{title}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{description}</p></div></div>
+      {doc ? <><div className="mt-4 flex items-center gap-2 text-xs text-slate-500"><CalendarDays size={14} /> Uploaded {formatDate(doc.createdAt)}</div>{status === "rejected" && doc.rejectionReason && <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50 p-3"><p className="text-xs font-bold text-rose-700">Rejection reason</p><p className="mt-1 whitespace-pre-wrap text-xs leading-5 text-rose-600">{doc.rejectionReason}</p></div>}<a href={fileUrl(doc)} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#ed1c24] hover:underline">View document <ArrowUpRight size={16} /></a></> : <p className="mt-4 text-xs font-medium text-slate-400">No file submitted during registration</p>}
+    </div>
+  </article>;
 }

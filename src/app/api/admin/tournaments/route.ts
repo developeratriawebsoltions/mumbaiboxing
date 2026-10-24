@@ -68,10 +68,6 @@ export async function GET(req: NextRequest) {
 
   // Get all tournaments
   const tournaments = await prisma.tournament.findMany({
-<<<<<<<<< Temporary merge branch 1
-    orderBy: { startDate: "asc" },
-    include: { _count: { select: { tournamententry: true } } },
-=========
     orderBy: {
       startDate: "asc",
     },
@@ -82,7 +78,6 @@ export async function GET(req: NextRequest) {
         },
       },
     },
->>>>>>>>> Temporary merge branch 2
   });
 
   return NextResponse.json(

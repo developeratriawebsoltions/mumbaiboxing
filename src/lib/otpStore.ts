@@ -1,7 +1,7 @@
 // In-memory OTP store: email -> { otp, expiresAt }
 export const otpStore = new Map<string, { otp: string; expiresAt: number }>();
 
-const OTP_TTL_MS = 5 * 60 * 1000;
+const OTP_TTL_MS = 15 * 60 * 1000;
 
 export function setOtp(email: string, otp: string) {
   otpStore.set(email.toLowerCase(), {
