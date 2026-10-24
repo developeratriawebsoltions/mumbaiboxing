@@ -158,7 +158,7 @@ export default function Hero() {
         className="mba-red-streak mba-red-streak-two"
       />
 
-      <div className="mba-hero-inner relative mx-auto grid w-full max-w-[1600px] grid-cols-1 items-start gap-8 px-5 pb-12 pt-9 sm:px-8 md:min-h-[calc(100svh-80px)] md:grid-cols-[1.05fr_0.95fr] md:px-8 md:pb-9 md:pt-8 lg:px-10 xl:px-0 xl:pt-12">
+      <div className="mba-hero-inner relative mx-auto grid w-full max-w-[1600px] grid-cols-1 items-start gap-8 px-5 pb-12 pt-9 sm:px-8 md:min-h-[calc(100svh-76px)] md:grid-cols-[1.05fr_0.95fr] md:px-8 md:pb-9 md:pt-8 lg:px-10 xl:px-0 xl:pt-12">
         {/* LEFT CONTENT */}
         <div className="mba-hero-copy relative z-10 w-full max-w-[650px]">
           <div className="mb-5 flex flex-wrap items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#101820] sm:text-[10px]">
@@ -219,7 +219,7 @@ export default function Hero() {
         </div>
 
         {/* RIGHT CONTENT */}
-        <div className="mba-hero-right relative z-10 flex w-full flex-col items-end justify-center md:min-h-[530px]">
+        <div className="mba-hero-right relative z-10 flex w-full flex-col items-end justify-center">
           <div className="mba-motivation mb-7 mr-3 hidden rotate-[-8deg] self-end font-serif text-[22px] italic leading-[1.05] text-white drop-shadow-lg lg:block">
             Discipline
             <br />
