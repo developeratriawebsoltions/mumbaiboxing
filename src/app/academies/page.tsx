@@ -17,8 +17,6 @@ import {
   X,
 } from "lucide-react";
 
-import Navbar from "@/Components/navbar/Navbar";
-import Footer from "@/Components/footer/Footer";
 
 /* =========================================================
    ACADEMY DATA
@@ -143,8 +141,6 @@ export default function AcademiesPage() {
 
   return (
     <main className="min-h-screen bg-[#05070a] text-white">
-
-      <Navbar />
 
       {/* =====================================================
           HERO
@@ -1002,8 +998,6 @@ export default function AcademiesPage() {
         </div>
 
       </section>
-
-      <Footer />
 
     </main>
   );

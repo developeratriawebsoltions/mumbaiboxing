@@ -14,18 +14,10 @@ import {
   Trash2,
 } from "lucide-react";
 
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation";
-
 type Me = {
   email: string;
   role: string;
-};
-
-type BoxerHeader = {
-  name: string;
+  name: string | null;
 };
 
 type Notification = {
@@ -37,14 +29,8 @@ type Notification = {
 };
 
 export default function Header() {
-  const path = usePathname();
-  const router = useRouter();
-
-  const [me, setMe] =
-    useState<Me | null>(null);
-
-  const [boxer, setBoxer] =
-    useState<BoxerHeader | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
 
   const [open, setOpen] =
     useState(false);
@@ -77,21 +63,17 @@ export default function Header() {
             cache: "no-store",
           });
 
-        if (!response.ok) {
-          return;
-        }
+        if (!response.ok) return;
 
-        const data =
-          await response.json();
+        const data = await response.json();
 
         if (!cancelled && data?.email) {
-          setMe({
-            email: data.email,
-            role: data.role ?? "",
-          });
+          setMe({ email: data.email, role: data.role ?? "", name: data.name ?? null });
         }
       } catch {
         // Ignore authentication fetch errors
+      } finally {
+        if (!cancelled) setUserLoading(false);
       }
     }
 
@@ -102,50 +84,7 @@ export default function Header() {
     };
   }, []);
 
-  /*
-   * =========================================================
-   * LOAD BOXER NAME
-   * =========================================================
-   */
 
-  useEffect(() => {
-    if (path !== "/dashboard/boxer") {
-      setBoxer(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadBoxer() {
-      try {
-        const response =
-          await fetch("/api/boxer", {
-            cache: "no-store",
-          });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data =
-          await response.json();
-
-        if (!cancelled && data?.name) {
-          setBoxer({
-            name: data.name,
-          });
-        }
-      } catch {
-        // Ignore boxer fetch errors
-      }
-    }
-
-    loadBoxer();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [path]);
 
   /*
    * =========================================================
@@ -242,17 +181,11 @@ export default function Header() {
 
   async function handleLogout() {
     try {
-      await fetch(
-        "/api/auth/logout",
-        {
-          method: "POST",
-        }
-      );
+      await fetch("/api/auth/logout", { method: "POST" });
     } catch {
       // Still redirect if logout request fails
-    } finally {
-      router.push("/login");
     }
+    window.location.href = "/login";
   }
 
   /*
@@ -335,20 +268,14 @@ export default function Header() {
    */
 
   const initial =
-    boxer?.name?.charAt(0).toUpperCase() ||
+    me?.name?.charAt(0).toUpperCase() ||
     me?.email?.charAt(0).toUpperCase() ||
     "?";
 
-  const displayName =
-    boxer?.name ||
-    me?.email ||
-    "Member";
+  const displayName = me?.name || me?.email || "";
 
   const displayRole =
-    me?.role
-      ? me.role.charAt(0).toUpperCase() +
-        me.role.slice(1)
-      : "Member";
+    me?.role ? me.role.charAt(0).toUpperCase() + me.role.slice(1) : "";
 
   /*
    * =========================================================
@@ -880,42 +807,21 @@ export default function Header() {
               shrink-0
             "
           >
-            {initial}
+            {userLoading ? "" : initial}
           </div>
 
           {/* Name */}
 
-          <div
-            className="
-              hidden
-              sm:block
-              text-left
-              max-w-[180px]
-            "
-          >
-
-            <p
-              className="
-                text-sm
-                font-semibold
-                text-slate-900
-                truncate
-              "
-            >
-              {displayName}
-            </p>
-
-            <p
-              className="
-                text-xs
-                text-slate-500
-                mt-0.5
-              "
-            >
-              {displayRole}
-            </p>
-
-          </div>
+          {!userLoading && (
+            <div className="hidden sm:block text-left max-w-[180px]">
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {displayName}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {displayRole}
+              </p>
+            </div>
+          )}
 
           {/* Chevron */}
 
@@ -957,77 +863,14 @@ export default function Header() {
 
             {/* User information */}
 
-            <div
-              className="
-                px-5
-                py-5
-                border-b
-                border-slate-100
-              "
-            >
-
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-3
-                "
-              >
-
-                <div
-                  className="
-                    w-11
-                    h-11
-                    rounded-full
-                    bg-[#ed1c24]
-                    text-white
-                    flex
-                    items-center
-                    justify-center
-                    font-bold
-                    shrink-0
-                  "
-                >
-                  {initial}
-                </div>
-
-                <div className="min-w-0">
-
-                  <p
-                    className="
-                      font-semibold
-                      text-slate-900
-                      truncate
-                    "
-                  >
-                    {displayName}
-                  </p>
-
-                  <p
-                    className="
-                      text-xs
-                      text-slate-500
-                      mt-0.5
-                    "
-                  >
-                    {displayRole}
-                  </p>
-
-                </div>
-
-              </div>
-
-              <p
-                className="
-                  text-xs
-                  text-slate-400
-                  mt-4
-                  truncate
-                "
-              >
-                {me?.email ?? ""}
+            <div className="px-5 py-4 border-b border-slate-100">
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {displayName}
               </p>
-
+              <p className="text-xs text-slate-500 mt-0.5">{displayRole}</p>
+              {me?.email && (
+                <p className="text-xs text-slate-400 mt-1 truncate">{me.email}</p>
+              )}
             </div>
 
             {/* Sign out */}

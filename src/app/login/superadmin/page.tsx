@@ -1,38 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ShieldCheck, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+} from "lucide-react";
+import styles from "./superadmin-login.module.css";
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
     setError("");
 
     try {
       const response = await fetch("/api/superadmin/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -40,7 +41,7 @@ export default function SuperAdminLoginPage() {
         return;
       }
 
-      router.push("/dashboard/superadmin");
+      router.push(data.redirect || "/dashboard/superadmin");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -50,129 +51,130 @@ export default function SuperAdminLoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F3F3F1] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <main className={styles.superAdminPage}>
+      <div className={styles.superAdminLayout}>
+        <div className={styles.boxingArt} aria-hidden="true" />
+        <div className={styles.boxingArtOverlay} aria-hidden="true" />
 
-        {/* BRAND */}
-        <div className="text-center mb-8">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#071426] shadow-lg">
-            <ShieldCheck
-              size={30}
-              className="text-white"
-            />
-          </div>
+        <Link href="/" className={styles.superAdminBrand} aria-label="MBA home">
+          <span className={styles.superAdminLogo}>
+            M<span>B</span>A
+          </span>
+          <span className={styles.superAdminBrandDivider} />
+          <span className={styles.superAdminBrandName}>
+            MUMBAI
+            <br />
+            BOXING
+            <br />
+            ASSOCIATION
+          </span>
+        </Link>
 
-          <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-[#171717]">
-            Super Admin Portal
-          </h1>
-
-          <p className="mt-2 text-sm text-slate-500">
-            Mumbai Boxing Association
-          </p>
+        <div className={styles.superAdminWatermark} aria-hidden="true">
+          <ShieldCheck />
         </div>
 
-        {/* CARD */}
-        <div className="rounded-3xl border border-[#E5E5E2] bg-white p-8 shadow-xl">
+        <section className={styles.superAdminContent} aria-label="Super Admin sign in">
+          <header className={styles.superAdminHeader}>
+            <div className={styles.superAdminShield}>
+              <ShieldCheck size={31} strokeWidth={1.9} aria-hidden="true" />
+            </div>
+            <h1>
+              Super Admin <span>Portal</span>
+            </h1>
+            <p>Mumbai Boxing Association</p>
+          </header>
 
-          <div className="mb-6">
-            <h2 className="text-lg font-bold text-[#171717]">
-              Secure Sign In
-            </h2>
+          <div className={styles.superAdminCard}>
+            <div className={styles.superAdminCardHeading}>
+              <h2>Secure Sign In</h2>
+              <p>Authorized Super Admin access only.</p>
+            </div>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Authorized Super Admin access only.
-            </p>
+            <form onSubmit={handleSubmit}>
+              <div className={styles.superAdminField}>
+                <label htmlFor="super-admin-email">Email</label>
+                <div className={styles.superAdminInputWrap}>
+                  <Mail
+                    size={21}
+                    className={styles.superAdminInputIcon}
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="super-admin-email"
+                    type="email"
+                    autoComplete="username"
+                    placeholder="Enter admin email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setError("");
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className={styles.superAdminField}>
+                <label htmlFor="super-admin-password">Password</label>
+                <div className={styles.superAdminInputWrap}>
+                  <LockKeyhole
+                    size={21}
+                    className={styles.superAdminInputIcon}
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="super-admin-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setError("");
+                    }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className={styles.superAdminEye}
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} aria-hidden="true" />
+                    ) : (
+                      <Eye size={20} aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className={styles.superAdminError} role="alert">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className={styles.superAdminSubmit}
+                disabled={loading}
+              >
+                <span>
+                  {loading ? "Signing in..." : "Sign in as Super Admin"}
+                </span>
+                {!loading && <ArrowRight size={21} aria-hidden="true" />}
+              </button>
+            </form>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5"
-          >
-            {/* EMAIL */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Email
-              </label>
-
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError("");
-                }}
-                placeholder="admin@mba.com"
-                required
-                className="w-full rounded-xl border border-[#D9D9D5] bg-[#FAFAF8] px-4 py-3 text-sm text-[#171717] outline-none transition focus:border-[#DC2626] focus:ring-2 focus:ring-red-100"
-              />
-            </div>
-
-            {/* PASSWORD */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Password
-              </label>
-
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError("");
-                  }}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full rounded-xl border border-[#D9D9D5] bg-[#FAFAF8] px-4 py-3 pr-12 text-sm text-[#171717] outline-none transition focus:border-[#DC2626] focus:ring-2 focus:ring-red-100"
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword((value) => !value)
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* ERROR */}
-            {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
-
-            {/* BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-[#071426] py-3.5 text-sm font-bold text-white transition hover:bg-[#10233d] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading
-                ? "Signing in..."
-                : "Sign in as Super Admin"}
-            </button>
-          </form>
-        </div>
-
-        {/* BACK */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#DC2626]"
-          >
-            <ArrowLeft size={15} />
-            Back to member login
+          <Link href="/login" className={styles.superAdminBack}>
+            <ArrowLeft size={19} aria-hidden="true" />
+            <span>Back to member login</span>
           </Link>
-        </div>
-
+        </section>
       </div>
     </main>
   );

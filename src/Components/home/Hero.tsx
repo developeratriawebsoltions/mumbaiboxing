@@ -1,17 +1,18 @@
+
 "use client";
 
 import Link from "next/link";
+import { tournamentUrl } from "@/lib/tournament-url";
 import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
-  ChevronDown,
-  Clock3,
   MapPin,
   Trophy,
+  LoaderCircle,
 } from "lucide-react";
 
-type FeaturedTournament = {
+type Tournament = {
   id: number;
   name: string;
   location: string | null;
@@ -19,709 +20,325 @@ type FeaturedTournament = {
   endDate: string | null;
   weightClass: string | null;
   status: string;
+  isFeatured: boolean;
 };
 
-type TournamentResponse = {
-  success: boolean;
-  tournament: FeaturedTournament | null;
-  error?: string;
-};
+function dateText(value: string | null) {
+  if (!value) return "To be announced";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "To be announced";
+
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function dateRange(tournament: Tournament) {
+  const start = dateText(tournament.startDate);
+  const end = tournament.endDate ? dateText(tournament.endDate) : "";
+
+  return end && start !== end ? `${start} – ${end}` : start;
+}
+
+function tournamentLabel(tournament: Tournament) {
+  if (tournament.isFeatured) return "Featured Tournament";
+  if (tournament.status === "ongoing") return "Current Tournament";
+  if (tournament.status === "open") return "Registration Open";
+
+  const startDate = tournament.startDate
+    ? new Date(tournament.startDate)
+    : null;
+
+  if (
+    startDate &&
+    !Number.isNaN(startDate.getTime()) &&
+    startDate >= new Date()
+  ) {
+    return "Upcoming Tournament";
+  }
+
+  return "Tournament Information";
+}
 
 export default function Hero() {
-  const [tournament, setTournament] =
-    useState<FeaturedTournament | null>(null);
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const [loadingTournament, setLoadingTournament] =
-    useState(true);
-  const [tournamentError, setTournamentError] =
-    useState(false);
+  const fetchTournament = useCallback(async (): Promise<Tournament | null> => {
+    const response = await fetch("/api/public/upcoming-tournament", {
+      cache: "no-store",
+    });
 
-  const [now, setNow] = useState(() => Date.now());
+    if (!response.ok) {
+      throw new Error("Unable to load tournament");
+    }
 
-  /*
-   * ============================================================
-   * LOAD FEATURED HOMEPAGE TOURNAMENT
-   * ============================================================
-   */
-  const fetchFeaturedTournament =
-    useCallback(async (): Promise<TournamentResponse> => {
-      const response = await fetch(
-        "/api/public/upcoming-tournament",
-        { cache: "no-store" }
-      );
-      const data: TournamentResponse = await response.json();
+    const data: {
+      success: boolean;
+      tournament: Tournament | null;
+    } = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Featured event information is unavailable.");
-      }
+    if (!data.success) {
+      throw new Error("Invalid response");
+    }
 
-      return data;
-    }, []);
+    return data.tournament;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchFeaturedTournament()
+    fetchTournament()
       .then((data) => {
         if (!cancelled) {
-          setTournament(data.tournament ?? null);
-          setTournamentError(false);
+          setTournament(data);
+          setError(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setTournament(null);
-          setTournamentError(true);
+          setError(true);
         }
       })
       .finally(() => {
-        if (!cancelled) setLoadingTournament(false);
+        if (!cancelled) setLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [fetchFeaturedTournament]);
+  }, [fetchTournament]);
 
-  function retryFeaturedTournament() {
-    setLoadingTournament(true);
-    setTournamentError(false);
+  async function retryTournamentLoad() {
+    setLoading(true);
+    setError(false);
 
-    fetchFeaturedTournament()
-      .then((data) => {
-        setTournament(data.tournament ?? null);
-      })
-      .catch(() => {
-        setTournament(null);
-        setTournamentError(true);
-      })
-      .finally(() => setLoadingTournament(false));
+    try {
+      setTournament(await fetchTournament());
+    } catch {
+      setTournament(null);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(() => {
-    if (!tournament?.startDate) return;
-
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [tournament?.startDate]);
-
-  /*
-   * ============================================================
-   * HELPERS
-   * ============================================================
-   */
-  const pad = (number: number) =>
-    String(number).padStart(2, "0");
-
-  const targetTime = tournament?.startDate
-    ? new Date(tournament.startDate).getTime()
-    : Number.NaN;
-  const hasValidStartTime = Number.isFinite(targetTime);
-  const hasStarted = hasValidStartTime && targetTime <= now;
-  const totalSeconds = hasValidStartTime
-    ? Math.max(0, Math.floor((targetTime - now) / 1000))
-    : 0;
-  const countdownItems = [
-    {
-      value: pad(Math.floor(totalSeconds / (24 * 60 * 60))),
-      label: "DAYS",
-    },
-    {
-      value: pad(Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60))),
-      label: "HRS",
-    },
-    {
-      value: pad(Math.floor((totalSeconds % (60 * 60)) / 60)),
-      label: "MIN",
-    },
-    {
-      value: pad(totalSeconds % 60),
-      label: "SEC",
-    },
-  ];
-
-  const formatDate = (
-    date: string | null
-  ) => {
-    if (!date) {
-      return "Date to be announced";
-    }
-
-    const parsed = new Date(date);
-
-    if (Number.isNaN(parsed.getTime())) {
-      return "Date to be announced";
-    }
-
-    return parsed.toLocaleDateString(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }
-    );
-  };
-
-  const formatStatus = (
-    status: string | undefined
-  ) => {
-    if (!status) return "Upcoming";
-
-    return (
-      status.charAt(0).toUpperCase() +
-      status.slice(1)
-    );
-  };
-
   return (
-    <section className="relative w-full overflow-hidden bg-[#05070a] px-3 pb-8 pt-4 sm:px-5 sm:pb-10 sm:pt-5 lg:px-6 lg:pb-10 lg:pt-6 xl:px-8">
+    <section className="mba-hero relative isolate w-full overflow-hidden">
+      {/* Main background artwork */}
+      <div
+        aria-hidden="true"
+        className="mba-hero-art absolute inset-0 -z-30"
+      />
 
-      {/* Ambient background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-40 top-20 h-[500px] w-[500px] rounded-full bg-red-600/10 blur-[140px]" />
-        <div className="absolute -right-40 bottom-0 h-[600px] w-[600px] rounded-full bg-red-900/10 blur-[160px]" />
+      {/* Contrast overlays */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-20 bg-gradient-to-r from-white/20 via-white/0 to-transparent"
+      />
 
-        <div
-          className="absolute inset-0 opacity-[0.035]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)",
-            backgroundSize: "70px 70px",
-          }}
-        />
-      </div>
+      <div
+        aria-hidden="true"
+        className="mba-hero-shade absolute inset-0 -z-10"
+      />
 
-      <div className="relative mx-auto w-full max-w-[1600px]">
+      {/* Decorative diagonal red brush strokes */}
+      <div
+        aria-hidden="true"
+        className="mba-red-streak mba-red-streak-one"
+      />
+      <div
+        aria-hidden="true"
+        className="mba-red-streak mba-red-streak-two"
+      />
 
-        {/* =====================================================
-            MAIN HERO
-        ===================================================== */}
-        <div className="relative w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#080b10] shadow-[0_30px_100px_rgba(0,0,0,0.55)] sm:rounded-[28px]">
+      <div className="mba-hero-inner relative mx-auto grid w-full max-w-[1600px] grid-cols-1 items-start gap-8 px-5 pb-12 pt-9 sm:px-8 md:min-h-[calc(100svh-80px)] md:grid-cols-[1.05fr_0.95fr] md:px-8 md:pb-9 md:pt-8 lg:px-10 xl:px-0 xl:pt-12">
+        {/* LEFT CONTENT */}
+        <div className="mba-hero-copy relative z-10 w-full max-w-[650px]">
+          <div className="mb-5 flex flex-wrap items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#101820] sm:text-[10px]">
+            <span className="mr-1 h-[2px] w-7 bg-[#f50919]" />
+            Mumbai Boxing Association
 
-          {/* Subtle red top glow */}
-          <div className="pointer-events-none absolute left-1/4 top-0 z-30 h-px w-1/2 bg-gradient-to-r from-transparent via-red-500/70 to-transparent" />
+            <span className="border-l border-slate-400 pl-2 text-slate-500">
+              EST. 1985
+            </span>
+          </div>
 
-          <div
-            className="
-              grid
-              min-h-[680px]
-              lg:min-h-[calc(100svh-155px)]
-              lg:max-h-[820px]
-              grid-cols-1
-              lg:grid-cols-[0.92fr_1.08fr]
-            "
-          >
+          <h1 className="mba-heading text-[clamp(48px,7vw,76px)] font-black uppercase leading-[0.88] tracking-[-0.065em] text-[#071016]">
+            WHERE
+            <br />
+            <span className="text-[#f50919]">CHAMPIONS</span>
+            <br />
+            ARE BUILT<span className="text-[#f50919]">.</span>
+          </h1>
 
-            {/* =================================================
-                LEFT CONTENT
-            ================================================= */}
-            <div className="relative z-10 flex items-center px-6 py-12 sm:px-9 sm:py-14 md:px-10 lg:px-10 xl:px-14 2xl:px-16">
+          <p className="mt-5 max-w-[520px] text-[13px] font-medium leading-[1.7] text-[#253140] sm:text-[14px] lg:text-[15px]">
+            Mumbai Boxing Association is dedicated to developing boxers,
+            promoting the sport, and building a stronger boxing community
+            across Mumbai.
+          </p>
 
-              {/* Dark gradient behind text */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#080b10] via-[#080b10]/95 to-transparent" />
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/register"
+              className="inline-flex min-h-[46px] items-center justify-center gap-3 rounded-full bg-[#f50919] px-6 py-3 text-[11px] font-extrabold text-white shadow-lg shadow-red-600/15 transition duration-200 hover:-translate-y-0.5 hover:bg-[#c90010] sm:text-[12px]"
+            >
+              JOIN THE ASSOCIATION
+              <ArrowRight size={17} />
+            </Link>
 
-              <div className="relative w-full max-w-[700px]">
+            <Link
+              href="/events"
+              className="inline-flex min-h-[46px] items-center justify-center gap-3 rounded-full border border-[#aeb9c6] bg-white/85 px-6 py-3 text-[11px] font-extrabold text-[#101820] backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-red-500 sm:text-[12px]"
+            >
+              VIEW TOURNAMENTS
+              <Trophy size={17} className="text-[#f50919]" />
+            </Link>
+          </div>
 
-                {/* Association label */}
-                <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-red-500/20 bg-red-500/[0.07] px-3.5 py-2 shadow-[0_0_30px_rgba(239,68,68,0.05)] sm:mb-7 sm:px-4">
+          <div className="mt-5 flex flex-wrap items-center gap-4 text-[9px] font-extrabold uppercase tracking-[0.11em] text-slate-700 sm:text-[10px]">
+            <span className="flex items-center gap-2">
+              <MapPin size={16} className="text-[#f50919]" />
+              Official Boxing Body
+            </span>
 
-                  <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
+            <span className="hidden h-4 w-px bg-slate-400 sm:block" />
 
-                  <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-red-400 sm:text-[10px] sm:tracking-[0.2em]">
-                    Mumbai Boxing Association
-                  </span>
+            <span className="flex items-center gap-2">
+              <MapPin size={16} className="text-[#f50919]" />
+              Mumbai, India
+            </span>
+          </div>
 
-                  <span className="hidden h-4 w-px bg-red-500/20 sm:block" />
+        </div>
 
-                  <span className="hidden text-[9px] font-semibold tracking-widest text-slate-500 sm:block">
-                    EST. 1985
-                  </span>
-                </div>
+        {/* RIGHT CONTENT */}
+        <div className="mba-hero-right relative z-10 flex w-full flex-col items-end justify-center md:min-h-[530px]">
+          <div className="mba-motivation mb-7 mr-3 hidden rotate-[-8deg] self-end font-serif text-[22px] italic leading-[1.05] text-white drop-shadow-lg lg:block">
+            Discipline
+            <br />
+            Dedication
+            <br />
+            Determination
 
-                {/* Main heading */}
-                <h1
-                  className="
-                    font-black
-                    leading-[0.86]
-                    tracking-[-0.06em]
-                    text-white
-                    text-[clamp(3.2rem,5.3vw,6rem)]
-                  "
-                >
-                  WHERE
-                  <br />
+            <div className="mt-2 h-[2px] w-full bg-[#f50919]" />
+          </div>
 
-                  <span className="text-red-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.18)]">
-                    CHAMPIONS
-                  </span>
+          {/* Tournament card */}
+          <div className="mba-tournament-card w-full mr-[-70] mt-10 max-w-[390px] rounded-[20px] border border-white/20 bg-[#080e14]/95 p-5 text-white shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-md sm:p-6">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff1728] shadow-[0_0_12px_#ff1728]" />
 
-                  <br />
-
-                  ARE BUILT
-                  <span className="text-red-500">.</span>
-                </h1>
-
-                {/* Description */}
-                <p className="mt-7 max-w-[580px] text-sm leading-6 text-slate-400 sm:mt-8 sm:text-base sm:leading-7">
-                  Mumbai Boxing Association is dedicated
-                  to developing boxers, promoting the sport,
-                  and building a stronger boxing community.
-                </p>
-
-                {/* Buttons */}
-                <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:items-center">
-
-                  <Link
-                    href="/register"
-                    className="group inline-flex items-center justify-center gap-3 rounded-xl bg-red-600 px-6 py-3.5 text-sm font-bold !text-white shadow-[0_10px_35px_rgba(220,38,38,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-[0_15px_45px_rgba(220,38,38,0.35)] sm:px-7"
-                  >
-                    JOIN THE ASSOCIATION
-
-                    <ArrowRight
-                      size={17}
-                      strokeWidth={2.5}
-                      className="transition-transform duration-200 group-hover:translate-x-1"
-                    />
-                  </Link>
-
-                  <Link
-                    href="/events"
-                    className="group inline-flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/[0.03] px-6 py-3.5 text-sm font-bold !text-white backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.07] sm:px-7"
-                  >
-                    VIEW TOURNAMENTS
-
-                    <Trophy
-                      size={17}
-                      strokeWidth={2}
-                      className="text-red-500 transition-transform duration-200 group-hover:scale-110"
-                    />
-                  </Link>
-                </div>
-
-                {/* Bottom information */}
-                <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-slate-500 sm:mt-11 sm:gap-x-7">
-
-                  <div className="flex items-center gap-2">
-                    <CalendarDays
-                      size={15}
-                      className="shrink-0 text-red-500"
-                    />
-
-                    <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400 sm:text-[10px] sm:tracking-[0.16em]">
-                      Official Boxing Body
-                    </span>
-                  </div>
-
-                  <div className="hidden h-4 w-px bg-white/10 sm:block" />
-
-                  <div className="flex items-center gap-2">
-                    <MapPin
-                      size={15}
-                      className="shrink-0 text-red-500"
-                    />
-
-                    <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400 sm:text-[10px] sm:tracking-[0.16em]">
-                      Mumbai, India
-                    </span>
-                  </div>
-
-                </div>
-
-                {/* Hero statistics */}
-                <div className="mt-9 grid max-w-[570px] grid-cols-3 border-t border-white/10 pt-6 sm:mt-11">
-
-                  <div className="pr-4">
-                    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                      500<span className="text-red-500">+</span>
-                    </p>
-
-                    <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-slate-500 sm:text-[9px]">
-                      Registered Boxers
-                    </p>
-                  </div>
-
-                  <div className="border-l border-white/10 px-4">
-                    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                      50<span className="text-red-500">+</span>
-                    </p>
-
-                    <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-slate-500 sm:text-[9px]">
-                      Affiliated Academies
-                    </p>
-                  </div>
-
-                  <div className="border-l border-white/10 pl-4">
-                    <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                      25<span className="text-red-500">+</span>
-                    </p>
-
-                    <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-slate-500 sm:text-[9px]">
-                      Years of Excellence
-                    </p>
-                  </div>
-
-                </div>
-
-              </div>
-            </div>
-
-            {/* =================================================
-                RIGHT IMAGE
-            ================================================= */}
-            <div className="relative min-h-[500px] overflow-hidden bg-black lg:min-h-0">
-
-              {/* Background Image */}
-              <div
-                className="absolute inset-0 scale-[1.02] bg-cover bg-center"
-                style={{
-                  backgroundImage:
-                    "url('/hero.png')",
-                }}
-              />
-
-              {/* Dark cinematic overlay */}
-              <div className="absolute inset-0 bg-black/25" />
-
-              {/* Left fade into dark content */}
-              <div className="absolute inset-y-0 left-0 z-10 w-2/5 bg-gradient-to-r from-[#080b10] via-[#080b10]/80 to-transparent" />
-
-              {/* Top dark fade */}
-              <div className="absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-black/65 to-transparent" />
-
-              {/* Bottom dark fade */}
-              <div className="absolute inset-x-0 bottom-0 z-10 h-48 bg-gradient-to-t from-black/75 to-transparent" />
-
-              {/* Red atmospheric glow */}
-              <div className="pointer-events-none absolute left-[20%] top-[15%] z-10 h-48 w-48 rounded-full bg-red-600/15 blur-[100px]" />
-
-              {/* Right atmospheric glow */}
-              <div className="pointer-events-none absolute bottom-[10%] right-[5%] z-10 h-64 w-64 rounded-full bg-red-600/10 blur-[120px]" />
-
-              {/* Image label */}
-              <div className="absolute left-5 top-5 z-30 flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3.5 py-2 shadow-lg backdrop-blur-xl sm:left-6 sm:top-6 sm:px-4">
-
-                <span className="h-2 w-2 animate-pulse rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]" />
-
-                <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-white sm:text-[9px] sm:tracking-[0.18em]">
-                  Mumbai Boxing
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-300">
+                  {tournament
+                    ? tournamentLabel(tournament)
+                    : "Tournament Information"}
                 </span>
               </div>
 
-              {/* Top right slogan */}
-              <div className="absolute right-6 top-6 z-20 hidden text-right lg:block">
-                <p className="text-[8px] font-semibold uppercase tracking-[0.35em] text-white/50">
-                  Train
-                </p>
+              <Trophy size={19} className="shrink-0 text-[#ff1728]" />
+            </div>
 
-                <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.35em] text-white/50">
-                  Compete
-                </p>
-
-                <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.35em] text-white/50">
-                  Belong
-                </p>
-
-                <div className="ml-auto mt-2 h-10 w-px bg-red-500" />
-              </div>
-
-              {/* =================================================
-                  TOURNAMENT CARD
-              ================================================= */}
+            {loading ? (
               <div
-                className="
-                  absolute
-                  left-1/2
-                  top-1/2
-                  z-30
-                  w-[min(88%,350px)]
-                  -translate-x-1/2
-                  -translate-y-1/2
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  border-white/15
-                  bg-[#090c11]/90
-                  p-5
-                  shadow-[0_25px_80px_rgba(0,0,0,0.55)]
-                  backdrop-blur-2xl
-                  lg:left-auto
-                  lg:right-[5%]
-                  lg:w-[min(39%,350px)]
-                  lg:translate-x-0
-                  xl:right-[6%]
-                "
+                className="space-y-4 py-2"
+                role="status"
+                aria-label="Loading tournament"
               >
+                <LoaderCircle
+                  size={25}
+                  className="animate-spin text-red-500"
+                />
+                <div className="h-5 w-4/5 animate-pulse rounded bg-white/10" />
+                <div className="h-4 w-2/3 animate-pulse rounded bg-white/10" />
+                <div className="h-12 animate-pulse rounded-full bg-white/10" />
+              </div>
+            ) : tournament ? (
+              <>
+                <h2 className="text-[19px] font-black leading-tight tracking-tight text-white">
+                  {tournament.name}
+                </h2>
 
-                {/* Red card glow */}
-                <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br from-red-500/30 via-transparent to-transparent opacity-70" />
-
-                {/* Card content */}
-                <div className="relative">
-
-                  {/* Header */}
-                  <div className="mb-5 flex items-center justify-between">
-
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 animate-pulse rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
-
-                      <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-red-400 sm:text-[10px] sm:tracking-[0.18em]">
-                        {loadingTournament
-                          ? "Loading Tournament"
-                          : tournament
-                          ? "Upcoming Tournament"
-                          : "Tournament Update"}
-                      </span>
-                    </div>
-
-                    <Trophy
+                <div className="mt-4 space-y-3 text-[13px] text-slate-200 sm:text-[14px]">
+                  <div className="flex items-start gap-3">
+                    <CalendarDays
                       size={18}
-                      className="text-white/50"
+                      className="mt-0.5 shrink-0 text-[#ff1728]"
                     />
+                    <span>{dateRange(tournament)}</span>
                   </div>
 
-                  {/* Loading */}
-                  {loadingTournament ? (
-                    <>
-                      <div className="space-y-2">
-                        <div className="h-5 w-4/5 animate-pulse rounded bg-white/10" />
-
-                        <div className="h-5 w-3/5 animate-pulse rounded bg-white/10" />
-                      </div>
-
-                      <div className="mt-5 h-px bg-white/10" />
-
-                      <div className="mt-5 grid grid-cols-4 gap-2">
-                        {[1, 2, 3, 4].map(
-                          (item) => (
-                            <div
-                              key={item}
-                              className="h-16 animate-pulse rounded-xl bg-white/[0.06]"
-                            />
-                          )
-                        )}
-                      </div>
-                    </>
-                  ) : tournament ? (
-                    <>
-                      {/* Tournament name */}
-                      <h2 className="max-w-[290px] text-[17px] font-bold leading-6 text-white sm:text-lg">
-                        {tournament.name}
-                      </h2>
-
-                      {/* Date */}
-                      <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
-                        <Clock3
-                          size={14}
-                          className="shrink-0 text-red-500"
-                        />
-
-                        <span>
-                          {formatDate(
-                            tournament.startDate
-                          )}
-                        </span>
-                      </div>
-
-                      {/* Location */}
-                      {tournament.location && (
-                        <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
-                          <MapPin
-                            size={14}
-                            className="shrink-0 text-red-500"
-                          />
-
-                          <span className="truncate">
-                            {tournament.location}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Status + Weight */}
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-
-                        <span className="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-400">
-                          {formatStatus(
-                            tournament.status
-                          )}
-                        </span>
-
-                        {tournament.weightClass && (
-                          <span className="inline-flex rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[10px] font-medium text-slate-400">
-                            {tournament.weightClass}
-                          </span>
-                        )}
-
-                      </div>
-
-                      {/* Divider */}
-                      <div className="my-5 h-px bg-white/10" />
-
-                      {/* Countdown */}
-                      {hasStarted ? (
-                        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-4 text-center">
-                          <p className="text-sm font-bold text-red-400">
-                            Tournament has started
-                          </p>
-
-                          <p className="mt-1 text-[10px] text-red-300/60">
-                            Please check the event page for
-                            current tournament information.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-4 gap-2">
-                          {countdownItems.map(
-                            (item) => (
-                              <div
-                                key={item.label}
-                                className="rounded-xl border border-white/10 bg-white/[0.055] px-1.5 py-3 text-center shadow-inner sm:px-2"
-                              >
-                                <div className="text-lg font-black tracking-tight text-white sm:text-xl">
-                                  {item.value}
-                                </div>
-
-                                <div className="mt-1 text-[7px] font-semibold tracking-[0.13em] text-slate-500 sm:text-[8px] sm:tracking-[0.15em]">
-                                  {item.label}
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      )}
-
-                      {/* Event CTA */}
-                      <Link
-                        href="/events"
-                        className="group mt-5 flex items-center justify-between rounded-xl bg-red-600 px-4 py-3 text-xs font-bold !text-white shadow-[0_8px_25px_rgba(220,38,38,0.22)] transition-all duration-200 hover:bg-red-500 hover:shadow-[0_10px_35px_rgba(220,38,38,0.32)]"
-                      >
-                        <span>
-                          VIEW EVENT DETAILS
-                        </span>
-
-                        <ArrowRight
-                          size={15}
-                          className="!text-white transition-transform duration-200 group-hover:translate-x-1"
-                        />
-                      </Link>
-                    </>
-                  ) : tournamentError ? (
-                    <>
-                      <h2 className="text-[17px] font-bold leading-6 text-white sm:text-lg">
-                        Event information is temporarily unavailable
-                      </h2>
-
-                      <p
-                        role="status"
-                        className="mt-3 text-xs leading-5 text-slate-400"
-                      >
-                        We could not load the featured tournament right now.
-                        Please try again or browse all events.
-                      </p>
-
-                      <button
-                        type="button"
-                        onClick={retryFeaturedTournament}
-                        className="mt-5 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-white/10"
-                      >
-                        TRY AGAIN
-                      </button>
-
-                      <Link
-                        href="/events"
-                        className="group mt-3 flex items-center justify-between rounded-xl bg-red-600 px-4 py-3 text-xs font-bold !text-white transition-all duration-200 hover:bg-red-500"
-                      >
-                        <span>VIEW ALL TOURNAMENTS</span>
-                        <ArrowRight
-                          size={15}
-                          className="!text-white transition-transform duration-200 group-hover:translate-x-1"
-                        />
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      {/* No featured tournament */}
-                      <h2 className="text-[17px] font-bold leading-6 text-white sm:text-lg">
-                        No Upcoming Tournament
-                      </h2>
-
-                      <p className="mt-3 text-xs leading-5 text-slate-400">
-                        Upcoming tournament information will
-                        appear here when announced by the
-                        Mumbai Boxing Association.
-                      </p>
-
-                      <div className="my-5 h-px bg-white/10" />
-
-                      <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-center">
-                        <Trophy
-                          size={24}
-                          className="mx-auto text-slate-500"
-                        />
-
-                        <p className="mt-2 text-xs font-semibold text-slate-400">
-                          Stay tuned for the next event
-                        </p>
-                      </div>
-
-                      <Link
-                        href="/events"
-                        className="group mt-5 flex items-center justify-between rounded-xl bg-red-600 px-4 py-3 text-xs font-bold !text-white transition-all duration-200 hover:bg-red-500"
-                      >
-                        <span>
-                          VIEW ALL TOURNAMENTS
-                        </span>
-
-                        <ArrowRight
-                          size={15}
-                          className="!text-white transition-transform duration-200 group-hover:translate-x-1"
-                        />
-                      </Link>
-                    </>
+                  {tournament.location && (
+                    <div className="flex items-start gap-3">
+                      <MapPin
+                        size={18}
+                        className="mt-0.5 shrink-0 text-[#ff1728]"
+                      />
+                      <span>{tournament.location}</span>
+                    </div>
                   )}
 
+                  {tournament.weightClass && (
+                    <div className="flex items-start gap-3">
+                      <Trophy
+                        size={18}
+                        className="mt-0.5 shrink-0 text-[#ff1728]"
+                      />
+                      <span>{tournament.weightClass}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              {/* Bottom image detail */}
-              <div className="absolute bottom-5 left-5 z-20 hidden items-center gap-3 lg:flex">
-                <div className="h-8 w-px bg-red-500" />
+                <Link
+                  href={tournamentUrl(tournament)}
+                  className="mt-5 flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full bg-[#f50919] px-5 py-3 text-[13px] font-extrabold text-white transition duration-200 hover:bg-red-700"
+                >
+                  REGISTER NOW
+                  <ArrowRight size={18} />
+                </Link>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-white">
+                  {error
+                    ? "Tournament information unavailable"
+                    : "No upcoming tournament announced"}
+                </h2>
 
-                <div>
-                  <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-white/60">
-                    Mumbai
-                  </p>
+                <p className="mt-3 text-xs leading-5 text-slate-300">
+                  {error
+                    ? "Please try loading the event again."
+                    : "New tournament details will appear here when announced."}
+                </p>
 
-                  <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-white/30">
-                    Boxing Association
-                  </p>
-                </div>
-              </div>
-
-            </div>
+                {error ? (
+                  <button
+                    type="button"
+                    onClick={retryTournamentLoad}
+                    className="mt-5 w-full rounded-full bg-red-600 px-5 py-3 text-xs font-bold text-white transition hover:bg-red-700"
+                  >
+                    TRY AGAIN
+                  </button>
+                ) : (
+                  <Link
+                    href="/events"
+                    className="mt-5 flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-5 py-3 text-xs font-bold text-white transition hover:bg-red-700"
+                  >
+                    VIEW ALL EVENTS
+                    <ArrowRight size={16} className="ml-2" />
+                  </Link>
+                )}
+              </>
+            )}
           </div>
         </div>
-
-        {/* =====================================================
-            SCROLL INDICATOR
-        ===================================================== */}
-        <div className="mt-5 flex items-center justify-center gap-3 text-slate-500 sm:mt-6">
-
-          <div className="hidden h-px w-10 bg-white/10 sm:block" />
-
-          <span className="text-[8px] font-semibold uppercase tracking-[0.25em] text-slate-500 sm:text-[9px]">
-            Scroll to explore
-          </span>
-
-          <ChevronDown
-            size={14}
-            className="animate-bounce text-red-500"
-          />
-
-          <div className="hidden h-px w-10 bg-white/10 sm:block" />
-
-        </div>
-
       </div>
     </section>
   );

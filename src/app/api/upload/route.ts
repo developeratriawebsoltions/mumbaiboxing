@@ -9,12 +9,27 @@ export async function POST(req: NextRequest) {
 
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
 
+    const medicalIssueDates: Record<string, Date | undefined> = {};
+    for (const [field, label] of [
+      ["medicalCertIssueDate", "medical-fitness-certificate-by-mbbs-dr"],
+      ["hivReportIssueDate", "hiv-hepatitis-b-c-test-report"],
+    ]) {
+      const value = String(formData.get(field) ?? "").trim();
+      if (!value) continue;
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return NextResponse.json({ error: `Invalid issue date for ${label}` }, { status: 400 });
+      }
+      medicalIssueDates[label] = date;
+    }
+
     const saved: { label: string; filePath: string }[] = [];
 
     const failed: string[] = [];
 
     for (const [key, value] of formData.entries()) {
-      if (key === "userId" || !(value instanceof File)) continue;
+      if (key === "userId" || key in medicalIssueDates || !(value instanceof File)) continue;
 
       const file = value as File;
       if (file.size === 0) continue;
@@ -26,8 +41,18 @@ export async function POST(req: NextRequest) {
 
         await prisma.document.upsert({
           where: { userId_label: { userId: parseInt(userId), label: key } },
-          update: { filePath: url, fileType: fileType === "image" ? "image" : "pdf" },
-          create: { userId: parseInt(userId), label: key, filePath: url, fileType: fileType === "image" ? "image" : "pdf" },
+          update: {
+            filePath: url,
+            fileType: fileType === "image" ? "image" : "pdf",
+            ...(medicalIssueDates[key] && { issueDate: medicalIssueDates[key] }),
+          },
+          create: {
+            userId: parseInt(userId),
+            label: key,
+            filePath: url,
+            fileType: fileType === "image" ? "image" : "pdf",
+            issueDate: medicalIssueDates[key],
+          },
         });
 
         saved.push({ label: key, filePath: url });

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { tournamentUrl } from "@/lib/tournament-url";
 import {
   ArrowRight,
   CalendarDays,
@@ -19,25 +20,102 @@ type Tournament = {
   weightClass: string | null;
   status: string;
   entryFee: number | null;
+  isFeatured: boolean;
 };
+
+function isTournament(value: unknown): value is Tournament {
+  if (typeof value !== "object" || value === null) return false;
+
+  const tournament = value as Record<string, unknown>;
+  return (
+    typeof tournament.id === "number" &&
+    typeof tournament.name === "string" &&
+    typeof tournament.status === "string" &&
+    (typeof tournament.startDate === "string" ||
+      tournament.startDate === null) &&
+    (typeof tournament.endDate === "string" ||
+      tournament.endDate === null) &&
+    (typeof tournament.location === "string" ||
+      tournament.location === null) &&
+    (typeof tournament.weightClass === "string" ||
+      tournament.weightClass === null) &&
+    (typeof tournament.entryFee === "number" ||
+      tournament.entryFee === null) &&
+    typeof tournament.isFeatured === "boolean"
+  );
+}
 
 export default function UpcomingTournaments() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    fetch("/api/tournaments")
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d)) {
-          setTournaments(
-            d
-              .filter((t) => t.status !== "completed")
-              .slice(0, 3)
-          );
+    let cancelled = false;
+
+    async function loadTournaments() {
+      setLoading(true);
+
+      try {
+        const response = await fetch("/api/tournaments", {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          throw new Error("Tournament listings are unavailable.");
         }
-      })
-      .catch(() => {});
-  }, []);
+
+        const data: unknown = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Tournament listings returned an invalid response.");
+        }
+
+        const active = data
+          .filter(isTournament)
+          .filter((tournament) => {
+            return !["completed", "cancelled"].includes(tournament.status);
+          })
+          .sort((first, second) => {
+            if (first.isFeatured !== second.isFeatured) {
+              return first.isFeatured ? -1 : 1;
+            }
+
+            const firstOngoing = first.status === "ongoing";
+            const secondOngoing = second.status === "ongoing";
+            if (firstOngoing !== secondOngoing) {
+              return firstOngoing ? -1 : 1;
+            }
+
+            const firstStart = first.startDate
+              ? new Date(first.startDate).getTime()
+              : Number.POSITIVE_INFINITY;
+            const secondStart = second.startDate
+              ? new Date(second.startDate).getTime()
+              : Number.POSITIVE_INFINITY;
+            return firstStart - secondStart;
+          })
+          .slice(0, 3);
+
+        if (!cancelled) {
+          setTournaments(active);
+          setLoadError(false);
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadTournaments();
+    return () => {
+      cancelled = true;
+    };
+  }, [retryCount]);
+
+  function retryLoadingTournaments() {
+    setRetryCount((count) => count + 1);
+  }
 
   const formatDate = (
     start: string | null,
@@ -71,10 +149,15 @@ export default function UpcomingTournaments() {
   const isOpen = (status: string) =>
     status === "open";
 
-  const statusLabel = (status: string) => {
-    if (status === "open") return "Registration Open";
-    if (status === "ongoing") return "Ongoing";
-    return "Upcoming";
+  const statusLabel = (status: string, isFeatured: boolean) => {
+    const statusText =
+      status === "open"
+        ? "Registration Open"
+        : status === "ongoing"
+          ? "Ongoing"
+          : "Upcoming";
+
+    return isFeatured ? `Featured · ${statusText}` : statusText;
   };
 
   const statusStyles = (status: string) => {
@@ -103,10 +186,6 @@ export default function UpcomingTournaments() {
       dot: "bg-slate-600",
     };
   };
-
-  if (tournaments.length === 0) {
-    return null;
-  }
 
   return (
     <section
@@ -217,9 +296,57 @@ export default function UpcomingTournaments() {
             TOURNAMENT GRID
         ===================================================== */}
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-
-          {tournaments.map((tournament) => {
+        {loading ? (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3" role="status">
+            <span className="sr-only">Loading upcoming tournaments</span>
+            {[0, 1, 2].map((item) => (
+              <div
+                key={item}
+                className="h-64 animate-pulse rounded-[22px] border border-white/10 bg-white/[0.04]"
+              />
+            ))}
+          </div>
+        ) : loadError ? (
+          <div
+            role="status"
+            className="rounded-[22px] border border-white/10 bg-white/[0.04] p-7 text-center sm:p-10"
+          >
+            <p className="text-lg font-bold text-white">
+              Upcoming events are temporarily unavailable
+            </p>
+            <p className="mt-2 text-sm text-slate-400">
+              Please try again or browse all tournament listings.
+            </p>
+            <button
+              type="button"
+              onClick={retryLoadingTournaments}
+              className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-red-500"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : tournaments.length === 0 ? (
+          <div
+            role="status"
+            className="rounded-[22px] border border-white/10 bg-white/[0.04] p-7 text-center sm:p-10"
+          >
+            <p className="text-lg font-bold text-white">
+              No upcoming tournaments announced
+            </p>
+            <p className="mt-2 text-sm text-slate-400">
+              Check back soon or browse all tournament listings.
+            </p>
+            <Link
+              href="/events"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-300 transition hover:border-red-500/40 hover:text-white"
+            >
+              Browse All Events
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {tournaments.map((tournament) => {
 
             const open = isOpen(tournament.status);
             const styles = statusStyles(
@@ -280,7 +407,8 @@ export default function UpcomingTournaments() {
                       className={`text-[9px] font-bold uppercase tracking-[0.12em] ${styles.text}`}
                     >
                       {statusLabel(
-                        tournament.status
+                        tournament.status,
+                        tournament.isFeatured
                       )}
                     </span>
 
@@ -434,7 +562,7 @@ export default function UpcomingTournaments() {
                 <div className="mt-auto border-t border-white/[0.06] px-6 py-5">
 
                   <Link
-                    href={`/events/${tournament.id}`}
+                    href={tournamentUrl(tournament)}
                     className={`group/btn flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-[10px] font-bold uppercase tracking-[0.13em] transition-all duration-200 ${
                       open
                         ? "bg-red-600 !text-white shadow-[0_8px_25px_rgba(220,38,38,0.18)] hover:bg-red-500 hover:shadow-[0_10px_30px_rgba(220,38,38,0.28)]"
@@ -462,9 +590,9 @@ export default function UpcomingTournaments() {
 
               </div>
             );
-          })}
-
-        </div>
+            })}
+          </div>
+        )}
 
         {/* =====================================================
             BOTTOM DECORATION

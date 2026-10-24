@@ -1,15 +1,17 @@
 "use client";
 
-import Navbar from "@/Components/navbar/Navbar";
-import Footer from "@/Components/footer/Footer";
+import Link from "next/link";
 
 import {
+  ArrowRight,
   Award,
+  BarChart3,
   ChevronDown,
   Crown,
   Medal,
   Search,
   ShieldCheck,
+  Target,
   Trophy,
   Users,
 } from "lucide-react";
@@ -268,129 +270,145 @@ export default function RankingsPage() {
   return (
     <main className="min-h-screen bg-[#05070a] text-white">
 
-      <Navbar />
+      {/* ================= RANKINGS HERO ================= */}
 
-      {/* =========================================================
-          HERO
-      ========================================================= */}
-
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#05070a]">
-
-        {/* Ambient Glow */}
-
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-red-600/10 blur-3xl" />
-
-        <div className="pointer-events-none absolute -bottom-48 -left-48 h-[520px] w-[520px] rounded-full bg-red-600/10 blur-3xl" />
-
-        {/* Grid */}
+      <section className="relative isolate overflow-hidden bg-[#05080c] text-white">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-20 bg-[url('/rankings/rankings-hero.png')] bg-cover bg-no-repeat bg-[position:65%_center] lg:bg-center"
+        />
 
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.035]"
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-[#05080c]/95 via-[#05080c]/80 to-[#05080c]/25 lg:from-[#05080c]/85 lg:via-[#05080c]/55 lg:to-transparent"
+        />
+
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
+              "linear-gradient(90deg, white 1px, transparent 1px), linear-gradient(white 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
           }}
         />
 
-        <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
-
-          {/* Breadcrumb */}
-
-          <div className="mb-10 flex items-center gap-2 text-xs text-slate-500">
-
-            <a
-              href="/"
-              className="transition-colors hover:text-white"
-            >
+        <div className="relative mx-auto flex min-h-[610px] max-w-[1650px] flex-col justify-center px-5 py-16 sm:px-8 lg:min-h-[560px] lg:px-12 xl:px-16">
+          <nav
+            aria-label="Breadcrumb"
+            className="mb-12 flex items-center gap-3 text-sm font-medium text-slate-300"
+          >
+            <Link href="/" className="hover:text-white">
               Home
-            </a>
-
-            <ChevronDown
-              size={12}
-              className="-rotate-90 text-slate-700"
-            />
-
-            <span className="text-red-500">
-              Rankings
-            </span>
-
-          </div>
+            </Link>
+            <span className="text-slate-500" aria-hidden="true">›</span>
+            <span className="text-[#ff2639]">Rankings</span>
+          </nav>
 
           <div className="max-w-[1050px]">
-
-            <div className="mb-5 flex items-center gap-3">
-
-              <span className="h-[2px] w-9 bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.45)]" />
-
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">
+            <div className="mb-6 flex items-center gap-5">
+              <span className="h-[3px] w-12 bg-[#ff1024]" />
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff3042] sm:text-sm">
                 Mumbai Boxing Association
-              </p>
-
+              </span>
             </div>
 
-            <h1 className="text-5xl font-black leading-[0.95] tracking-[-0.045em] sm:text-6xl lg:text-7xl xl:text-[84px]">
-
-              OFFICIAL{" "}
-
-              <span className="text-red-500">
-                BOXING
-              </span>
-
-              <br />
-
-              RANKINGS
-
+            <h1 className="text-[clamp(48px,6.2vw,108px)] font-black uppercase leading-[0.95] tracking-[-0.06em]">
+              BOXING{" "}
+              <span className="text-[#ff2034]">RANKINGS</span>
             </h1>
 
-            <p className="mt-7 max-w-[850px] text-base leading-8 text-slate-400 sm:text-lg sm:leading-9">
-              Follow the official Mumbai Boxing Association
-              rankings, calculated from verified tournament
-              performances and the Association&apos;s points
-              system.
+            <p className="mt-7 max-w-[900px] text-[15px] leading-[1.8] text-slate-200 sm:text-lg">
+              Track verified athlete performance across tournaments,
+              categories, medals, and points. Rankings are calculated
+              from approved tournament results recorded through the
+              Mumbai Boxing Association system.
             </p>
 
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-9 flex flex-wrap gap-4">
+              <a
+                href="#athlete-rankings"
+                className="inline-flex min-h-12 items-center justify-center gap-4 rounded-full bg-[#f50919] px-7 py-3 text-xs font-extrabold uppercase tracking-[0.09em] text-white shadow-[0_12px_35px_rgba(245,9,25,0.25)] transition hover:bg-[#d90013]"
+              >
+                <BarChart3 size={19} />
+                View Rankings
+                <ArrowRight size={18} />
+              </a>
 
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3">
-
-                <ShieldCheck
-                  size={17}
-                  className="text-red-500"
-                />
-
-                <span className="text-xs font-semibold text-slate-400">
-                  Official Rankings
-                </span>
-
-              </div>
-
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3">
-
-                <Trophy
-                  size={17}
-                  className="text-red-500"
-                />
-
-                <span className="text-xs font-semibold text-slate-400">
-                  Verified Results
-                </span>
-
-              </div>
-
+              <a
+                href="#points-system"
+                className="inline-flex min-h-12 items-center justify-center gap-4 rounded-full border border-white/50 bg-black/35 px-7 py-3 text-xs font-extrabold uppercase tracking-[0.09em] text-white transition hover:bg-white/10"
+              >
+                <Trophy size={19} className="text-[#ff3042]" />
+                Ranking Points
+                <ArrowRight size={18} />
+              </a>
             </div>
-
           </div>
-
         </div>
+      </section>
 
+      {/* ================= LIVE STATISTICS ================= */}
+
+      <section className="border-y border-white/20 bg-[#080c11] text-white">
+        <div className="mx-auto grid max-w-[1650px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
+          {[
+            {
+              label: "Ranked Athletes",
+              value: filteredRankings.length,
+              icon: Users,
+            },
+            {
+              label: "Tournament Entries",
+              value: totalTournaments,
+              icon: Trophy,
+            },
+            {
+              label: "Total Points",
+              value: totalPoints,
+              icon: Target,
+            },
+            {
+              label: "Gold Medals",
+              value: totalGold,
+              icon: Medal,
+            },
+          ].map((stat, index) => {
+            const Icon = stat.icon;
+
+            return (
+              <div
+                key={stat.label}
+                className={`flex items-start gap-4 border-white/10 px-3 py-8 sm:px-6 lg:py-9 ${
+                  index % 2 === 0 ? "border-r" : ""
+                } ${index < 2 ? "border-b lg:border-b-0" : ""} ${
+                  index === 1 ? "lg:border-r" : ""
+                }`}
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-red-600/50 bg-red-600/10 text-[#ff2639]">
+                  <Icon size={25} />
+                </div>
+
+                <div>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-300 sm:text-xs">
+                    {stat.label}
+                  </p>
+                  <p className="mt-3 text-4xl font-black leading-none text-white sm:text-5xl">
+                    {loading ? "—" : stat.value.toLocaleString("en-IN")}
+                  </p>
+                  <div className="mt-3 h-px w-20 bg-gradient-to-r from-slate-400/60 to-transparent" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* =========================================================
           RANKING CONTENT
       ========================================================= */}
 
-      <section className="relative overflow-hidden bg-[#090c11]">
+      <section id="athlete-rankings" className="relative overflow-hidden bg-[#05070a]">
 
         <div className="pointer-events-none absolute -left-40 top-40 h-[500px] w-[500px] rounded-full bg-red-600/[0.035] blur-[150px]" />
 
@@ -577,50 +595,6 @@ export default function RankingsPage() {
 
               </div>
             )}
-
-          {/* =====================================================
-              SUMMARY STATS
-          ===================================================== */}
-
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
-
-            <StatCard
-              icon={
-                <Users size={19} />
-              }
-              label="Ranked Boxers"
-              value={
-                loading
-                  ? "—"
-                  : filteredRankings.length
-              }
-            />
-
-            <StatCard
-              icon={
-                <Trophy size={19} />
-              }
-              label="Tournament Results"
-              value={
-                loading
-                  ? "—"
-                  : totalTournaments
-              }
-            />
-
-            <StatCard
-              icon={
-                <Award size={19} />
-              }
-              label="Total Points"
-              value={
-                loading
-                  ? "—"
-                  : totalPoints
-              }
-            />
-
-          </div>
 
           {/* =====================================================
               RANKING TABLE
@@ -867,7 +841,7 @@ export default function RankingsPage() {
               POINTS SYSTEM
           ===================================================== */}
 
-          <section className="mt-20">
+          <section id="points-system" className="mt-20 scroll-mt-24">
 
             <div className="mb-10 max-w-[850px]">
 
@@ -1025,8 +999,6 @@ export default function RankingsPage() {
         </div>
 
       </section>
-
-      <Footer />
 
     </main>
   );
@@ -1507,46 +1479,6 @@ function MiniStat({
       <p className="mt-1 truncate text-xs font-semibold text-slate-400">
         {value}
       </p>
-
-    </div>
-  );
-}
-
-/* =============================================================
-   STAT CARD
-============================================================= */
-
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number | string;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-[#05070a] p-5 transition-all duration-300 hover:border-red-500/15">
-
-      <div className="flex items-center gap-3">
-
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-500/15 bg-red-500/[0.07] text-red-500">
-          {icon}
-        </div>
-
-        <div>
-
-          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-600">
-            {label}
-          </p>
-
-          <p className="mt-1 text-2xl font-black text-white">
-            {value}
-          </p>
-
-        </div>
-
-      </div>
 
     </div>
   );
