@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   const boxer = await prisma.boxer.findUnique({ where: { userId: payload.id } });
   if (!boxer) return NextResponse.json({ error: "Boxer profile not found" }, { status: 404 });
 
-  const tournament = await prisma.tournament.findUnique({ where: { id: parsedTournamentId } });
+  const tournament = await prisma.tournament.findUnique({ where: { id: tournamentId } });
   if (!tournament) return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
   if (tournament.status !== "open") {
     return NextResponse.json({ error: "Registration is not open for this tournament" }, { status: 400 });
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",
-      receipt: `t${parsedTournamentId}_b${boxer.id}`,
-      notes: { tournamentId: String(parsedTournamentId), boxerId: String(boxer.id) },
+      receipt: `t${tournamentId}_b${boxer.id}`,
+      notes: { tournamentId: String(tournamentId), boxerId: String(boxer.id) },
     });
 
     return NextResponse.json({ orderId: order.id, amount, tournamentName: tournament.name });

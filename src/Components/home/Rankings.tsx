@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import Footer from "@/Components/footer/Footer";
-
 import {
   ArrowRight,
   BarChart3,
@@ -291,47 +289,23 @@ export default function RankingsPage() {
     );
   }, [filteredRankings]);
 
-  const formatDate = (date: string | null) => {
-    if (!date) return "—";
-
-    return new Date(date).toLocaleDateString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }
-    );
-  };
-
   return (
-    <main className="min-h-screen bg-[#05070a] text-white">
+    <div className="home-rankings min-h-screen bg-[#f7f8fa] text-[#081019]">
      
 
       {/* =========================================================
           HERO
       ========================================================= */}
 
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#05070a]">
+      <section className="home-rankings-hero relative isolate overflow-hidden border-b border-white/10 bg-[#05070a]">
 
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-red-600/10 blur-3xl" />
+        <div aria-hidden="true" className="home-rankings-hero-art pointer-events-none absolute inset-0" />
 
-        <div className="pointer-events-none absolute -bottom-48 -left-48 h-[520px] w-[520px] rounded-full bg-red-600/10 blur-3xl" />
-
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.035]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+        <div className="home-rankings-hero-content relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
           {/* Breadcrumb */}
 
-          <div className="mb-10 flex items-center gap-2 text-xs text-slate-500">
+          <div className="mb-10 flex items-center gap-2 text-xl text-slate-500">
 
             <Link
               href="/"
@@ -356,7 +330,7 @@ export default function RankingsPage() {
 
               <span className="h-[2px] w-9 bg-red-600" />
 
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">
+              <p className="text-[16px] font-bold uppercase tracking-[0.28em] text-red-500">
                 Mumbai Boxing Association
               </p>
 
@@ -369,18 +343,19 @@ export default function RankingsPage() {
               </span>
             </h1>
 
-            <p className="mt-7 max-w-[850px] text-base leading-8 text-slate-400 sm:text-lg sm:leading-9">
-              Track verified athlete performance across tournaments,
-              categories, medals, and points. Rankings are calculated from
-              approved tournament results recorded through the Mumbai Boxing
-              Association system.
-            </p>
+
+<p className="mt-7 max-w-[850px] text-lg leading-8 text-slate-400 sm:text-xl sm:leading-9 lg:text-2xl">
+  Explore verified athlete performances across tournaments, weight
+  categories, medals, and ranking points. Every ranking reflects
+  approved tournament results recorded by the Mumbai Boxing Association.
+</p>
+
 
           </div>
 
           {/* Hero Meta */}
 
-          <div className="mt-10 flex flex-wrap gap-3">
+          <div className="home-rankings-hero-meta mt-10 flex flex-wrap gap-3">
 
             <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3">
 
@@ -419,11 +394,11 @@ export default function RankingsPage() {
           STATS
       ========================================================= */}
 
-      <section className="border-b border-white/10 bg-[#090c11]">
+      <section className="home-rankings-stats border-b border-white/10 bg-[#090c11]">
 
         <div className="mx-auto grid max-w-[1600px] grid-cols-2 px-5 sm:px-7 lg:grid-cols-4 lg:px-8 xl:px-10 2xl:px-12">
 
-          <div className="border-b border-r border-white/10 px-4 py-8 sm:px-6 lg:border-b-0">
+          <div className="home-rankings-stat-card border-b border-r border-white/10 px-4 py-8 sm:px-6 lg:border-b-0">
 
             <div className="flex items-center gap-3">
 
@@ -443,7 +418,7 @@ export default function RankingsPage() {
 
           </div>
 
-          <div className="border-b border-white/10 px-4 py-8 sm:px-6 lg:border-b-0 lg:border-r">
+          <div className="home-rankings-stat-card border-b border-white/10 px-4 py-8 sm:px-6 lg:border-b-0 lg:border-r">
 
             <div className="flex items-center gap-3">
 
@@ -463,7 +438,7 @@ export default function RankingsPage() {
 
           </div>
 
-          <div className="border-r border-white/10 px-4 py-8 sm:px-6">
+          <div className="home-rankings-stat-card border-r border-white/10 px-4 py-8 sm:px-6">
 
             <div className="flex items-center gap-3">
 
@@ -483,7 +458,7 @@ export default function RankingsPage() {
 
           </div>
 
-          <div className="px-4 py-8 sm:px-6">
+          <div className="home-rankings-stat-card px-4 py-8 sm:px-6">
 
             <div className="flex items-center gap-3">
 
@@ -510,7 +485,7 @@ export default function RankingsPage() {
           MAIN RANKINGS
       ========================================================= */}
 
-      <section className="relative overflow-hidden bg-[#05070a]">
+      <section className="home-rankings-board relative overflow-hidden bg-[#05070a]">
 
         <div className="pointer-events-none absolute -left-40 top-40 h-[500px] w-[500px] rounded-full bg-red-600/[0.035] blur-[150px]" />
 
@@ -538,6 +513,10 @@ export default function RankingsPage() {
                   RANKINGS
                 </span>
               </h2>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Explore the latest rankings across different categories and age groups.
+              </p>
 
             </div>
 
@@ -619,7 +598,7 @@ export default function RankingsPage() {
                 onChange={(e) =>
                   setSearch(e.target.value)
                 }
-                placeholder="Search athlete..."
+                placeholder="Search athletes, academy or membership..."
                 className="w-full rounded-xl border border-white/10 bg-[#090c11] py-3 pl-10 pr-4 text-xs text-white outline-none placeholder:text-slate-700 focus:border-red-500/40"
               />
 
@@ -644,9 +623,6 @@ export default function RankingsPage() {
 
                   const isSecond =
                     ranking.rank === 2;
-
-                  const isThird =
-                    ranking.rank === 3;
 
                   return (
                     <article
@@ -765,7 +741,7 @@ export default function RankingsPage() {
 
             {/* Table Header */}
 
-            <div className="hidden grid-cols-[70px_minmax(260px,1.5fr)_1fr_120px_150px_130px] gap-4 border-b border-white/[0.07] px-6 py-4 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-600 lg:grid">
+            <div className="home-rankings-table-header hidden grid-cols-[70px_minmax(260px,1.5fr)_1fr_120px_150px_130px] gap-4 border-b border-white/[0.07] px-6 py-4 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-600 lg:grid">
 
               <span>
                 Rank
@@ -776,11 +752,11 @@ export default function RankingsPage() {
               </span>
 
               <span>
-                Academy
+                Category
               </span>
 
               <span>
-                Category
+                Academy
               </span>
 
               <span>
@@ -849,7 +825,7 @@ export default function RankingsPage() {
 
             ) : filteredRankings.length === 0 ? (
 
-              <div className="px-5 py-20 text-center">
+              <div className="home-rankings-empty px-5 py-20 text-center">
 
                 <Trophy
                   size={36}
@@ -861,7 +837,7 @@ export default function RankingsPage() {
                 </p>
 
                 <p className="mt-2 text-xs text-slate-600">
-                  Verified tournament results will appear here.
+                  Rankings will appear here once data is available.
                 </p>
 
               </div>
@@ -880,7 +856,7 @@ export default function RankingsPage() {
 
                       {/* Desktop */}
 
-                      <div className="hidden grid-cols-[70px_minmax(260px,1.5fr)_1fr_120px_150px_130px] items-center gap-4 lg:grid">
+                      <div className="home-rankings-row hidden grid-cols-[70px_minmax(260px,1.5fr)_1fr_120px_150px_130px] items-center gap-4 lg:grid">
 
                         {/* Rank */}
 
@@ -929,13 +905,6 @@ export default function RankingsPage() {
 
                         </div>
 
-                        {/* Academy */}
-
-                        <p className="truncate text-xs text-slate-500">
-                          {ranking.academy?.name ||
-                            "Mumbai Boxing Association"}
-                        </p>
-
                         {/* Category */}
 
                         <div>
@@ -953,6 +922,13 @@ export default function RankingsPage() {
                           </p>
 
                         </div>
+
+                        {/* Academy */}
+
+                        <p className="truncate text-xs text-slate-500">
+                          {ranking.academy?.name ||
+                            "Mumbai Boxing Association"}
+                        </p>
 
                         {/* Medals */}
 
@@ -990,7 +966,7 @@ export default function RankingsPage() {
 
                       {/* Mobile */}
 
-                      <div className="lg:hidden">
+                      <div className="home-rankings-mobile-row lg:hidden">
 
                         <div className="flex items-start gap-3">
 
@@ -1134,7 +1110,7 @@ export default function RankingsPage() {
           MEDAL SUMMARY
       ========================================================= */}
 
-      <section className="border-y border-white/10 bg-[#090c11]">
+      <section className="home-rankings-medals border-y border-white/10 bg-[#090c11]">
 
         <div className="mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
@@ -1147,7 +1123,7 @@ export default function RankingsPage() {
                 <span className="h-[2px] w-8 bg-red-600" />
 
                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-500">
-                  Performance Summary
+                  Performance Highlights
                 </p>
 
               </div>
@@ -1169,7 +1145,7 @@ export default function RankingsPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 
-              <div className="rounded-2xl border border-amber-500/15 bg-amber-500/[0.035] p-6">
+              <div className="home-rankings-medal-card rounded-2xl border border-amber-500/15 bg-amber-500/[0.035] p-6">
 
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
                   <Medal
@@ -1188,7 +1164,7 @@ export default function RankingsPage() {
 
               </div>
 
-              <div className="rounded-2xl border border-slate-400/15 bg-slate-400/[0.025] p-6">
+              <div className="home-rankings-medal-card rounded-2xl border border-slate-400/15 bg-slate-400/[0.025] p-6">
 
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-400/10">
                   <Medal
@@ -1207,7 +1183,7 @@ export default function RankingsPage() {
 
               </div>
 
-              <div className="rounded-2xl border border-orange-500/15 bg-orange-500/[0.025] p-6">
+              <div className="home-rankings-medal-card rounded-2xl border border-orange-500/15 bg-orange-500/[0.025] p-6">
 
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10">
                   <Medal
@@ -1237,13 +1213,13 @@ export default function RankingsPage() {
           POINTS SYSTEM
       ========================================================= */}
 
-      <section className="relative overflow-hidden bg-[#05070a]">
+      <section className="home-rankings-points relative overflow-hidden bg-[#05070a]">
 
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
+              "linear-gradient(rgba(15,23,42,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.8) 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />
@@ -1257,7 +1233,7 @@ export default function RankingsPage() {
               <span className="h-[2px] w-8 bg-red-600" />
 
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-500">
-                Ranking Methodology
+                Know the Structure
               </p>
 
             </div>
@@ -1272,7 +1248,7 @@ export default function RankingsPage() {
             <p className="mt-5 max-w-[750px] text-[15px] leading-7 text-slate-400 sm:text-base sm:leading-8">
               Points are awarded according to tournament level and verified
               finishing position. Approved tournament history contributes to
-              an athlete&apos;s ranking record.
+              an athlete&apos;s ranking score.
             </p>
 
           </div>
@@ -1370,7 +1346,7 @@ export default function RankingsPage() {
           METHODOLOGY / CTA
       ========================================================= */}
 
-      <section className="relative overflow-hidden border-t border-white/10 bg-[#090c11]">
+      <section className="home-rankings-cta relative overflow-hidden border-t border-white/10 bg-[#090c11]">
 
         <div className="pointer-events-none absolute -left-40 -top-40 h-[450px] w-[450px] rounded-full bg-red-600/8 blur-3xl" />
 
@@ -1428,6 +1404,6 @@ export default function RankingsPage() {
 
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -5,7 +5,9 @@ import { signToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const { email, password } = body;
+    const rememberMe = body?.rememberMe !== false;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      ...(rememberMe ? { maxAge: 60 * 60 * 24 * 7 } : {}),
     });
 
     return response;

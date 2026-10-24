@@ -1,5 +1,1 @@
-import { redirect } from "next/navigation";
-
-export default function LegacyAdminLoginPage() {
-  redirect("/login/superadmin");
-}
+export { default } from "../../login/admin/page";

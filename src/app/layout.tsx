@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Bebas_Neue } from "next/font/google";
+import PublicSiteChrome from "@/Components/layout/PublicSiteChrome";
 import "./globals.css";
 
 const inter = Inter({
@@ -68,7 +69,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${bebasNeue.variable} antialiased`}
       >
-        {children}
+        <PublicSiteChrome>{children}</PublicSiteChrome>
       </body>
     </html>
   );

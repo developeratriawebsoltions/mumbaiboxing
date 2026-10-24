@@ -9,13 +9,17 @@ import {
   FileCheck2,
   FileText,
   HeartPulse,
+  RefreshCw,
   ShieldCheck,
+  Upload,
   UserRound,
   X,
 } from "lucide-react";
 
 import {
+  useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -42,6 +46,7 @@ type MedicalDocument = {
   fileType: string;
   status: string;
   rejectionReason: string | null;
+  issueDate: string | null;
   createdAt: string;
 };
 
@@ -55,6 +60,43 @@ type MedicalResponse = {
 
   documents: MedicalDocument[];
 };
+
+/* =========================================================
+   RENEW STATE
+   ========================================================= */
+
+type RenewState = {
+  docType: string;
+  issueDate: string;
+  file: File | null;
+  submitting: boolean;
+  error: string;
+  success: boolean;
+};
+
+/* =========================================================
+   LABEL → DOC TYPE SLUG
+   ========================================================= */
+
+const LABEL_TO_DOCTYPE: Record<string, string> = {
+  "medical-fitness-certificate-by-mbbs-dr":
+    "medical-fitness-certificate-by-mbbs-dr",
+  "medical fitness certificate by mbbs dr":
+    "medical-fitness-certificate-by-mbbs-dr",
+  "medicalfitnesscertificatebymbbsdr":
+    "medical-fitness-certificate-by-mbbs-dr",
+  "hiv-hepatitis-b-c-test-report":
+    "hiv-hepatitis-b-c-test-report",
+  "hiv hepatitis b c test report":
+    "hiv-hepatitis-b-c-test-report",
+  "hivhepatitisbctestreport":
+    "hiv-hepatitis-b-c-test-report",
+};
+
+function resolveDocType(label: string): string | null {
+  const key = label.toLowerCase().replace(/\s+/g, " ").trim();
+  return LABEL_TO_DOCTYPE[key] ?? LABEL_TO_DOCTYPE[label.toLowerCase()] ?? null;
+}
 
 /* =========================================================
    HELPERS
@@ -149,6 +191,74 @@ export default function MedicalPage() {
       null
     );
 
+  /* renewal state: keyed by document id */
+  const [renewStates, setRenewStates] = useState<Record<number, RenewState>>({});
+  const [openRenewId, setOpenRenewId] = useState<number | null>(null);
+  const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+
+  const toggleRenew = useCallback((doc: MedicalDocument) => {
+    const docType = resolveDocType(doc.label);
+    if (!docType) return;
+    setOpenRenewId((prev) => (prev === doc.id ? null : doc.id));
+    setRenewStates((prev) => ({
+      ...prev,
+      [doc.id]: prev[doc.id] ?? {
+        docType,
+        issueDate: "",
+        file: null,
+        submitting: false,
+        error: "",
+        success: false,
+      },
+    }));
+  }, []);
+
+  const updateRenew = useCallback(
+    (id: number, patch: Partial<RenewState>) =>
+      setRenewStates((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], ...patch },
+      })),
+    []
+  );
+
+  const submitRenew = useCallback(
+    async (docId: number) => {
+      const state = renewStates[docId];
+      if (!state || !state.file || !state.issueDate) {
+        updateRenew(docId, { error: "Please select a file and enter the issue date." });
+        return;
+      }
+      updateRenew(docId, { submitting: true, error: "", success: false });
+      try {
+        const form = new FormData();
+        form.append("docType", state.docType);
+        form.append("issueDate", state.issueDate);
+        form.append("file", state.file);
+
+        const res = await fetch("/api/medical", {
+          method: "PATCH",
+          body: form,
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error ?? "Failed to renew document.");
+
+        updateRenew(docId, { submitting: false, success: true });
+        setOpenRenewId(null);
+
+        /* reload medical data */
+        const dataRes = await fetch("/api/medical", { cache: "no-store" });
+        if (dataRes.ok) setData(await dataRes.json());
+      } catch (err) {
+        updateRenew(docId, {
+          submitting: false,
+          error: err instanceof Error ? err.message : "Failed to renew document.",
+        });
+      }
+    },
+    [renewStates, updateRenew]
+  );
+
   /* =======================================================
      LOAD MEDICAL DATA
   ======================================================= */
@@ -176,7 +286,7 @@ export default function MedicalPage() {
         if (!response.ok) {
           throw new Error(
             result?.error ||
-              "Failed to load medical records."
+            "Failed to load medical records."
           );
         }
 
@@ -368,10 +478,9 @@ export default function MedicalPage() {
                   py-1.5
                   text-xs
                   font-semibold
-                  ${
-                    data.medical.eligible
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-red-50 text-red-700"
+                  ${data.medical.eligible
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-700"
                   }
                 `}
               >
@@ -546,10 +655,9 @@ export default function MedicalPage() {
                       className={`
                         text-base
                         font-bold
-                        ${
-                          data.medical.eligible
-                            ? "text-emerald-600"
-                            : "text-red-600"
+                        ${data.medical.eligible
+                          ? "text-emerald-600"
+                          : "text-red-600"
                         }
                       `}
                     >
@@ -637,9 +745,9 @@ export default function MedicalPage() {
               "
             >
 
-            <FileText size={15} />
+              <FileText size={15} />
 
-            {data?.documents?.length ?? 0} Submitted
+              {data?.documents?.length ?? 0} Submitted
 
             </div>
 
@@ -793,13 +901,12 @@ export default function MedicalPage() {
                           {/* REVIEW STATUS */}
 
                           <div
-                            className={`absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow-sm ${
-                              document.status.trim().toLowerCase() === "approved"
+                            className={`absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow-sm ${document.status.trim().toLowerCase() === "approved"
                                 ? "border-emerald-100 text-emerald-700"
                                 : document.status.trim().toLowerCase() === "rejected"
                                   ? "border-red-100 text-red-700"
                                   : "border-amber-100 text-amber-700"
-                            }`}
+                              }`}
                           >
                             {document.status.trim().toLowerCase() === "approved" ? (
                               <CheckCircle2 size={14} />
@@ -852,6 +959,12 @@ export default function MedicalPage() {
                                   document.createdAt
                                 )}
                               </p>
+                              {document.label.toLowerCase().replace(/[^a-z0-9]/g, "") ===
+                                "hivhepatitisbctestreport" && (
+                                <p className="mt-1 text-xs text-slate-500">
+                                  Issue date: {formatDate(document.issueDate)}
+                                </p>
+                              )}
                               {document.rejectionReason && (
                                 <p className="mt-2 text-sm text-red-600">
                                   Review note: {document.rejectionReason}
@@ -929,6 +1042,226 @@ export default function MedicalPage() {
                             </a>
 
                           </div>
+
+                          {/* RENEW BUTTON — shown for expired/expiring docs */}
+
+                          {resolveDocType(document.label) &&
+                            (data?.medical?.fitnessStatus === "Expired" ||
+                              data?.medical?.fitnessStatus === "Expiring Soon") && (
+
+                              <div className="mt-4 border-t border-slate-100 pt-4">
+
+                                <button
+                                  type="button"
+                                  onClick={() => toggleRenew(document)}
+                                  className="
+                                  w-full
+                                  inline-flex
+                                  items-center
+                                  justify-center
+                                  gap-2
+                                  rounded-xl
+                                  border
+                                  border-amber-300
+                                  bg-amber-50
+                                  px-4
+                                  py-2.5
+                                  text-sm
+                                  font-semibold
+                                  text-amber-700
+                                  hover:bg-amber-100
+                                  transition
+                                "
+                                >
+                                  <RefreshCw size={16} />
+                                  {openRenewId === document.id
+                                    ? "Cancel Renewal"
+                                    : "Renew Certificate"}
+                                </button>
+
+                                {/* RENEW FORM */}
+
+                                {openRenewId === document.id && (() => {
+                                  const rs = renewStates[document.id];
+                                  if (!rs) return null;
+                                  return (
+                                    <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/60 p-4 space-y-4">
+
+                                      <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                                        Upload New Certificate
+                                      </p>
+
+                                      {/* ISSUE DATE */}
+
+                                      <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                          Certificate Issue Date
+                                          <span className="text-red-500 ml-0.5">*</span>
+                                        </label>
+                                        <input
+                                          type="date"
+                                          value={rs.issueDate}
+                                          max={new Date().toISOString().split("T")[0]}
+                                          onChange={(e) =>
+                                            updateRenew(document.id, { issueDate: e.target.value })
+                                          }
+                                          className="
+                                          w-full
+                                          rounded-lg
+                                          border
+                                          border-slate-200
+                                          bg-white
+                                          px-3
+                                          py-2.5
+                                          text-sm
+                                          text-slate-800
+                                          focus:border-red-400
+                                          focus:outline-none
+                                          focus:ring-2
+                                          focus:ring-red-100
+                                        "
+                                        />
+                                        {rs.issueDate && (
+                                          <p className="mt-1.5 text-xs text-slate-500">
+                                            Expiry will be calculated automatically:{" "}
+                                            <span className="font-semibold text-slate-700">
+                                              {rs.docType === "hiv-hepatitis-b-c-test-report"
+                                                ? formatDate(
+                                                  new Date(
+                                                    new Date(rs.issueDate).setMonth(
+                                                      new Date(rs.issueDate).getMonth() + 6
+                                                    )
+                                                  ).toISOString()
+                                                )
+                                                : formatDate(
+                                                  new Date(
+                                                    new Date(rs.issueDate).setFullYear(
+                                                      new Date(rs.issueDate).getFullYear() + 1
+                                                    )
+                                                  ).toISOString()
+                                                )}
+                                            </span>
+                                            {" "}
+                                            ({rs.docType === "hiv-hepatitis-b-c-test-report"
+                                              ? "6 months"
+                                              : "1 year"})
+                                          </p>
+                                        )}
+                                      </div>
+
+                                      {/* FILE UPLOAD */}
+
+                                      <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                          New Document File
+                                          <span className="text-red-500 ml-0.5">*</span>
+                                        </label>
+
+                                        <input
+                                          ref={(el) => { fileInputRefs.current[document.id] = el; }}
+                                          type="file"
+                                          accept="image/*,.pdf"
+                                          className="hidden"
+                                          onChange={(e) =>
+                                            updateRenew(document.id, {
+                                              file: e.target.files?.[0] ?? null,
+                                            })
+                                          }
+                                        />
+
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            fileInputRefs.current[document.id]?.click()
+                                          }
+                                          className="
+                                          w-full
+                                          flex
+                                          flex-col
+                                          items-center
+                                          justify-center
+                                          gap-2
+                                          rounded-xl
+                                          border-2
+                                          border-dashed
+                                          border-slate-300
+                                          bg-white
+                                          py-5
+                                          text-sm
+                                          text-slate-500
+                                          hover:border-red-400
+                                          hover:text-red-600
+                                          transition
+                                        "
+                                        >
+                                          <Upload size={20} />
+                                          {rs.file
+                                            ? rs.file.name
+                                            : "Click to upload (JPG, PNG, PDF)"}
+                                        </button>
+                                      </div>
+
+                                      {/* ERROR */}
+
+                                      {rs.error && (
+                                        <p className="text-sm text-red-600 font-medium">
+                                          {rs.error}
+                                        </p>
+                                      )}
+
+                                      {/* SUCCESS */}
+
+                                      {rs.success && (
+                                        <p className="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
+                                          <CheckCircle2 size={15} />
+                                          Certificate renewed successfully!
+                                        </p>
+                                      )}
+
+                                      {/* SUBMIT */}
+
+                                      <button
+                                        type="button"
+                                        disabled={rs.submitting}
+                                        onClick={() => submitRenew(document.id)}
+                                        className="
+                                        w-full
+                                        inline-flex
+                                        items-center
+                                        justify-center
+                                        gap-2
+                                        rounded-xl
+                                        bg-red-600
+                                        px-4
+                                        py-3
+                                        text-sm
+                                        font-semibold
+                                        text-white
+                                        hover:bg-red-700
+                                        disabled:opacity-60
+                                        disabled:cursor-not-allowed
+                                        transition
+                                      "
+                                      >
+                                        {rs.submitting ? (
+                                          <>
+                                            <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                                            Uploading...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Upload size={16} />
+                                            Submit Renewal
+                                          </>
+                                        )}
+                                      </button>
+
+                                    </div>
+                                  );
+                                })()}
+
+                              </div>
+                            )}
 
                         </div>
 
@@ -1055,10 +1388,10 @@ export default function MedicalPage() {
                 <div className="mt-1 flex items-center gap-2">
 
                   {selectedDocument.status.trim().toLowerCase() === "approved" ? (
-                  <CheckCircle2
-                    size={14}
-                    className="text-emerald-600"
-                  />
+                    <CheckCircle2
+                      size={14}
+                      className="text-emerald-600"
+                    />
                   ) : selectedDocument.status.trim().toLowerCase() === "rejected" ? (
                     <X size={14} className="text-red-600" />
                   ) : (

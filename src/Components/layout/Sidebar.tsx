@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -289,43 +289,12 @@ const MENUS: Record<string, MenuSection[]> = {
     },
 
     {
-      group: "Academy",
+      group: "Payments",
       items: [
         {
-          name: "Boxers",
-          href: "/dashboard/boxer",
-          icon: Users,
-        },
-        {
-          name: "Coaches",
-          href: "/dashboard/coach",
-          icon: UserRound,
-        },
-        {
-          name: "Certificates",
-          href: "/dashboard/certificates",
-          icon: Award,
-        },
-      ],
-    },
-
-    {
-      group: "Operations",
-      items: [
-        {
-          name: "Tournament",
-          href: "/dashboard/tournament",
-          icon: Trophy,
-        },
-        {
-          name: "Payment",
+          name: "Payment Receipts",
           href: "/dashboard/payment",
           icon: CreditCard,
-        },
-        {
-          name: "Documents",
-          href: "/dashboard/documents",
-          icon: FileText,
         },
       ],
     },
@@ -396,10 +365,9 @@ export default function Sidebar({
   role?: string;
 }) {
   const path = usePathname();
-  const router = useRouter();
-
   const [role, setRole] = useState(propRole ?? "");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
   /* =======================================================
      LOAD CURRENT USER
@@ -409,13 +377,9 @@ export default function Sidebar({
     fetch("/api/auth/me")
       .then((response) => response.json())
       .then((data) => {
-        if (data.role) {
-          setRole(data.role);
-        }
-
-        if (data.email) {
-          setEmail(data.email);
-        }
+        if (data.role) setRole(data.role);
+        if (data.email) setEmail(data.email);
+        if (data.name) setName(data.name);
       })
       .catch(() => {});
   }, []);
@@ -426,14 +390,11 @@ export default function Sidebar({
 
   async function handleLogout() {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
+      await fetch("/api/auth/logout", { method: "POST" });
     } catch {
       // Continue redirect even if request fails
-    } finally {
-      router.push("/login");
     }
+    window.location.href = "/login";
   }
 
   /* =======================================================
@@ -449,10 +410,11 @@ export default function Sidebar({
      ======================================================= */
 
   const initial =
+    name?.charAt(0).toUpperCase() ||
     email?.charAt(0).toUpperCase() ||
-    role?.charAt(0).toUpperCase() ||
     "S";
 
+  const displayInSidebar = name || email || "Member";
   /* =======================================================
      DISPLAY ROLE
      ======================================================= */
@@ -676,7 +638,7 @@ export default function Sidebar({
                   truncate
                 "
               >
-                {email || "Member"}
+              {displayInSidebar}
               </p>
 
               <p

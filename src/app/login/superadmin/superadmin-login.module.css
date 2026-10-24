@@ -1,0 +1,513 @@
+.superAdminPage {
+  --super-admin-navy: #071528;
+  --super-admin-red: #ed2029;
+  min-height: 100vh;
+  padding: 30px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 49% 57%, rgba(255, 215, 212, 0.46), transparent 40%),
+    radial-gradient(ellipse at 78% 26%, rgba(255, 234, 232, 0.58), transparent 42%),
+    #fffdfc;
+  color: #09172b;
+  font-family: var(--font-inter), Arial, sans-serif;
+}
+
+.superAdminLayout {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.boxingArt {
+  position: fixed;
+  z-index: -3;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #fffaf8;
+  background-image: url("/hero.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.58;
+}
+
+.boxingArtOverlay {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 252, 250, 0.08), rgba(255, 252, 250, 0.68) 34%, rgba(255, 252, 250, 0.93) 50%, rgba(255, 252, 250, 0.67) 75%, rgba(255, 252, 250, 0.2)),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.82) 30%, rgba(255, 245, 242, 0.38) 67%, transparent 100%);
+}
+
+.superAdminBrand {
+  position: absolute;
+  top: 24px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.superAdminLogo {
+  color: #d81925;
+  font-size: 57px;
+  font-weight: 900;
+  letter-spacing: -6px;
+  line-height: 1;
+}
+
+.superAdminLogo span {
+  color: #ee202b;
+}
+
+.superAdminBrandDivider {
+  width: 3px;
+  height: 61px;
+  background: var(--super-admin-red);
+}
+
+.superAdminBrandName {
+  color: #101e35;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1.75;
+}
+
+.superAdminWatermark {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: 2%;
+  color: rgba(237, 32, 41, 0.055);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.superAdminWatermark svg {
+  width: clamp(210px, 29vw, 410px);
+  height: clamp(210px, 29vw, 410px);
+  stroke-width: 0.85;
+}
+
+.superAdminContent {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 620px);
+  padding-top: 30px;
+  padding-bottom: 20px;
+}
+
+.superAdminHeader {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.superAdminShield {
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 17px;
+  background: linear-gradient(145deg, #0b1a30, #061225);
+  box-shadow:
+    0 8px 18px rgba(7, 21, 40, 0.12),
+    0 0 0 7px rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.superAdminHeader h1 {
+  margin: 0 0 8px;
+  color: #09172b;
+  font-size: clamp(27px, 3vw, 39px);
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  line-height: 1.2;
+}
+
+.superAdminHeader h1 span {
+  color: #e51d29;
+}
+
+.superAdminHeader > p {
+  margin: 0;
+  color: #71839e;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.superAdminCard {
+  position: relative;
+  padding: 30px 32px;
+  border: 1px solid rgba(235, 226, 222, 0.95);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 20px 38px rgba(16, 24, 40, 0.09),
+    0 4px 8px rgba(16, 24, 40, 0.035);
+  backdrop-filter: blur(16px);
+}
+
+.superAdminCardHeading {
+  margin-bottom: 22px;
+}
+
+.superAdminCardHeading h2 {
+  margin: 0 0 7px;
+  color: #0d1b30;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.35px;
+}
+
+.superAdminCardHeading p {
+  margin: 0;
+  color: #6d7f9a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.superAdminField {
+  margin-bottom: 19px;
+}
+
+.superAdminField > label {
+  display: block;
+  margin-bottom: 9px;
+  color: #172b48;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.superAdminInputWrap {
+  width: 100%;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid #d9e0e9;
+  border-radius: 30px;
+  background: #fbfaf9;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.superAdminInputWrap:focus-within {
+  border-color: #ed7e85;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(237, 32, 41, 0.06);
+}
+
+.superAdminInputIcon {
+  flex-shrink: 0;
+  color: #7285a3;
+}
+
+.superAdminInputWrap input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #10213a;
+  font-size: 13px;
+}
+
+.superAdminInputWrap input::placeholder {
+  color: #8290a6;
+}
+
+.superAdminEye {
+  width: 30px;
+  height: 38px;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #7c90ad;
+  cursor: pointer;
+}
+
+.superAdminEye:hover {
+  color: var(--super-admin-red);
+}
+
+.superAdminSubmit {
+  width: 100%;
+  min-height: 53px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: 30px;
+  background: linear-gradient(110deg, #ed2029, #d90b1c);
+  box-shadow: 0 7px 17px rgba(221, 19, 34, 0.12);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.superAdminSubmit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 11px 24px rgba(221, 19, 34, 0.22);
+  filter: brightness(0.97);
+}
+
+.superAdminSubmit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.superAdminSubmit:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.superAdminError {
+  margin: -4px 0 16px;
+  padding: 11px 13px;
+  border: 1px solid #f2c5c8;
+  border-radius: 10px;
+  background: #fff3f4;
+  color: #b91c27;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.superAdminBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
+  margin: 20px auto 0;
+  color: #607b9d;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    color 180ms ease,
+    gap 180ms ease;
+}
+
+.superAdminBack:hover {
+  gap: 14px;
+  color: var(--super-admin-red);
+}
+
+@media (max-width: 900px) {
+  .superAdminPage {
+    padding: 22px;
+  }
+
+  .superAdminLayout {
+    min-height: calc(100vh - 44px);
+  }
+
+  .superAdminBrand {
+    top: 20px;
+    left: 18px;
+    gap: 11px;
+  }
+
+  .superAdminLogo {
+    font-size: 43px;
+  }
+
+  .superAdminBrandDivider {
+    height: 46px;
+  }
+
+  .superAdminBrandName {
+    font-size: 9px;
+    letter-spacing: 1.3px;
+  }
+
+  .superAdminContent {
+    width: min(100%, 520px);
+    padding-top: 70px;
+  }
+
+  .superAdminCard {
+    padding: 28px 25px;
+  }
+
+  .superAdminWatermark {
+    right: -5%;
+  }
+}
+
+@media (max-width: 600px) {
+  .superAdminPage {
+    min-height: 100vh;
+    padding: 16px;
+    overflow: visible;
+    background:
+      radial-gradient(ellipse at 50% 15%, rgba(255, 221, 219, 0.6), transparent 45%),
+      #fffdfc;
+  }
+
+  .superAdminLayout {
+    min-height: calc(100vh - 32px);
+    justify-content: center;
+  }
+
+  .boxingArt {
+    background-position: 20% center;
+    opacity: 0.24;
+  }
+
+  .boxingArtOverlay {
+    background: rgba(255, 252, 250, 0.8);
+  }
+
+  .superAdminBrand {
+    position: relative;
+    top: auto;
+    left: auto;
+    align-self: center;
+    justify-content: center;
+    margin: 0 0 23px;
+    gap: 11px;
+  }
+
+  .superAdminLogo {
+    font-size: 43px;
+  }
+
+  .superAdminBrandDivider {
+    height: 44px;
+  }
+
+  .superAdminBrandName {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+
+  .superAdminContent {
+    width: 100%;
+    max-width: 430px;
+    padding: 0;
+  }
+
+  .superAdminHeader {
+    margin-bottom: 22px;
+  }
+
+  .superAdminShield {
+    width: 58px;
+    height: 58px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+  }
+
+  .superAdminShield svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  .superAdminHeader h1 {
+    font-size: clamp(25px, 7vw, 32px);
+    letter-spacing: -1px;
+  }
+
+  .superAdminHeader > p {
+    font-size: 13px;
+  }
+
+  .superAdminCard {
+    padding: 25px 21px 23px;
+    border-radius: 21px;
+    box-shadow: 0 14px 35px rgba(16, 24, 40, 0.08);
+  }
+
+  .superAdminCardHeading {
+    margin-bottom: 21px;
+  }
+
+  .superAdminField {
+    margin-bottom: 18px;
+  }
+
+  .superAdminInputWrap {
+    height: 51px;
+  }
+
+  .superAdminSubmit {
+    min-height: 52px;
+    font-size: 13px;
+  }
+
+  .superAdminWatermark {
+    top: 54%;
+    right: -10%;
+  }
+
+  .superAdminWatermark svg {
+    width: 190px;
+    height: 190px;
+  }
+
+  .superAdminBack {
+    margin-top: 20px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .superAdminPage {
+    padding: 10px;
+  }
+
+  .superAdminBrand {
+    gap: 8px;
+  }
+
+  .superAdminLogo {
+    font-size: 36px;
+  }
+
+  .superAdminBrandName {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .superAdminCard {
+    padding: 23px 16px;
+  }
+
+  .superAdminHeader h1 {
+    font-size: 25px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .superAdminInputWrap,
+  .superAdminSubmit,
+  .superAdminBack {
+    transition-duration: 0.01ms;
+  }
+}

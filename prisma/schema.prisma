@@ -140,6 +140,7 @@ model document {
   label           String
   filePath        String
   fileType        String
+  issueDate       DateTime?
   status          String   @default("Pending")
   rejectionReason String?
   createdAt       DateTime @default(now())
@@ -269,9 +270,6 @@ enum user_role {
   coach
   academy
   referee_judge
-  association
-  school
-  taluka
   admin
   superadmin
 }

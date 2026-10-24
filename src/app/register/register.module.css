@@ -1,0 +1,850 @@
+.registerPage {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  padding: 24px;
+  color: #10223f;
+  background: transparent;
+  font-family: var(--font-inter), Arial, sans-serif;
+}
+
+.registerPage::before,
+.registerPage::after {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.registerPage::before {
+  background:
+    radial-gradient(ellipse at 34% 48%, rgba(176, 24, 39, 0.58), transparent 43%),
+    radial-gradient(ellipse at 82% 88%, rgba(122, 23, 43, 0.4), transparent 42%),
+    linear-gradient(130deg, transparent 0 12%, rgba(237, 32, 41, 0.62) 12.2% 16%, transparent 16.2% 100%),
+    linear-gradient(145deg, transparent 0 48%, rgba(237, 32, 41, 0.42) 48.2% 57%, transparent 57.2% 100%),
+    linear-gradient(150deg, #111827, #201e2b 58%, #351923);
+}
+
+.registerPage::after {
+  background:
+    radial-gradient(ellipse at 50% 48%, transparent 10%, rgba(17, 24, 39, 0.3) 95%),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 55px,
+      rgba(255, 255, 255, 0.035) 56px 58px,
+      transparent 59px 95px
+    );
+}
+
+.registerLayout {
+  width: min(1500px, 100%);
+  min-height: calc(100vh - 48px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: clamp(24px, 3.3vw, 50px);
+}
+
+.registerHero {
+  position: sticky;
+  top: 24px;
+  min-width: 0;
+  min-height: 760px;
+  height: calc(100vh - 48px);
+  max-height: 1100px;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  color: #fff;
+}
+
+.registerHero::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: none;
+  content: "";
+}
+
+.registerHero::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: none;
+  content: "";
+}
+
+.heroRedSplash {
+  display: none;
+}
+
+.heroLight {
+  position: absolute;
+  z-index: -1;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 15px 7px rgba(255, 255, 255, 0.5),
+    0 0 45px 15px rgba(255, 240, 224, 0.2);
+}
+
+.heroLightOne {
+  top: 16%;
+  left: 12%;
+}
+
+.heroLightTwo {
+  top: 29%;
+  right: 12%;
+}
+
+.registerBrand {
+  position: absolute;
+  top: 35px;
+  left: 32px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.registerBrandLogo {
+  color: #f32232;
+  font-size: clamp(40px, 4.2vw, 62px);
+  font-weight: 900;
+  letter-spacing: -5px;
+  line-height: 1;
+}
+
+.registerBrandDivider {
+  width: 2px;
+  height: 55px;
+  background: #f02b38;
+}
+
+.registerBrandName {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  line-height: 1.7;
+}
+
+.registerHeroCopy {
+  position: absolute;
+  top: 25%;
+  left: 13%;
+  z-index: 2;
+}
+
+.heroKicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #c7d0e0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.heroKicker span {
+  color: #ff303a;
+}
+
+.registerHeroCopy h1 {
+  margin: 24px 0 18px;
+  color: #fff;
+  font-size: clamp(46px, 5vw, 70px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 0.98;
+}
+
+.registerHeroCopy h1 span {
+  color: #ff2835;
+}
+
+.registerHeroCopy p {
+  max-width: 290px;
+  margin: 22px 0;
+  color: #d7dfed;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.heroCtaLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  color: #f3f5f9;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.heroCtaLine span {
+  width: 30px;
+  height: 3px;
+  border-radius: 3px;
+  background: #ed2029;
+}
+
+.heroFeatures {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 24px 14px;
+  background: rgba(10, 20, 39, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.heroFeature {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 11px;
+  padding: 4px 5px;
+  text-align: center;
+}
+
+.heroFeature + .heroFeature {
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.heroFeature svg {
+  width: 26px;
+  height: 26px;
+  color: #ff2835;
+  stroke-width: 1.8;
+}
+
+.heroFeature span {
+  color: #e1e6ef;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.registerContent {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.registerCard {
+  width: 100%;
+  padding: clamp(25px, 3vw, 42px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 27px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 20px 65px rgba(195, 44, 48, 0.1),
+    0 3px 15px rgba(16, 34, 63, 0.035);
+  backdrop-filter: blur(18px);
+}
+
+.registerHeading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+  margin-bottom: 28px;
+}
+
+.registerHeadingIcon {
+  display: grid;
+  width: 47px;
+  height: 47px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff3a43, #e61927);
+  color: #fff;
+}
+
+.registerHeading h1 {
+  margin: 0 0 7px;
+  color: #10223f;
+  font-size: clamp(29px, 3vw, 43px);
+  font-weight: 900;
+  letter-spacing: -1.7px;
+  line-height: 1.1;
+}
+
+.registerHeading p {
+  margin: 0;
+  color: #70819e;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.tournamentNotice {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #f3dede;
+  border-radius: 16px;
+  background: #fff7f6;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.tournamentNotice > p {
+  margin: 0;
+}
+
+.tournamentNotice .tournamentNoticeTitle {
+  margin-bottom: 4px;
+  color: #15233b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tournamentNoticeLink {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #e21e29;
+  font-weight: 600;
+}
+
+.registrationProgress {
+  margin-bottom: 26px;
+  padding: 20px;
+  border: 1px solid #f3dede;
+  border-radius: 21px;
+  background: linear-gradient(135deg, #fff, #fffdfd);
+}
+
+.registerSectionLabel {
+  display: block;
+  margin-bottom: 13px;
+  color: #e21e29 !important;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.7px;
+  text-transform: uppercase;
+}
+
+.registerRoles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.registerRole {
+  min-width: 0;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 7px;
+  border: 1px solid #dbe2ee;
+  border-radius: 22px;
+  background: #f5f7fb;
+  color: #536987;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.registerRole span {
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.registerRole:hover:not(:disabled) {
+  border-color: #f1a1a4;
+  transform: translateY(-1px);
+}
+
+.registerRole:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.registerRole.selected {
+  border-color: #ed2029;
+  background: linear-gradient(130deg, #fa2632, #e71926);
+  box-shadow: 0 5px 14px rgba(237, 32, 41, 0.18);
+  color: #fff;
+}
+
+.tournamentRole {
+  display: inline-flex;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: #fff0f0;
+  color: #b91c27;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stepper {
+  margin-bottom: 28px;
+}
+
+.stepItem {
+  text-align: center;
+}
+
+.stepCircle {
+  flex-shrink: 0;
+}
+
+.stepLine {
+  margin-right: 7px;
+  margin-left: 7px;
+  background: #dfe5ef;
+}
+
+.stepName {
+  color: #71819c;
+  font-size: 10px;
+}
+
+.stepMeta {
+  gap: 10px;
+  color: #7b8ca8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.registerCard :global(.space-y-5) {
+  --tw-space-y-reverse: 0;
+  margin-top: 0;
+}
+
+.registerCard :global(.space-y-4 > :not([hidden]) ~ :not([hidden])) {
+  margin-top: 0;
+}
+
+.registerCard :global(.register-field) {
+  min-width: 0;
+}
+
+.registerCard :global(input:not([type="checkbox"]):not([type="radio"])),
+.registerCard :global(select),
+.registerCard :global(textarea) {
+  color: #162641;
+}
+
+.registerCard :global(.register-field > label),
+.registerCard :global(label.text-xs.font-semibold) {
+  color: #506686 !important;
+}
+
+.registerCard :global(.relative > input) {
+  min-height: 52px;
+  border-radius: 28px;
+  background: #f8f9fc !important;
+}
+
+.registerCard :global(input[type="checkbox"]) {
+  accent-color: #ed2029;
+}
+
+.registerCard :global(.btn-gold) {
+  min-height: 52px;
+  border-radius: 28px;
+  background: linear-gradient(105deg, #ef202a, #e71924);
+  box-shadow: 0 8px 20px rgba(237, 32, 41, 0.13);
+  font-size: 13px;
+}
+
+.registerCard :global(.btn-gold:hover:not(:disabled)) {
+  background: linear-gradient(105deg, #df1722, #c91420);
+}
+
+.registerCard :global(button:not(.registerRole):not(.btn-gold)) {
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.signInPrompt,
+.browseLink {
+  margin: 22px 0 0;
+  color: #64748b;
+  text-align: center;
+  font-size: 12px;
+}
+
+.browseLink {
+  margin-top: 12px;
+}
+
+.signInLink {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.signInLink:hover,
+.tournamentNoticeLink:hover {
+  color: #a90f18;
+  text-decoration: underline;
+}
+
+.registerFooter {
+  padding: 20px 8px 0;
+  color: #7a8ba6;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1100px) {
+  .registerPage {
+    padding: 18px;
+  }
+
+  .registerLayout {
+    min-height: calc(100vh - 36px);
+    grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+    gap: 22px;
+  }
+
+  .registerHero {
+    min-height: 720px;
+    height: calc(100vh - 36px);
+  }
+
+  .registerBrand {
+    left: 20px;
+    gap: 10px;
+  }
+
+  .registerBrandLogo {
+    font-size: 43px;
+  }
+
+  .registerBrandDivider {
+    height: 45px;
+  }
+
+  .registerBrandName {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .registerHeroCopy {
+    left: 9%;
+  }
+
+  .registerHeroCopy h1 {
+    font-size: clamp(43px, 5vw, 57px);
+  }
+
+  .registerCard {
+    padding: 25px;
+  }
+
+  .registrationProgress {
+    padding: 15px;
+  }
+
+  .registerRole {
+    gap: 5px;
+    font-size: 10px;
+  }
+
+  .registerRole svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .registerPage {
+    padding: 14px;
+  }
+
+  .registerLayout {
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .registerHero {
+    position: relative;
+    top: auto;
+    width: 100%;
+    min-height: 225px;
+    height: 225px;
+    max-height: none;
+    margin-bottom: 17px;
+    border-radius: 0;
+  }
+
+  .registerBrand {
+    top: 18px;
+    left: 20px;
+    right: 15px;
+  }
+
+  .registerBrandLogo {
+    font-size: 36px;
+  }
+
+  .registerBrandDivider {
+    height: 36px;
+  }
+
+  .registerBrandName {
+    font-size: 8px;
+    line-height: 1.6;
+  }
+
+  .registerHeroCopy {
+    top: 91px;
+    left: 22px;
+  }
+
+  .heroKicker {
+    gap: 7px;
+    font-size: 8px;
+    letter-spacing: 1.2px;
+  }
+
+  .registerHeroCopy h1 {
+    margin: 10px 0 6px;
+    font-size: 32px;
+    letter-spacing: -1.3px;
+    line-height: 1;
+  }
+
+  .registerHeroCopy h1 br:nth-of-type(n + 2),
+  .registerHeroCopy h1 span {
+    display: none;
+  }
+
+  .registerHeroCopy h1 {
+    font-size: 30px;
+  }
+
+  .registerHeroCopy p,
+  .heroCtaLine {
+    display: none;
+  }
+
+  .heroFeatures {
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: 48%;
+    height: 100%;
+    align-content: end;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px;
+    background: linear-gradient(90deg, transparent, rgba(10, 20, 39, 0.8));
+  }
+
+  .heroFeature {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 9px;
+    padding: 0;
+    text-align: left;
+  }
+
+  .heroFeature + .heroFeature {
+    border-left: 0;
+  }
+
+  .heroFeature svg {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+  }
+
+  .heroFeature span {
+    font-size: 9px;
+  }
+
+  .registerContent {
+    padding: 0;
+  }
+
+  .registerCard {
+    padding: 24px 19px;
+    border: 1px solid #f1dddd;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 12px 38px rgba(195, 44, 48, 0.08);
+  }
+
+  .registerHeading {
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .registerHeadingIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .registerHeading h1 {
+    font-size: clamp(27px, 7vw, 34px);
+    letter-spacing: -1.1px;
+  }
+
+  .registerHeading p {
+    font-size: 11px;
+  }
+
+  .registrationProgress {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .registerRoles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .registerRole {
+    min-height: 47px;
+    justify-content: flex-start;
+    gap: 9px;
+    padding: 10px 12px;
+    border-radius: 15px;
+    font-size: 11px;
+  }
+
+  .registerRole span {
+    text-align: left;
+  }
+
+  .registerRole svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .stepper {
+    margin-top: 22px;
+    margin-bottom: 22px;
+  }
+
+  .stepCircle {
+    width: 31px;
+    height: 31px;
+    font-size: 11px;
+  }
+
+  .stepLine {
+    margin-right: 4px;
+    margin-left: 4px;
+  }
+
+  .stepName {
+    font-size: 9px;
+  }
+
+  .stepMeta {
+    font-size: 9px;
+    letter-spacing: 1.1px;
+  }
+
+  .registerCard :global(.grid.gap-4.sm\:grid-cols-2) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .registerCard :global(.btn-gold) {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 380px) {
+  .registerPage {
+    padding: 9px;
+  }
+
+  .registerHero {
+    min-height: 205px;
+    height: 205px;
+  }
+
+  .registerHeroCopy {
+    left: 15px;
+  }
+
+  .registerHeroCopy h1 {
+    font-size: 28px;
+  }
+
+  .heroFeatures {
+    width: 45%;
+    padding: 9px;
+  }
+
+  .heroFeature {
+    gap: 6px;
+  }
+
+  .heroFeature span {
+    font-size: 8px;
+  }
+
+  .registerCard {
+    padding: 20px 13px;
+  }
+
+  .registerHeading {
+    gap: 9px;
+  }
+
+  .registerHeading h1 {
+    font-size: 26px;
+  }
+
+  .registerHeading p {
+    font-size: 10px;
+  }
+
+  .registrationProgress {
+    padding: 11px;
+  }
+
+  .registerRole {
+    padding: 9px;
+    font-size: 10px;
+  }
+
+  .stepCircle {
+    width: 28px;
+    height: 28px;
+  }
+
+  .stepName,
+  .stepMeta {
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .registerRole,
+  .registerCard :global(button) {
+    transition-duration: 0.01ms;
+  }
+}

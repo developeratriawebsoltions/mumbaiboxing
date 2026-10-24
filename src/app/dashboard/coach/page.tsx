@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import PageSpinner from "@/Components/ui/PageSpinner";
 
 type Doc = {
   id: number;
@@ -1064,11 +1065,7 @@ export default function CoachDashboard() {
   if (loading) {
     return (
       <DashboardLayout role="coach">
-        <div className="flex min-h-[400px] items-center justify-center">
-          <p className="text-sm text-slate-400">
-            Loading coach dashboard...
-          </p>
-        </div>
+        <PageSpinner message="Loading coach dashboard..." />
       </DashboardLayout>
     );
   }

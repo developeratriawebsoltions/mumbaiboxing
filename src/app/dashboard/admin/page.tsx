@@ -20,6 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
+import PageSpinner from "@/Components/ui/PageSpinner";
 import { useRole } from "@/hooks/useRole";
 
 type DashboardData = {
@@ -229,13 +230,7 @@ function AdminDashboardContent() {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-slate-200 border-t-red-600 rounded-full animate-spin mx-auto" />
-
-          <p className="mt-4 text-sm text-slate-500">
-            Loading admin dashboard...
-          </p>
-        </div>
+        <PageSpinner message="Loading admin dashboard..." />
       </div>
     );
   }

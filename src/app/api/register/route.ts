@@ -19,6 +19,9 @@ export async function POST(req: NextRequest) {
       weight,
       ageGroup,
       address,
+      academyName,
+      medicalCertIssueDate,
+      hivReportIssueDate,
 
       // Referee / Judge fields
       officialDesignation,
@@ -127,7 +130,14 @@ export async function POST(req: NextRequest) {
       parsedDob = date;
     }
 
-    const hashed = await bcrypt.hash(password, 12);
+    // Resolve academyId and hash password in parallel
+    const [foundAcademy, hashed] = await Promise.all([
+      academyName && academyName !== "__none__"
+        ? prisma.academy.findFirst({ where: { name: academyName }, select: { id: true } })
+        : Promise.resolve(null),
+      bcrypt.hash(password, 10),
+    ]);
+    const resolvedAcademyId: number | null = foundAcademy?.id ?? null;
 
     const dbRole = normalizedRole as
       | "boxer"
@@ -167,6 +177,34 @@ export async function POST(req: NextRequest) {
                 address: address || null,
                 weight: weight || null,
                 ageGroup: ageGroup || null,
+                academyId: resolvedAcademyId,
+                medical: medicalCertIssueDate || hivReportIssueDate ? {
+                  create: (() => {
+                    // Medical cert valid 1 year, HIV report valid 6 months
+                    const dates: Date[] = [];
+                    if (medicalCertIssueDate) {
+                      const d = new Date(medicalCertIssueDate);
+                      d.setFullYear(d.getFullYear() + 1);
+                      dates.push(d);
+                    }
+                    if (hivReportIssueDate) {
+                      const d = new Date(hivReportIssueDate);
+                      d.setMonth(d.getMonth() + 6);
+                      dates.push(d);
+                    }
+                    // Use the earlier expiry so boxer is flagged when any doc expires
+                    const expiryDate = dates.sort((a, b) => a.getTime() - b.getTime())[0];
+                    const now = new Date();
+                    const isExpired = expiryDate < now;
+                    const isExpiringSoon = !isExpired && (expiryDate.getTime() - now.getTime()) < 30 * 24 * 60 * 60 * 1000;
+                    return {
+                      expiryDate,
+                      fitnessStatus: isExpired ? "Expired" : isExpiringSoon ? "Expiring Soon" : "Valid",
+                      eligible: !isExpired,
+                      updatedAt: new Date(),
+                    };
+                  })(),
+                } : undefined,
               },
             },
           }),
@@ -180,6 +218,7 @@ export async function POST(req: NextRequest) {
               create: {
                 name: String(name).trim(),
                 phone: phone || null,
+                academyId: resolvedAcademyId,
               },
             },
           }),

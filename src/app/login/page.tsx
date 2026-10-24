@@ -1,18 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ArrowRight,
+  Dumbbell,
+  Eye,
+  EyeOff,
+  Landmark,
+  LockKeyhole,
+  Mail,
+  Scale,
+  ShieldCheck,
+  Trophy,
+  UserRound,
+} from "lucide-react";
 import { Suspense } from "react";
+import styles from "./login.module.css";
 
 const ROLES = [
-  "Boxer",
-  "Coach",
-  "Academy",
-  "Referee/Judge",
+  { label: "Boxer", icon: Dumbbell },
+  { label: "Coach", icon: UserRound },
+  { label: "Academy", icon: Landmark },
+  { label: "Referee/Judge", icon: Scale },
 ] as const;
 
-type Role = (typeof ROLES)[number];
+type Role = (typeof ROLES)[number]["label"];
 
 function LoginForm() {
   const router = useRouter();
@@ -26,33 +40,31 @@ function LoginForm() {
   const [role, setRole] = useState<Role>("Boxer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           password,
           role,
+          remember,
           ...(tournamentId ? { tournamentId } : {}),
         }),
       });
+      const data = await response.json();
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      if (!response.ok) {
         if (data.code === "PAYMENT_PENDING") {
           router.push(
             tournamentId
@@ -79,353 +91,256 @@ function LoginForm() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-white px-4 py-10">
+    <main className={styles.loginPage}>
+      <div className={styles.loginShell}>
+        <section className={styles.heroPanel} aria-label="Mumbai Boxing Association">
+          <div className={styles.heroRings} aria-hidden="true" />
 
-      {/* =====================================================
-          BACKGROUND
-      ===================================================== */}
+          <Link className={styles.brand} href="/" aria-label="MBA home">
+            <span className={styles.brandLogo} aria-hidden="true">
+              MBA
+            </span>
+            <span className={styles.brandDivider} />
+            <span className={styles.brandName}>
+              MUMBAI
+              <br />
+              BOXING
+              <br />
+              ASSOCIATION
+            </span>
+          </Link>
 
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(220,38,38,0.055) 0%, transparent 70%)",
-        }}
-      />
-
-      {/* =====================================================
-          MAIN CONTAINER
-      ===================================================== */}
-
-      <div className="relative w-full max-w-[620px]">
-
-        {/* ===================================================
-            TITLE
-        =================================================== */}
-
-        <div className="mb-8 text-center">
-
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#1E293B] sm:text-4xl">
-            Welcome Back
-          </h1>
-
-          <p className="mt-2 text-sm text-[#94A3B8]">
-            Sign in to your MBA portal account
-          </p>
-
-          {!tournamentId && (
-            <Link
-              href="/events"
-              className="mb-5 inline-flex text-sm font-semibold text-red-600 hover:underline"
-            >
-              Browse tournaments
-            </Link>
-          )}
-
-        </div>
-
-        {/* ===================================================
-            LOGIN CARD — FLAT
-        =================================================== */}
-
-        <div
-          className="rounded-[24px] bg-white p-6 sm:p-8"
-          style={{
-            border: "1px solid rgba(220,38,38,0.22)",
-            boxShadow: "none",
-          }}
-        >
-          {tournamentId && (
-            <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4">
-              <p className="text-sm font-bold text-slate-900">
-                Continue your tournament entry
-              </p>
-              <p className="mt-1 text-xs leading-5 text-slate-600">
-                Sign in with the boxer account you want to register. After
-                sign-in, you’ll continue to the selected event.
-              </p>
-              <Link
-                href={`/events/${tournamentId}`}
-                className="mt-2 inline-flex text-xs font-semibold text-red-600 hover:underline"
-              >
-                Back to event details
-              </Link>
+          <div className={styles.heroCopy}>
+            <span className={styles.heroEyebrow}>
+              <Trophy size={15} aria-hidden="true" />
+              THE SPIRIT OF CHAMPIONS
+            </span>
+            <h1>
+              More Than
+              <br />
+              <span>A Sport</span>
+            </h1>
+            <div className={styles.heroUnderline} />
+            <p>
+              Building Stronger
+              <br />
+              Athletes for a
+              <br />
+              Brighter Tomorrow.
+            </p>
+            <div className={styles.heroStats}>
+              <div>
+                <strong>01</strong>
+                <span>ONE COMMUNITY</span>
+              </div>
+              <div>
+                <strong>∞</strong>
+                <span>LIMITLESS POTENTIAL</span>
+              </div>
             </div>
-          )}
-
-          {/* =================================================
-              LOGIN AS
-          ================================================= */}
-
-          <div className="mb-7">
-
-            <label className="mb-3 block text-[11px] font-bold uppercase tracking-[0.18em] text-[#DC2626]">
-              Login As
-            </label>
-
-            {/* FOUR ROLES — ONE ROW */}
-
-            {tournamentId ? (
-              <div className="inline-flex rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">
-                Boxer account
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {ROLES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => {
-                      setRole(r);
-                      setError("");
-                    }}
-                    aria-pressed={role === r}
-                    className="min-w-0 rounded-full border px-2 py-3 text-[11px] font-semibold transition-colors duration-150 sm:text-xs"
-                    style={
-                      role === r
-                        ? {
-                            background: "#EF3038",
-                            borderColor: "#EF3038",
-                            color: "#FFFFFF",
-                          }
-                        : {
-                            background: "#F1F5F9",
-                            borderColor:
-                              "rgba(220,38,38,0.14)",
-                            color: "#64748B",
-                          }
-                    }
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            )}
-
           </div>
 
-          {/* =================================================
-              FORM
-          ================================================= */}
+          <div className={styles.heroBottom}>
+            <ShieldCheck size={17} aria-hidden="true" />
+            <span>EMPOWERING THE NEXT GENERATION</span>
+          </div>
+        </section>
 
-          <form
-            className="space-y-5"
-            onSubmit={handleSubmit}
-          >
-
-            {/* =================================================
-                EMAIL
-            ================================================= */}
-
-            <div>
-
-              <label className="mb-2 block text-xs font-semibold text-[#94A3B8]">
-                Email / Registration ID
-              </label>
-
-              <input
-                type="text"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError("");
-                }}
-                placeholder={
-                  role === "Boxer"
-                    ? "e.g. boxer@mba.com"
-                    : role === "Referee/Judge"
-                      ? "e.g. referee@mba.com"
-                      : "Enter your email"
-                }
-                className="w-full rounded-full bg-[#F1F5F9] px-5 py-3.5 text-sm text-[#1E293B] outline-none transition-colors placeholder:text-[#94A3B8]"
-                style={{
-                  border:
-                    "1px solid rgba(220,38,38,0.25)",
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor =
-                    "#DC2626";
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor =
-                    "rgba(220,38,38,0.25)";
-                }}
-              />
-
-            </div>
-
-            {/* =================================================
-                PASSWORD
-            ================================================= */}
-
-            <div>
-
-              <label className="mb-2 block text-xs font-semibold text-[#94A3B8]">
-                Password
-              </label>
-
-              <div className="relative">
-
-                <input
-                  type={
-                    showPass ? "text" : "password"
-                  }
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError("");
-                  }}
-                  placeholder="••••••••"
-                  className="w-full rounded-full bg-[#F1F5F9] px-5 py-3.5 pr-20 text-sm text-[#1E293B] outline-none transition-colors placeholder:text-[#94A3B8]"
-                  style={{
-                    border:
-                      "1px solid rgba(220,38,38,0.25)",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "#DC2626";
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "rgba(220,38,38,0.25)";
-                  }}
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPass(!showPass)
-                  }
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-xs font-medium text-[#94A3B8] hover:text-[#DC2626]"
-                >
-                  {showPass ? "Hide" : "Show"}
-                </button>
-
+        <section className={styles.loginPanel} aria-label="Sign in">
+          <div className={styles.loginCard}>
+            <header className={styles.loginHeader}>
+              <div className={styles.mobileBrand}>
+                <span className={styles.mobileLogo}>MBA</span>
+                <span>MUMBAI BOXING ASSOCIATION</span>
               </div>
+              <div className={styles.welcomeMark} aria-hidden="true">
+                <LockKeyhole size={20} />
+              </div>
+              <h2>Welcome Back</h2>
+              <p>Sign in to your MBA portal account</p>
+              {!tournamentId && (
+                <Link className={styles.tournamentLink} href="/events">
+                  Browse tournaments
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              )}
+            </header>
 
-            </div>
+            <div className={styles.formDivider} />
 
-            {/* =================================================
-                REMEMBER / FORGOT
-            ================================================= */}
-
-            <div className="flex items-center justify-between text-xs">
-
-              <label className="flex cursor-pointer items-center gap-2 text-[#94A3B8]">
-
-                <input
-                  type="checkbox"
-                  className="h-3.5 w-3.5 rounded border-slate-300"
-                />
-
-                Remember me
-
-              </label>
-
-              <Link
-                href={
-                  tournamentId
-                    ? `/forgot-password?tournamentId=${tournamentId}`
-                    : "/forgot-password"
-                }
-                className="text-[#DC2626] hover:underline"
-              >
-                Forgot password?
-              </Link>
-
-            </div>
-
-            {/* =================================================
-                ERROR
-            ================================================= */}
-
-            {error && (
-              <div
-                className="rounded-xl px-4 py-3 text-center text-xs"
-                style={{
-                  background:
-                    "rgba(239,68,68,0.05)",
-                  border:
-                    "1px solid rgba(239,68,68,0.15)",
-                  color: "#EF4444",
-                }}
-              >
-                {error}
+            {tournamentId && (
+              <div className={styles.tournamentNotice}>
+                <p className={styles.tournamentTitle}>
+                  Continue your tournament entry
+                </p>
+                <p>
+                  Sign in with the boxer account you want to register. After
+                  sign-in, you’ll continue to the selected event.
+                </p>
+                <Link href={`/events/${tournamentId}`}>
+                  Back to event details
+                </Link>
               </div>
             )}
 
-            {/* =================================================
-                LOGIN BUTTON
-            ================================================= */}
+            <form onSubmit={handleSubmit}>
+              <span className={styles.sectionLabel}>LOGIN AS</span>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-1 w-full rounded-full py-3.5 text-sm font-bold text-white transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60"
-              style={{
-                background: "#EF2028",
-                boxShadow: "none",
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.background =
-                    "#DC2626";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.background =
-                    "#EF2028";
-                }
-              }}
-            >
-              {loading
-                ? "Signing in..."
-                : `Sign In as ${role}`}
-            </button>
+              {tournamentId ? (
+                <div className={styles.tournamentRole}>Boxer account</div>
+              ) : (
+                <div className={styles.roleSelector}>
+                  {ROLES.map(({ label, icon: Icon }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        setRole(label);
+                        setError("");
+                      }}
+                      className={`${styles.roleOption} ${
+                        role === label ? styles.roleActive : ""
+                      }`}
+                      aria-pressed={role === label}
+                      disabled={loading}
+                    >
+                      <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
 
-          </form>
+              <div className={styles.formGroup}>
+                <label htmlFor="login-email">Email / Registration ID</label>
+                <div className={styles.inputWrap}>
+                  <Mail
+                    size={21}
+                    className={styles.inputIcon}
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="login-email"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="Enter email or registration ID"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setError("");
+                    }}
+                    required
+                  />
+                </div>
+              </div>
 
-          {/* =================================================
-              REGISTER
-          ================================================= */}
+              <div className={styles.formGroup}>
+                <label htmlFor="login-password">Password</label>
+                <div className={styles.inputWrap}>
+                  <LockKeyhole
+                    size={21}
+                    className={styles.inputIcon}
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="login-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setError("");
+                    }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} aria-hidden="true" />
+                    ) : (
+                      <Eye size={20} aria-hidden="true" />
+                    )}
+                    <span>{showPassword ? "Hide" : "Show"}</span>
+                  </button>
+                </div>
+              </div>
 
-          <p className="mt-6 text-center text-xs text-[#64748B]">
+              <div className={styles.formOptions}>
+                <label className={styles.rememberOption}>
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(event) => setRemember(event.target.checked)}
+                  />
+                  <span className={styles.customCheckbox} aria-hidden="true" />
+                  <span>Remember me</span>
+                </label>
+                <Link
+                  href={
+                    tournamentId
+                      ? `/forgot-password?tournamentId=${tournamentId}`
+                      : "/forgot-password"
+                  }
+                  className={styles.forgotLink}
+                >
+                  Forgot password?
+                </Link>
+              </div>
 
-            New to MBA?{" "}
+              {error && (
+                <div className={styles.formMessage} role="alert">
+                  {error}
+                </div>
+              )}
 
-            <Link
-              href={
-                tournamentId
-                  ? `/register?tournamentId=${tournamentId}`
-                  : "/register"
-              }
-              className="font-semibold text-[#DC2626] hover:underline"
-            >
-              Register here
-            </Link>
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={loading}
+              >
+                <span>
+                  {loading ? "Signing in..." : `Sign In as ${role}`}
+                </span>
+                {!loading && <ArrowRight size={21} aria-hidden="true" />}
+              </button>
 
-          </p>
+              <div className={styles.registerPrompt}>
+                <span aria-hidden="true" />
+                <p>
+                  New to MBA?{" "}
+                  <Link
+                    href={
+                      tournamentId
+                        ? `/register?tournamentId=${tournamentId}`
+                        : "/register"
+                    }
+                  >
+                    Register here
+                  </Link>
+                </p>
+                <span aria-hidden="true" />
+              </div>
+            </form>
+          </div>
 
-        </div>
-
-        {/* ===================================================
-            COPYRIGHT
-        =================================================== */}
-
-        <p className="mt-6 text-center text-xs text-[#94A3B8]">
-          © 2025 Mumbai Boxing Association. All rights reserved.
-        </p>
-
+          <footer className={styles.loginFooter}>
+            © 2025 Mumbai Boxing Association. All rights reserved.
+          </footer>
+        </section>
       </div>
-
     </main>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-white" />}>
+    <Suspense fallback={<main className={styles.loginPage} />}>
       <LoginForm />
     </Suspense>
   );
