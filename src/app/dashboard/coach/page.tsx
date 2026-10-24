@@ -1098,763 +1098,260 @@ export default function CoachDashboard() {
    * ============================================================
    */
 
+  const approvedDocuments = documents.filter(
+    (doc) => (doc.status || "").toUpperCase() === "APPROVED"
+  ).length;
+  const fitBoxers = boxers.filter(
+    (boxer) => boxer.medical?.fitnessStatus?.toLowerCase() === "valid"
+  ).length;
+  const membershipValid = Boolean(
+    isActive && validUntil && !Number.isNaN(validUntil.getTime()) &&
+    validUntil.getTime() >= Date.now()
+  );
+  const statusTone = (status?: string | null) => {
+    const normalized = (status || "PENDING").toUpperCase();
+    if (["APPROVED", "ACTIVE", "VALID", "VERIFIED"].includes(normalized))
+      return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+    if (["REJECTED", "EXPIRED", "INACTIVE", "INVALID"].includes(normalized))
+      return "bg-red-50 text-red-700 ring-red-100";
+    return "bg-amber-50 text-amber-700 ring-amber-100";
+  };
+
   return (
     <DashboardLayout role="coach">
-      <div className="space-y-6">
-
-        {/* ---------------------------------------------------- */}
-        {/* PAGE HEADER */}
-        {/* ---------------------------------------------------- */}
-
-        <div>
-          <h2 className="text-2xl font-bold text-slate-950">
-            Coach Dashboard
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Your coaching profile, credentials and assigned boxers
-          </p>
-        </div>
-
-        {/* ---------------------------------------------------- */}
-        {/* ERROR */}
-        {/* ---------------------------------------------------- */}
+      <main className="mx-auto w-full max-w-[1660px] space-y-6 pb-12 text-[#0b1729]">
+        {/* HERO */}
+        <section className="relative isolate overflow-hidden rounded-[24px] bg-[#07172c] px-6 py-8 text-white shadow-[0_18px_45px_rgba(7,23,44,.13)] sm:px-9 lg:px-11 lg:py-10">
+          <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[.09]" style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "38px 38px" }} />
+          <div aria-hidden className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-red-600/20 blur-[90px]" />
+          <div aria-hidden className="pointer-events-none absolute -top-20 right-[25%] hidden h-[160%] w-12 rotate-[24deg] bg-[#ed1c24] lg:block" />
+          <div aria-hidden className="pointer-events-none absolute -top-20 right-[20%] hidden h-[160%] w-5 rotate-[24deg] bg-red-500/40 lg:block" />
+          <div className="relative z-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-center">
+            <div className="min-w-0">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.18em] text-red-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                Mumbai Boxing Association
+              </div>
+              <p className="text-sm font-medium text-slate-300">Coach Dashboard</p>
+              <h1 className="mt-1 break-words text-3xl font-black tracking-tight sm:text-[44px] lg:text-[50px]">
+                Welcome, {coach.name.split(" ")[0]}<span className="text-red-500">.</span>
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
+                Lead with purpose. Train champions. Track your coaching journey.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold">
+                  <ShieldCheck className="h-4 w-4 text-red-400" /> Registered Coach
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold">
+                  <Award className="h-4 w-4 text-red-400" /> {coachId}
+                </span>
+              </div>
+            </div>
+            <div className="relative z-10 max-w-[270px] border-l-[3px] border-red-500 pl-5">
+              <p className="text-lg font-semibold italic leading-7 text-slate-200">
+                “Behind every champion is a coach who believed first.”
+              </p>
+              <div className="mt-4 h-[3px] w-12 rounded-full bg-red-500" />
+            </div>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-red-600 via-red-500 to-transparent" />
+        </section>
 
         {error && (
-          <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
-            <p className="text-sm text-red-600">
-              {error}
-            </p>
+          <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700">
+            {error}
           </div>
         )}
 
-        {/* ---------------------------------------------------- */}
-        {/* PROFILE + DIGITAL ID */}
-        {/* ---------------------------------------------------- */}
+        {/* SUMMARY CARDS */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <CoachMetric icon={<ShieldCheck className="h-5 w-5" />} label="Registration Status" value={registrationStatus} detail={isActive ? "Account approved" : "Check registration status"} accent="emerald" />
+          <CoachMetric icon={<Users className="h-5 w-5" />} label="Assigned Boxers" value={String(boxers.length)} detail={`${fitBoxers} with valid medical status`} accent="red" />
+          <CoachMetric icon={<CalendarDays className="h-5 w-5" />} label="Membership Validity" value={formatShortDate(validUntil)} detail={membershipValid ? "Currently active" : "Check membership validity"} accent="blue" />
+          <CoachMetric icon={<Award className="h-5 w-5" />} label="Certificates" value={String(certificates.length)} detail="Issued credentials" accent="amber" />
+        </div>
 
-        <div className="grid gap-5 xl:grid-cols-[1.5fr_1fr]">
-
-          {/* Profile */}
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-
-            <div className="flex flex-col gap-6 sm:flex-row">
-
-              {/* Photo */}
-
-              <div className="shrink-0">
-                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-red-100 bg-red-50">
-
-                  <UserRound
-                    className="h-10 w-10 text-red-500"
-                  />
-
-                </div>
-
-                <p className="mt-2 text-center text-[11px] text-slate-400">
-                  Coach Photo
-                </p>
+        {/* MAIN THREE-COLUMN ROW */}
+        <div className="grid items-stretch gap-5 xl:grid-cols-3">
+          <section className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <CoachSectionTitle icon={<UserRound className="h-5 w-5" />} title="Coach Profile" subtitle="Your registered information" />
+            <div className="mt-6 flex items-center gap-4 rounded-2xl bg-slate-50 p-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#07172c] text-2xl font-black text-white">
+                {coach.name.trim().charAt(0).toUpperCase() || "C"}
               </div>
-
-              {/* Information */}
-
-              <div className="min-w-0 flex-1">
-
-                <div className="flex flex-wrap items-center gap-3">
-
-                  <h3 className="text-xl font-bold text-slate-950">
-                    {coach.name}
-                  </h3>
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      isActive
-                        ? "bg-green-100 text-green-700"
-                        : "bg-orange-100 text-orange-700"
-                    }`}
-                  >
-                    {registrationStatus}
-                  </span>
-
-                </div>
-
-                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-                  <Info
-                    label="Coach ID"
-                    value={coachId}
-                  />
-
-                  <Info
-                    label="Email"
-                    value={coach.user.email}
-                  />
-
-                  <Info
-                    label="Phone"
-                    value={coach.phone || "—"}
-                  />
-
-                  <Info
-                    label="Academy"
-                    value={coach.academy?.name || "Not assigned"}
-                  />
-
-                  <Info
-                    label="Membership ID"
-                    value={coach.user.membershipId || "—"}
-                  />
-
-                  <Info
-                    label="Registration"
-                    value={registrationStatus}
-                  />
-
-                </div>
-
+              <div className="min-w-0">
+                <p className="break-words text-lg font-extrabold text-[#07172c]">{coach.name}</p>
+                <p className="mt-1 text-xs text-slate-500">{coach.academy?.name || "Academy not assigned"}</p>
+                <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ring-1 ${statusTone(registrationStatus)}`}>{registrationStatus}</span>
               </div>
-
             </div>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <CoachDetail label="Coach ID" value={coachId} />
+              <CoachDetail label="Email" value={coach.user.email} />
+              <CoachDetail label="Phone" value={coach.phone || "—"} />
+              <CoachDetail label="Academy" value={coach.academy?.name || "Not assigned"} />
+              <CoachDetail label="Membership ID" value={coach.user.membershipId || "Pending"} />
+              <CoachDetail label="Registration" value={registrationStatus} />
+            </div>
+          </section>
 
-          </div>
-
-          {/* Digital ID */}
-
-          <div className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
-
-            <div className="bg-gradient-to-r from-red-600 to-red-500 p-5 text-white">
-
-              <div className="flex items-center justify-between">
-
+          <section className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <CoachSectionTitle icon={<ShieldCheck className="h-5 w-5" />} title="Digital Coach ID" subtitle="Official membership credential" />
+            <div className="relative mt-6 overflow-hidden rounded-[19px] bg-[#07172c] p-5 text-white shadow-[0_12px_24px_rgba(7,23,44,.16)]">
+              <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-40 w-16 rotate-[25deg] bg-[#ed1c24]" />
+              <div aria-hidden className="pointer-events-none absolute right-12 top-0 h-40 w-4 rotate-[25deg] bg-red-500/30" />
+              <div className="relative flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-100">
-                    MBA Membership
-                  </p>
-
-                  <p className="mt-1 text-lg font-bold">
-                    Digital Coach ID
-                  </p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-red-300">Mumbai Boxing Association</p>
+                  <p className="mt-1 text-base font-extrabold">OFFICIAL COACH ID</p>
                 </div>
-
-                <ShieldCheck className="h-8 w-8 text-white/90" />
-
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white text-[11px] font-black text-red-600">MBA</div>
               </div>
-
-              <p className="mt-5 text-xl font-extrabold tracking-wide">
-                {coach.user.membershipId || "Pending"}
-              </p>
-
+              <div className="relative mt-9">
+                <p className="text-[10px] uppercase tracking-widest text-slate-400">Coach Name</p>
+                <p className="mt-1 break-words text-xl font-extrabold">{coach.name}</p>
+                <p className="mt-3 break-all text-xs font-bold text-red-300">{coach.user.membershipId || "Membership pending"}</p>
+              </div>
+              <div className="relative mt-6 grid grid-cols-2 gap-3 border-t border-white/15 pt-4">
+                <div><p className="text-[10px] text-slate-400">Valid From</p><p className="mt-1 text-xs font-bold">{formatShortDate(validFrom)}</p></div>
+                <div><p className="text-[10px] text-slate-400">Valid Until</p><p className="mt-1 text-xs font-bold">{formatShortDate(validUntil)}</p></div>
+              </div>
             </div>
-
-            <div className="p-5">
-
-              <div className="grid grid-cols-2 gap-4">
-
-                <Info
-                  label="Valid From"
-                  value={formatDate(
-                    coach.user.membershipValidFrom
-                  )}
-                />
-
-                <Info
-                  label="Valid Until"
-                  value={formatDate(
-                    coach.user.membershipExpiry
-                  )}
-                />
-
-              </div>
-
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
-
-                <button
-                  type="button"
-                  onClick={downloadIdCard}
-                  disabled={
-                    downloadingId ||
-                    !coach.user.membershipId
-                  }
-                  className="flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Download className="h-4 w-4" />
-
-                  {downloadingId
-                    ? "Generating..."
-                    : "Download Coach ID"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={downloadCertificate}
-                  disabled={
-                    downloadingCertificate ||
-                    !coach.user.membershipId
-                  }
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Award className="h-4 w-4" />
-
-                  {downloadingCertificate
-                    ? "Generating..."
-                    : "Download Certificate"}
-                </button>
-
-              </div>
-
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <button type="button" onClick={downloadIdCard} disabled={downloadingId || !coach.user.membershipId} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#ed1c24] px-4 py-3 text-xs font-bold text-white transition hover:bg-[#c9151e] disabled:cursor-not-allowed disabled:opacity-50">
+                <Download className="h-4 w-4" />{downloadingId ? "Generating..." : "Download ID"}
+              </button>
+              <button type="button" onClick={downloadCertificate} disabled={downloadingCertificate || !coach.user.membershipId} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+                <Award className="h-4 w-4" />{downloadingCertificate ? "Generating..." : "Certificate"}
+              </button>
             </div>
+          </section>
 
-          </div>
-
+          <section className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <CoachSectionTitle icon={<CheckCircle2 className="h-5 w-5" />} title="Membership Status" subtitle="Registration and eligibility" />
+            <div className={`mt-6 rounded-2xl p-5 ${membershipValid ? "bg-emerald-50" : "bg-amber-50"}`}>
+              <div className="flex items-center gap-3">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${membershipValid ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}><ShieldCheck className="h-6 w-6" /></div>
+                <div>
+                  <p className={`font-extrabold ${membershipValid ? "text-emerald-800" : "text-amber-800"}`}>{membershipValid ? "Active Membership" : "Membership Needs Review"}</p>
+                  <p className={`mt-1 text-xs ${membershipValid ? "text-emerald-700" : "text-amber-700"}`}>{membershipValid ? "Your membership is currently valid" : "Review your status and validity dates"}</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
+              <CoachStatusRow label="Registration" value={registrationStatus} tone={statusTone(registrationStatus)} />
+              <CoachStatusRow label="Valid From" value={formatDate(coach.user.membershipValidFrom)} />
+              <CoachStatusRow label="Valid Until" value={formatDate(coach.user.membershipExpiry)} />
+              <CoachStatusRow label="Documents Approved" value={`${approvedDocuments} / ${documents.length}`} />
+              <CoachStatusRow label="Academy" value={coach.academy?.name || "Not assigned"} />
+            </div>
+          </section>
         </div>
 
-        {/* ---------------------------------------------------- */}
-        {/* SUMMARY */}
-        {/* ---------------------------------------------------- */}
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-
-          <StatCard
-            icon={<Users className="h-5 w-5" />}
-            label="Assigned Boxers"
-            value={boxers.length}
-          />
-
-          <StatCard
-            icon={<FolderOpen className="h-5 w-5" />}
-            label="Documents"
-            value={documents.length}
-          />
-
-          <StatCard
-            icon={<Award className="h-5 w-5" />}
-            label="Credentials"
-            value={certificates.length}
-          />
-
-        </div>
-
-        {/* ---------------------------------------------------- */}
-        {/* ASSIGNED BOXERS */}
-        {/* ---------------------------------------------------- */}
-
-        <section>
-
-          <div className="mb-3 flex items-center justify-between">
-
-            <div>
-              <h3 className="text-lg font-semibold text-slate-950">
-                Assigned Boxers
-              </h3>
-
-              <p className="text-sm text-slate-500">
-                Boxers currently linked to your academy
-              </p>
-            </div>
-
-            <a
-              href="/dashboard/coach/boxers"
-              className="text-sm font-semibold text-red-600 hover:underline"
-            >
-              View Boxer List →
+        {/* BOXER ROSTER */}
+        <section className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-sm">
+          <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
+            <CoachSectionTitle icon={<Users className="h-5 w-5" />} title="Assigned Boxers" subtitle="Athletes linked to your academy" />
+            <a href="/dashboard/coach/boxers" className="inline-flex items-center gap-2 self-start rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-xs font-extrabold text-red-600 transition hover:bg-red-100">
+              View All Boxers <span aria-hidden>→</span>
             </a>
-
           </div>
-
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-
-            {boxers.length === 0 ? (
-              <div className="px-6 py-12 text-center">
-
-                <Users className="mx-auto h-10 w-10 text-slate-300" />
-
-                <p className="mt-3 font-medium text-slate-700">
-                  No boxers assigned yet
-                </p>
-
-                <p className="mt-1 text-sm text-slate-400">
-                  Boxers linked to your academy will appear here.
-                </p>
-
-              </div>
-            ) : (
-              <>
-                {/* Desktop */}
-
-                <div className="hidden overflow-x-auto md:block">
-
-                  <table className="w-full text-sm">
-
-                    <thead className="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
-
-                      <tr>
-                        <th className="px-5 py-4">
-                          Boxer
-                        </th>
-
-                        <th className="px-5 py-4">
-                          Weight
-                        </th>
-
-                        <th className="px-5 py-4">
-                          Medical
-                        </th>
-
-                        <th className="px-5 py-4">
-                          Rank
-                        </th>
+          {boxers.length === 0 ? (
+            <div className="px-6 py-14 text-center"><Users className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-bold text-slate-700">No boxers assigned yet</p><p className="mt-1 text-sm text-slate-500">Boxers linked to your academy will appear here.</p></div>
+          ) : (
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[650px] text-left">
+                  <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-wider text-slate-500"><tr><th className="px-6 py-4">Boxer</th><th className="px-6 py-4">Weight Category</th><th className="px-6 py-4">Medical Fitness</th><th className="px-6 py-4">Rank</th></tr></thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {boxers.map((boxer) => (
+                      <tr key={boxer.id} className="transition hover:bg-slate-50/70">
+                        <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 font-black text-red-600">{boxer.name.charAt(0).toUpperCase()}</div><div><p className="font-bold text-[#07172c]">{boxer.name}</p><p className="mt-0.5 text-xs text-slate-400">Boxer #{String(boxer.id).padStart(4, "0")}</p></div></div></td>
+                        <td className="px-6 py-4 text-sm font-medium text-slate-700">{boxer.weight || "—"}</td>
+                        <td className="px-6 py-4"><span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-bold ring-1 ${statusTone(boxer.medical?.fitnessStatus || "NO RECORD")}`}>{boxer.medical?.fitnessStatus || "No Record"}</span></td>
+                        <td className="px-6 py-4 text-sm font-extrabold text-red-600">{boxer.rank == null ? "—" : `#${boxer.rank}`}</td>
                       </tr>
-
-                    </thead>
-
-                    <tbody className="divide-y divide-slate-100">
-
-                      {boxers.map((boxer) => (
-                        <tr
-                          key={boxer.id}
-                          className="transition hover:bg-slate-50"
-                        >
-
-                          <td className="px-5 py-4">
-
-                            <p className="font-semibold text-slate-900">
-                              {boxer.name}
-                            </p>
-
-                            <p className="mt-0.5 text-xs text-slate-400">
-                              MBA-BXR-
-                              {String(boxer.id).padStart(
-                                4,
-                                "0"
-                              )}
-                            </p>
-
-                          </td>
-
-                          <td className="px-5 py-4 text-slate-600">
-                            {boxer.weight || "—"}
-                          </td>
-
-                          <td className="px-5 py-4">
-
-                            {boxer.medical ? (
-                              <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                  boxer.medical
-                                    .fitnessStatus ===
-                                  "Valid"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-orange-100 text-orange-700"
-                                }`}
-                              >
-                                {
-                                  boxer.medical
-                                    .fitnessStatus
-                                }
-                              </span>
-                            ) : (
-                              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-                                No Record
-                              </span>
-                            )}
-
-                          </td>
-
-                          <td className="px-5 py-4 font-semibold text-red-600">
-                            {boxer.rank
-                              ? `#${boxer.rank}`
-                              : "—"}
-                          </td>
-
-                        </tr>
-                      ))}
-
-                    </tbody>
-
-                  </table>
-
-                </div>
-
-                {/* Mobile */}
-
-                <div className="divide-y divide-slate-100 md:hidden">
-
-                  {boxers.map((boxer) => (
-                    <div
-                      key={boxer.id}
-                      className="p-5"
-                    >
-
-                      <div className="flex items-start justify-between gap-4">
-
-                        <div>
-
-                          <p className="font-semibold text-slate-900">
-                            {boxer.name}
-                          </p>
-
-                          <p className="mt-1 text-xs text-slate-400">
-                            Weight:{" "}
-                            {boxer.weight || "—"}
-                          </p>
-
-                        </div>
-
-                        <p className="font-bold text-red-600">
-                          {boxer.rank
-                            ? `#${boxer.rank}`
-                            : "—"}
-                        </p>
-
-                      </div>
-
-                      <div className="mt-3">
-
-                        {boxer.medical ? (
-                          <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">
-                            Medical:{" "}
-                            {
-                              boxer.medical
-                                .fitnessStatus
-                            }
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-                            Medical: No Record
-                          </span>
-                        )}
-
-                      </div>
-
-                    </div>
-                  ))}
-
-                </div>
-              </>
-            )}
-
-          </div>
-
-        </section>
-
-        {/* ---------------------------------------------------- */}
-        {/* CREDENTIALS / DOCUMENTS */}
-        {/* ---------------------------------------------------- */}
-
-        <section>
-
-          <div className="mb-3">
-
-            <h3 className="text-lg font-semibold text-slate-950">
-              Credentials & Documents
-            </h3>
-
-            <p className="text-sm text-slate-500">
-              Your uploaded coaching credentials and registration documents
-            </p>
-
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-
-            {/* Credentials */}
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-              <div className="flex items-center gap-3">
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
-                  <Award className="h-5 w-5" />
-                </div>
-
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    Coaching Credentials
-                  </p>
-
-                  <p className="text-xs text-slate-400">
-                    Official certificates
-                  </p>
-                </div>
-
+                    ))}
+                  </tbody>
+                </table>
               </div>
-
-              <div className="mt-5 space-y-3">
-
-                {certificates.length === 0 ? (
-                  <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-400">
-                    No certificates issued yet.
+              <div className="divide-y divide-slate-100 md:hidden">
+                {boxers.map((boxer) => (
+                  <div key={boxer.id} className="flex items-center gap-3 p-5">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 font-black text-red-600">{boxer.name.charAt(0).toUpperCase()}</div>
+                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{boxer.name}</p><p className="mt-1 text-xs text-slate-500">{boxer.weight || "No weight"} · {boxer.medical?.fitnessStatus || "No medical record"}</p></div>
+                    <span className="text-sm font-extrabold text-red-600">{boxer.rank == null ? "—" : `#${boxer.rank}`}</span>
                   </div>
-                ) : (
-                  certificates.map((certificate) => (
-                    <div
-                      key={certificate.id}
-                      className="flex items-center justify-between rounded-xl border border-slate-100 p-3"
-                    >
-
-                      <div className="flex min-w-0 items-center gap-3">
-
-                        <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
-
-                        <div className="min-w-0">
-
-                          <p className="truncate text-sm font-semibold text-slate-800">
-                            {certificate.type}
-                          </p>
-
-                          <p className="text-xs text-slate-400">
-                            {certificate.event}
-                          </p>
-
-                        </div>
-
-                      </div>
-
-                      <span className="text-xs font-semibold text-green-600">
-                        {certificate.qrStatus ||
-                          "Verified"}
-                      </span>
-
-                    </div>
-                  ))
-                )}
-
+                ))}
               </div>
-
-            </div>
-
-            {/* Documents */}
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-              <div className="flex items-center gap-3">
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                  <FileText className="h-5 w-5" />
-                </div>
-
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    Registration Documents
-                  </p>
-
-                  <p className="text-xs text-slate-400">
-                    Uploaded credentials and documents
-                  </p>
-                </div>
-
-              </div>
-
-              <div className="mt-5 space-y-3">
-
-                {documents.length === 0 ? (
-                  <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-400">
-                    No documents uploaded.
-                  </div>
-                ) : (
-                  documents.map((doc) => (
-                    <a
-                      key={doc.id}
-                      href={`/api/file?path=${encodeURIComponent(
-                        doc.filePath
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between rounded-xl border border-slate-100 p-3 transition hover:bg-slate-50"
-                    >
-
-                      <div className="flex min-w-0 items-center gap-3">
-
-                        <FileText className="h-5 w-5 shrink-0 text-slate-400" />
-
-                        <div className="min-w-0">
-
-                          <p className="truncate text-sm font-semibold text-slate-800">
-                            {doc.label.replace(
-                              /-/g,
-                              " "
-                            )}
-                          </p>
-
-                          <p className="text-xs text-slate-400">
-                            {formatDate(
-                              doc.createdAt
-                            )}
-                          </p>
-
-                        </div>
-
-                      </div>
-
-                      <span className="shrink-0 text-xs font-semibold text-red-600">
-                        View →
-                      </span>
-
-                    </a>
-                  ))
-                )}
-
-              </div>
-
-            </div>
-
-          </div>
-
+            </>
+          )}
         </section>
 
-        {/* ---------------------------------------------------- */}
-        {/* MEMBERSHIP STATUS */}
-        {/* ---------------------------------------------------- */}
-
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-          <div className="flex items-center gap-3">
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">
-              <ShieldCheck className="h-5 w-5" />
+        {/* CREDENTIALS & DOCUMENTS */}
+        <div className="grid gap-5 xl:grid-cols-2">
+          <section className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <CoachSectionTitle icon={<Award className="h-5 w-5" />} title="Coaching Credentials" subtitle={`${certificates.length} certificates issued`} />
+            <div className="mt-5 space-y-3">
+              {certificates.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">No certificates issued yet.</div>
+              ) : certificates.map((certificate) => (
+                <div key={certificate.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-4">
+                  <div className="flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><Award className="h-5 w-5" /></div><div className="min-w-0"><p className="break-words text-sm font-bold text-slate-800">{certificate.type}</p><p className="mt-1 text-xs text-slate-500">{certificate.event} · {formatDate(certificate.issuedAt)}</p></div></div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ${statusTone(certificate.qrStatus)}`}>{certificate.qrStatus || "Pending"}</span>
+                </div>
+              ))}
             </div>
-
-            <div>
-
-              <h3 className="font-semibold text-slate-900">
-                Registration & Membership Status
-              </h3>
-
-              <p className="text-xs text-slate-400">
-                Current official MBA registration status
-              </p>
-
+          </section>
+          <section className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-center justify-between gap-3"><CoachSectionTitle icon={<FolderOpen className="h-5 w-5" />} title="Registration Documents" subtitle={`${documents.length} uploaded documents`} /><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{approvedDocuments} approved</span></div>
+            <div className="mt-5 space-y-3">
+              {documents.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500">No documents uploaded yet.</div>
+              ) : documents.map((doc) => (
+                <a key={doc.id} href={`/api/file?path=${encodeURIComponent(doc.filePath)}`} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-4 transition hover:border-red-100 hover:bg-red-50/30">
+                  <div className="flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600"><FileText className="h-5 w-5" /></div><div className="min-w-0"><p className="break-words text-sm font-bold capitalize text-slate-800">{doc.label.replace(/-/g, " ")}</p><p className="mt-1 text-xs text-slate-500">{formatDate(doc.createdAt)}</p>{doc.status?.toUpperCase() === "REJECTED" && doc.rejectionReason && <p className="mt-1 text-xs text-red-600">{doc.rejectionReason}</p>}</div></div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ${statusTone(doc.status)}`}>{doc.status || "Pending"}</span>
+                </a>
+              ))}
             </div>
-
-          </div>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-
-            <StatusItem
-              label="Registration"
-              value={registrationStatus}
-              active={isActive}
-            />
-
-            <StatusItem
-              label="Valid From"
-              value={formatDate(
-                coach.user.membershipValidFrom
-              )}
-              active
-            />
-
-            <StatusItem
-              label="Valid Until"
-              value={formatDate(
-                coach.user.membershipExpiry
-              )}
-              active
-            />
-
-          </div>
-
-        </section>
-
-      </div>
+          </section>
+        </div>
+      </main>
     </DashboardLayout>
   );
 }
 
-/*
- * ==============================================================
- * SMALL UI COMPONENTS
- * ==============================================================
- */
-
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function CoachSectionTitle({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
-    <div className="min-w-0">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-
-      <p className="mt-1 truncate text-sm font-semibold text-slate-800">
-        {value}
-      </p>
+    <div className="flex items-center gap-3">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#ed1c24]">{icon}</div>
+      <div className="min-w-0"><h2 className="text-base font-extrabold tracking-tight text-[#07172c] sm:text-lg">{title}</h2><p className="mt-0.5 text-xs text-slate-500">{subtitle}</p></div>
     </div>
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-}) {
+function CoachMetric({ icon, label, value, detail, accent }: { icon: React.ReactNode; label: string; value: string; detail: string; accent: "red" | "blue" | "emerald" | "amber" }) {
+  const tones = { red: "bg-red-50 text-red-600", blue: "bg-blue-50 text-blue-600", emerald: "bg-emerald-50 text-emerald-600", amber: "bg-amber-50 text-amber-600" };
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-
-      <div className="flex items-center gap-4">
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600">
-          {icon}
-        </div>
-
-        <div>
-          <p className="text-2xl font-bold text-slate-950">
-            {value}
-          </p>
-
-          <p className="text-sm text-slate-500">
-            {label}
-          </p>
-        </div>
-
-      </div>
-
+    <div className="rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-start justify-between gap-3"><p className="text-xs font-semibold text-slate-500">{label}</p><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tones[accent]}`}>{icon}</div></div>
+      <p className="mt-2 break-words text-[23px] font-black tracking-tight text-[#07172c]">{value}</p>
+      <p className="mt-2 text-xs font-medium text-slate-500">{detail}</p>
     </div>
   );
 }
 
-function StatusItem({
-  label,
-  value,
-  active,
-}: {
-  label: string;
-  value: string;
-  active: boolean;
-}) {
+function CoachDetail({ label, value }: { label: string; value: string }) {
+  return <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p><p className="mt-1 break-words text-sm font-bold text-slate-800">{value}</p></div>;
+}
+
+function CoachStatusRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-
-      <p className="text-xs uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-
-      <div className="mt-2 flex items-center gap-2">
-
-        {active && (
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-        )}
-
-        <p
-          className={`text-sm font-semibold ${
-            active
-              ? "text-green-700"
-              : "text-slate-700"
-          }`}
-        >
-          {value}
-        </p>
-
-      </div>
-
+    <div className="flex items-center justify-between gap-4 border-b border-slate-100 py-3 last:border-0">
+      <span className="text-xs font-medium text-slate-500">{label}</span>
+      {tone ? <span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ring-1 ${tone}`}>{value}</span> : <span className="max-w-[65%] break-words text-right text-xs font-bold text-slate-800">{value}</span>}
     </div>
   );
 }
