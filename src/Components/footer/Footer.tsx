@@ -23,6 +23,7 @@ const footerLinks = [
     heading: "Association",
     links: [
       { label: "About Us", href: "/about" },
+      { label: "Governance & Committees", href: "/governance" },
       { label: "Official Notices", href: "/news" },
       { label: "Tournaments", href: "/events" },
       { label: "News & Updates", href: "/news" },

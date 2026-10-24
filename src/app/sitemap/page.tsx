@@ -7,6 +7,7 @@ const sections = [
     links: [
       { label: "Home", href: "/" },
       { label: "About Us", href: "/#about" },
+      { label: "Governance & Committees", href: "/governance" },
       { label: "Official Notices", href: "/#news" },
       { label: "Contact Us", href: "/#contact" },
       { label: "Grievance Cell", href: "/grievance" },

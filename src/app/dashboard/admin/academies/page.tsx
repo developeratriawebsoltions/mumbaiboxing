@@ -79,7 +79,7 @@ export default function AdminAcademiesPage() {
             <p className="text-xs text-gray-400">{filtered.length} of {academies.length} academies</p>
 
             <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[850px] text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                   <tr>
                     {["ID", "Name", "Email", "Phone", "Address", "Boxers", "Coaches", "Documents", "Registered"].map((h) => (
