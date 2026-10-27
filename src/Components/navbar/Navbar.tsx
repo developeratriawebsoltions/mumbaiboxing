@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import {
   ArrowRight,
   ChevronDown,
@@ -72,8 +73,17 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [governanceOpen, setGovernanceOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const governanceMenuRef = useRef<HTMLDivElement>(null);
   const mobileGovernanceMenuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [searchOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -158,11 +168,23 @@ export default function Navbar() {
     );
   }
 
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const query = searchQuery.trim();
+
+    if (!query) return;
+
+    setSearchOpen(false);
+    setMobileOpen(false);
+    router.push(`/search?q=${encodeURIComponent(query)}`);
+  }
+
   return (
     <header
       className="
         sticky top-0 z-[100]
-        h-[76px] w-full
+        h-[90px] w-full
         border-b border-[#e8ebef]
         bg-white
         shadow-[0_3px_18px_rgba(0,0,0,0.045)]
@@ -259,7 +281,7 @@ export default function Navbar() {
                     aria-expanded={governanceOpen}
                     aria-controls="governance-desktop-menu"
                     onClick={() => setGovernanceOpen((open) => !open)}
-                    className={`group relative flex h-full items-center gap-1 whitespace-nowrap text-[12px] font-medium tracking-[-0.01em] transition-colors duration-200 xl:text-[14px] ${
+                    className={`group relative flex h-full items-center gap-1 whitespace-nowrap !text-[14px] font-medium tracking-[-0.01em] transition-colors duration-200 xl:!text-[16px] ${
                       active || governanceOpen
                         ? "text-[#f50919]"
                         : "text-[#111827] hover:text-[#f50919]"
@@ -321,10 +343,10 @@ export default function Navbar() {
                   group relative flex h-full
                   shrink-0 items-center
                   whitespace-nowrap
-                  text-[12px] font-medium
+                  !text-[14px] font-medium
                   tracking-[-0.01em]
                   transition-colors duration-200
-                  xl:text-[14px]
+                  xl:!text-[16px]
                   ${
                     active
                       ? "!text-[#f50919]"
@@ -361,22 +383,28 @@ export default function Navbar() {
           "
         >
           {/* Search icon */}
-          <Link
-            href="/search"
-            aria-label="Search"
+          <button
+            type="button"
+            onClick={() => setSearchOpen((prev) => !prev)}
+            aria-label={searchOpen ? "Close search" : "Open search"}
+            aria-expanded={searchOpen}
             className="
               flex h-[42px] w-[42px]
               shrink-0 items-center justify-center
               rounded-full
               border border-[#d8dde4]
-              bg-white !text-[#101820]
+              bg-white text-[#101820]
               transition-all duration-200
               hover:border-[#f50919]
-              hover:!text-[#f50919]
+              hover:text-[#f50919]
             "
           >
-            <Search size={19} strokeWidth={2.2} />
-          </Link>
+            {searchOpen ? (
+              <X size={19} strokeWidth={2.2} />
+            ) : (
+              <Search size={19} strokeWidth={2.2} />
+            )}
+          </button>
 
           <div
             className="
@@ -400,7 +428,7 @@ export default function Navbar() {
                   whitespace-nowrap rounded-full
                   border border-[#aab3bf]
                   bg-white px-4
-                  text-[13px] font-semibold
+                  text-[14px] font-semibold
                   !text-[#101820]
                   transition-all
                   hover:border-[#f50919]
@@ -443,7 +471,7 @@ export default function Navbar() {
                   rounded-full
                   border border-[#aab3bf]
                   bg-white px-5
-                  text-[13px] font-semibold
+                  text-[14px] font-semibold
                   !text-[#101820]
                   transition-all duration-200
                   hover:border-[#f50919]
@@ -461,7 +489,7 @@ export default function Navbar() {
                   whitespace-nowrap
                   rounded-full
                   bg-[#f50919] px-6
-                  text-[13px] font-bold
+                  text-[14px] font-bold
                   !text-white
                   shadow-[0_5px_18px_rgba(245,9,25,0.18)]
                   transition-all duration-200
@@ -495,7 +523,7 @@ export default function Navbar() {
             border border-[#e1e5ea]
             bg-white !text-[#101820]
             transition-colors
-            hover:border-[#f50919]
+            hover:border-[#f50919]  
             lg:hidden
           "
         >
@@ -703,6 +731,86 @@ export default function Navbar() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {searchOpen && (
+        <div
+          className="
+            absolute left-0 right-0 top-full
+            z-[120] border-t border-[#e8ebef]
+            bg-white px-5 py-5
+            shadow-[0_20px_45px_rgba(0,0,0,0.12)]
+            md:px-8 lg:px-12
+          "
+        >
+          <form
+            onSubmit={handleSearch}
+            role="search"
+            className="
+              mx-auto flex w-full max-w-[1000px]
+              items-center gap-3
+              rounded-2xl border border-[#e1e5ea]
+              bg-[#f8f9fb] p-2
+              focus-within:border-[#f50919]
+            "
+          >
+            <Search
+              size={21}
+              aria-hidden="true"
+              className="ml-3 shrink-0 text-[#64748b]"
+            />
+
+            <input
+              ref={searchInputRef}
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setSearchOpen(false);
+                }
+              }}
+              placeholder="Search tournaments, boxers, academies..."
+              aria-label="Search website"
+              className="
+                h-11 min-w-0 flex-1
+                border-0 bg-transparent
+                text-[14px] text-[#101820]
+                outline-none
+                placeholder:text-[#94a3b8]
+              "
+            />
+
+            <button
+              type="submit"
+              className="
+                flex h-11 items-center
+                justify-center gap-2
+                rounded-xl bg-[#f50919]
+                px-5 text-sm font-bold
+                text-white transition-colors
+                hover:bg-[#d50012]
+              "
+            >
+              Search
+              <ArrowRight size={17} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSearchOpen(false)}
+              aria-label="Close search"
+              className="
+                flex h-10 w-10 shrink-0
+                items-center justify-center
+                rounded-lg text-[#64748b]
+                hover:bg-[#e8ebef]
+              "
+            >
+              <X size={19} />
+            </button>
+          </form>
         </div>
       )}
     </header>

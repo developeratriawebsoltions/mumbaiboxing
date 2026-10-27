@@ -160,9 +160,9 @@ export default function Hero() {
 
       <div className="mba-hero-inner relative mx-auto grid w-full max-w-[1600px] grid-cols-1 items-start gap-8 px-5 pb-12 pt-9 sm:px-8 md:min-h-[calc(100svh-80px)] md:px-8 md:pb-9 md:pt-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10 xl:px-10 xl:pt-12 2xl:px-10">
         {/* LEFT CONTENT */}
-        <div className="mba-hero-copy relative z-10 w-full max-w-[650px]">
-          <div className="mb-5 flex flex-wrap items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#101820] sm:text-[10px]">
-            <span className="mr-1 h-[2px] w-7 bg-[#f50919]" />
+        <div className="mba-hero-copy relative z-10 w-full mt-12 max-w-[650px]">
+          <div className="mb-5 flex flex-wrap items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#101820] sm:text-[13px]">
+            <span className="mr-1 h-[3px] w-7 bg-[#f50919]" />
             Mumbai Boxing Association
 
             <span className="border-l border-slate-400 pl-2 text-slate-500">
@@ -178,7 +178,7 @@ export default function Hero() {
             ARE BUILT<span className="text-[#f50919]">.</span>
           </h1>
 
-          <p className="mt-5 max-w-[520px] text-[13px] font-medium leading-[1.7] text-[#253140] sm:text-[14px] lg:text-[15px]">
+          <p className="mt-5 max-w-[520px] text-[14px] font-medium leading-[1.7] text-[#253140] sm:text-[15px] lg:text-[16px]">
             Mumbai Boxing Association is dedicated to developing boxers,
             promoting the sport, and building a stronger boxing community
             across Mumbai.
@@ -202,7 +202,7 @@ export default function Hero() {
             </Link>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-4 text-[9px] font-extrabold uppercase tracking-[0.11em] text-slate-700 sm:text-[10px]">
+          <div className="mt-5 flex flex-wrap items-center gap-4 text-[12px] font-extrabold uppercase tracking-[0.11em] text-slate-700 sm:text-[13px]">
             <span className="flex items-center gap-2">
               <MapPin size={16} className="text-[#f50919]" />
               Official Boxing Body

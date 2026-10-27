@@ -22,6 +22,7 @@ import {
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import PageSpinner from "@/Components/ui/PageSpinner";
 import { useRole } from "@/hooks/useRole";
+import PendingCashPayments from "@/Components/admin/PendingCashPayments";
 
 type DashboardData = {
   stats: {
@@ -517,6 +518,8 @@ function AdminDashboardContent() {
 
         </div>
       </div>
+
+      <PendingCashPayments />
 
       {/* Recent Registrations */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">

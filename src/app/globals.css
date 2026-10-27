@@ -829,7 +829,10 @@ video {
   }
 
   .mba-hero-art {
+    background-color: #fff;
+    background-image: url("/home/hero-bg-mobile.png");
     background-position: center top;
+    background-size: 100% auto;
   }
 
   .mba-hero-inner {
@@ -883,8 +886,8 @@ video {
   .mba-hero-art {
     background-color: #fff;
     background-image: url("/home/hero-bg-mobile.png");
-    background-position: 65% top;
-    background-size: auto 560px;
+    background-position: center top;
+    background-size: 100% auto;
   }
 
   .mba-hero-shade {

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import PageSpinner from "@/Components/ui/PageSpinner";
+import PendingCashPayments from "@/Components/admin/PendingCashPayments";
 
 interface DashboardStats {
   totalBoxers: number;
@@ -227,6 +228,10 @@ export default function SuperAdminPage() {
               </Link>
             );
           })}
+        </div>
+
+        <div className="mt-6">
+          <PendingCashPayments />
         </div>
 
         {/* MEMBERSHIP OVERVIEW */}

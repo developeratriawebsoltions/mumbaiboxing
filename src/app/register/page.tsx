@@ -16,9 +16,9 @@ import {
 } from 'lucide-react';
 import styles from './register.module.css';
 
-// Existing registration APIs are preserved:
+// Registration APIs:
 // /api/auth/me, /api/otp/send, /api/otp/verify, /api/register,
-// /api/upload, /api/payments/create-order, /api/payments/verify
+// /api/upload, /api/payments/offline-request
 
 const ROLES = ['Boxer', 'Coach', 'Academy', 'Referee / Judge'] as const;
 type Role = (typeof ROLES)[number];
@@ -1542,6 +1542,8 @@ function RegisterForm() {
     useState("");
 
   const [paymentDone, setPaymentDone] = useState(false);
+  const [offlinePaymentRequested, setOfflinePaymentRequested] =
+    useState(false);
 
   const router = useRouter();
 
@@ -1566,25 +1568,6 @@ function RegisterForm() {
       })
       .catch(() => {});
   }, [router, tournamentId]);
-
-  useEffect(() => {
-    const existing = document.querySelector(
-      'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
-    );
-
-    if (existing) return;
-
-    const script = document.createElement('script');
-    script.src =
-      'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-
-    document.body.appendChild(script);
-
-    return () => {
-      // Keep the shared Razorpay script in the document if another part of the app uses it.
-    };
-  }, []);
 
   const roleLabel = useMemo(
     () => `Register as ${role}`,
@@ -1897,6 +1880,7 @@ function handleFieldChange(
       setMembershipInfo(null);
       setPaymentInfo(null);
       setPaymentDone(false);
+      setOfflinePaymentRequested(false);
       setStep(5);
     } catch {
       setError('Network error. Please try again.');
@@ -1905,158 +1889,31 @@ function handleFieldChange(
     }
   }
 
-  async function handlePayment() {
-  if (!registeredUser) return;
+  async function handleOfflinePaymentRequest() {
+    if (!registeredUser) return;
 
-  setError('');
-  setLoading(true);
+    setError("");
+    setLoading(true);
 
-  try {
-    const RazorpayCheckout = window.Razorpay;
-    if (!RazorpayCheckout) {
-      setError('Payment gateway is still loading. Please try again.');
+    try {
+      const response = await fetch("/api/payments/offline-request", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Could not submit your cash payment request.");
+        return;
+      }
+
+      setOfflinePaymentRequested(true);
+    } catch {
+      setError("Network error. Please try submitting your request again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // ---------------------------------------------------------
-    // CREATE RAZORPAY ORDER
-    // Server determines the actual fee from the user's role.
-    // ---------------------------------------------------------
-    const orderRes = await fetch('/api/payments/create-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const order = await orderRes.json();
-
-    if (!orderRes.ok) {
-      setError(order.error || 'Failed to create payment order.');
-      setLoading(false);
-      return;
-    }
-
-    // ---------------------------------------------------------
-    // RAZORPAY CHECKOUT
-    // ---------------------------------------------------------
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-
-      amount: order.amount * 100,
-
-      currency: order.currency,
-
-      name: 'Mumbai Boxing Association',
-
-      description: `Annual Membership Fee – ${registeredUser.role}`,
-
-      order_id: order.orderId,
-
-      prefill: {
-        email,
-      },
-
-      theme: {
-        color: '#DC2626',
-      },
-
-      modal: {
-        ondismiss: () => {
-          setLoading(false);
-        },
-      },
-
-      // -------------------------------------------------------
-      // PAYMENT SUCCESS
-      // -------------------------------------------------------
-      handler: async (response: {
-        razorpay_order_id: string;
-        razorpay_payment_id: string;
-        razorpay_signature: string;
-      }) => {
-        try {
-          setError('');
-          setLoading(true);
-
-          // ---------------------------------------------------
-          // VERIFY PAYMENT ON SERVER
-          // ---------------------------------------------------
-          const verifyRes = await fetch('/api/payments/verify', {
-            method: 'POST',
-
-            headers: {
-              'Content-Type': 'application/json',
-            },
-
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-
-              // Only identify the registration.
-              // Backend still verifies ownership/role/amount.
-              userId: registeredUser.id,
-            }),
-          });
-
-          const verifyJson = await verifyRes.json();
-
-          if (!verifyRes.ok) {
-            setError(
-              verifyJson.error ||
-                'Payment verification failed. Please contact support.'
-            );
-
-            setLoading(false);
-            return;
-          }
-
-          // ---------------------------------------------------
-          // PAYMENT VERIFIED + MEMBERSHIP ACTIVATED
-          // ---------------------------------------------------
-
-          setMembershipInfo(verifyJson.membership);
-          setPaymentInfo(verifyJson.payment);
-          setCertificateEmailSent(verifyJson.certificateEmailSent === true);
-          setCertificateEmailError(
-            typeof verifyJson.certificateEmailError === "string"
-              ? verifyJson.certificateEmailError
-              : ""
-          );
-
-          setPaymentDone(true);
-
-          // IMPORTANT:
-          // DO NOT redirect automatically.
-          //
-          // The user should now see the same screen
-          // used by Developer Bypass.
-          setLoading(false);
-        } catch (error) {
-          console.error('Payment verification error:', error);
-
-          setError(
-            'Payment verification failed. Please contact support.'
-          );
-
-          setLoading(false);
-        }
-      },
-    };
-
-    const rzp = new RazorpayCheckout(options);
-
-    rzp.open();
-  } catch (error) {
-    console.error('Payment error:', error);
-
-    setError('Payment failed. Please try again.');
-
-    setLoading(false);
   }
-}
 
   async function handleDeveloperBypass() {
     if (!registeredUser) return;
@@ -2842,6 +2699,56 @@ const fee =
                     </p>
                   )}
                 </>
+              ) : offlinePaymentRequested ? (
+                <>
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center">
+                    <div className="text-4xl">✓</div>
+                    <h2 className="mt-3 text-lg font-bold text-emerald-900">
+                      Cash payment request submitted
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-emerald-800">
+                      Pay the ₹{fee} membership fee in cash to the Mumbai
+                      Boxing Association. An administrator will activate your
+                      membership after confirming receipt.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p className="text-sm font-semibold text-amber-900">
+                      Login is disabled until payment is confirmed
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-amber-800">
+                      You can sign in once an administrator or super
+                      administrator confirms the cash payment.
+                    </p>
+                  </div>
+                  <Link
+                    href="/"
+                    className="block w-full rounded-xl border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Return to home
+                  </Link>
+                  {process.env.NODE_ENV !== "production" && (
+                    <div className="rounded-xl border border-amber-300 bg-amber-50 p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-900">
+                        Development Only
+                      </p>
+                      <p className="mt-1 text-[11px] text-amber-900">
+                        Developer bypass is available only during local
+                        development and is disabled in production.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleDeveloperBypass}
+                        disabled={loading}
+                        className="mt-3 w-full rounded-xl border border-amber-300 bg-amber-100 py-2.5 text-xs font-semibold text-amber-900 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {loading
+                          ? "Activating..."
+                          : "Developer Bypass — Test Membership"}
+                      </button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <>
                   <div className="py-2 text-center">
@@ -2860,8 +2767,8 @@ const fee =
                       className="mt-1 text-sm"
                       style={{ color: '#64748B' }}
                     >
-                      Complete payment to activate your
-                      membership.
+                      Request cash payment to activate your
+                      membership after the association confirms receipt.
                     </p>
                   </div>
 
@@ -2965,20 +2872,13 @@ const fee =
                       background: '#FEF2F2',
                     }}
                   >
-                    <p
-                      className="text-xs font-semibold"
-                      style={{ color: '#991B1B' }}
-                    >
-                      Payment is required
+                    <p className="text-xs font-semibold text-[#991B1B]">
+                      Cash payment required
                     </p>
-
-                    <p
-                      className="mt-1 text-[11px] leading-5"
-                      style={{ color: '#7F1D1D' }}
-                    >
-                      Your membership will remain pending
-                      until the membership fee is successfully
-                      paid and verified.
+                    <p className="mt-1 text-[11px] leading-5 text-[#7F1D1D]">
+                      Submit a cash payment request, then pay the membership
+                      fee to the association. Your account remains inactive
+                      until an administrator confirms receipt.
                     </p>
                   </div>
 
@@ -2990,13 +2890,13 @@ const fee =
 
                   <button
                     type="button"
-                    onClick={handlePayment}
+                    onClick={handleOfflinePaymentRequest}
                     disabled={loading}
                     className="btn-gold w-full rounded-xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading
-                      ? 'Opening Payment...'
-                      : `Pay ₹${fee} & Activate Membership`}
+                      ? "Submitting Request..."
+                      : `Request Cash Payment — ₹${fee}`}
                   </button>
 
                   {process.env.NODE_ENV !==
