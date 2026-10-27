@@ -10,12 +10,6 @@ import {
 
 import { news } from "@/data/news";
 
-const newsImages = [
-  "/news/boxing-tournament.jpg",
-  "/news/boxing-training.jpg",
-  "/news/boxing-community.jpg",
-];
-
 export default function News() {
   const latestNews = [...news]
     .sort(
@@ -71,7 +65,7 @@ export default function News() {
         {/* NEWS CARDS */}
         {latestNews.length > 0 ? (
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {latestNews.map((item, index) => (
+            {latestNews.map((item) => (
               <article
                 key={item.id}
                 className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-[#e8edf3] bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_45px_rgba(15,23,42,0.12)]"
@@ -79,11 +73,11 @@ export default function News() {
                 {/* CARD IMAGE */}
                 <div className="relative h-[210px] overflow-hidden bg-[#eef1f5] sm:h-[225px]">
                   <Image
-                    src={newsImages[index]}
+                    src="/home/hero-bg-desktop.png"
                     alt={item.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover object-[70%_center] transition-transform duration-500 group-hover:scale-105"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />

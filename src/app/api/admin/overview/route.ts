@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
       prisma.user.count({
         where: {
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
           registrationStatus: "ACTIVE",
           membershipExpiry: {
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
       prisma.user.count({
         where: {
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
           membershipExpiry: {
             lt: now,
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
       prisma.user.count({
         where: {
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
           registrationStatus: "PAYMENT_PENDING",
         },
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       prisma.user.findMany({
         where: {
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
         },
         orderBy: {
