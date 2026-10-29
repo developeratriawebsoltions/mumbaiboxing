@@ -38,6 +38,16 @@ export async function GET(req: NextRequest) {
         tournamententry: boxer
           ? { where: { boxerId: boxer.id } }
           : false,
+        payment: boxer
+          ? {
+              where: {
+                boxerId: boxer.id,
+                method: "Cash",
+                status: "Pending",
+              },
+              select: { id: true },
+            }
+          : false,
       },
     });
 
@@ -45,6 +55,7 @@ export async function GET(req: NextRequest) {
       tournaments.map((t) => ({
         ...t,
         registered: boxer ? t.tournamententry.length > 0 : false,
+        registrationPending: boxer ? t.payment.length > 0 : false,
       }))
     );
   } catch (error) {

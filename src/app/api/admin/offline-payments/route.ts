@@ -7,6 +7,7 @@ import {
   issueMembershipCertificate,
   sendMembershipCertificateEmailOnce,
 } from "@/lib/membership-certificate";
+import { sendTournamentPaymentReceipt } from "@/lib/tournament-payment-receipt";
 
 const ROLE_FEES = {
   boxer: 100,
@@ -16,6 +17,18 @@ const ROLE_FEES = {
 } as const;
 
 type RegistrationRole = keyof typeof ROLE_FEES;
+
+type PendingCashPayment = {
+  id: number;
+  amount: number;
+  createdAt: Date;
+  name: string;
+  email: string;
+  role: string;
+  paymentType: "membership" | "tournament";
+  tournamentName?: string;
+  receiptRetry?: boolean;
+};
 
 function isTransientDatabaseError(error: unknown) {
   return (
@@ -60,15 +73,28 @@ export async function GET(req: NextRequest) {
 
     const payments = await prisma.payment.findMany({
       where: {
-        type: "Membership",
         method: "Cash",
-        status: "Pending",
+        OR: [
+          { type: "Membership", status: "Pending" },
+          {
+            tournamentId: { not: null },
+            OR: [
+              { status: "Pending" },
+              { status: "Paid", receiptEmailSentAt: null },
+            ],
+          },
+        ],
       },
       orderBy: { createdAt: "asc" },
       select: {
         id: true,
         amount: true,
         createdAt: true,
+        status: true,
+        paidAt: true,
+        tournamentId: true,
+        receiptEmailSentAt: true,
+        tournament: { select: { name: true } },
         boxer: {
           select: {
             name: true,
@@ -96,7 +122,25 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const pendingPayments = payments.flatMap((payment) => {
+    const pendingPayments = payments.flatMap((payment): PendingCashPayment[] => {
+      if (payment.tournamentId !== null) {
+        const boxer = payment.boxer;
+        if (!boxer || !payment.tournament) return [];
+        return [
+          {
+            id: payment.id,
+            amount: payment.amount,
+            createdAt: payment.createdAt,
+            name: boxer.name,
+            email: boxer.user.email,
+            role: boxer.user.role,
+            paymentType: "tournament" as const,
+            tournamentName: payment.tournament.name,
+            receiptRetry: payment.status === "Paid",
+          },
+        ];
+      }
+
       const profile =
         payment.boxer ??
         payment.coach ??
@@ -114,6 +158,7 @@ export async function GET(req: NextRequest) {
           name: profile.name,
           email: profile.user.email,
           role: profile.user.role,
+          paymentType: "membership" as const,
         },
       ];
     });
@@ -150,6 +195,13 @@ export async function POST(req: NextRequest) {
           amount: true,
           method: true,
           status: true,
+          paidAt: true,
+          tournamentId: true,
+          invoiceNumber: true,
+          receiptEmailSentAt: true,
+          tournament: {
+            select: { id: true, name: true },
+          },
           boxer: { select: { id: true, userId: true, name: true } },
           coach: { select: { id: true, userId: true, name: true } },
           academy: { select: { id: true, userId: true, name: true } },
@@ -157,6 +209,137 @@ export async function POST(req: NextRequest) {
         },
       })
     );
+
+    if (payment?.tournamentId !== null && payment?.tournamentId !== undefined) {
+      if (
+        !payment.type.startsWith("Tournament: ") ||
+        payment.method !== "Cash" ||
+        !payment.tournament ||
+        !payment.boxer
+      ) {
+        return NextResponse.json(
+          { error: "This tournament cash payment could not be verified." },
+          { status: 409 },
+        );
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: payment.boxer.userId },
+        select: { email: true, role: true },
+      });
+      if (!user || user.role !== "boxer") {
+        return NextResponse.json(
+          { error: "The boxer account could not be verified." },
+          { status: 400 },
+        );
+      }
+
+      let invoiceNumber = payment.invoiceNumber;
+      let paidAt = payment.paidAt ?? new Date();
+      if (payment.status === "Pending") {
+        paidAt = new Date();
+        invoiceNumber = `MBA-TOUR-${paidAt.getFullYear()}-${String(payment.id).padStart(6, "0")}`;
+        await prisma.$transaction(async (tx) => {
+          const updated = await tx.payment.updateMany({
+            where: {
+              id: payment.id,
+              tournamentId: payment.tournamentId,
+              method: "Cash",
+              status: "Pending",
+            },
+            data: {
+              status: "Paid",
+              invoiceNumber,
+              paidAt,
+            },
+          });
+          if (updated.count !== 1) {
+            throw new Error("Tournament cash payment has already been processed.");
+          }
+
+          const existingEntry = await tx.tournamententry.findFirst({
+            where: {
+              tournamentId: payment.tournamentId!,
+              boxerId: payment.boxer!.id,
+            },
+            select: { id: true },
+          });
+          if (!existingEntry) {
+            await tx.tournamententry.create({
+              data: {
+                tournamentId: payment.tournamentId!,
+                boxerId: payment.boxer!.id,
+              },
+            });
+          }
+        });
+      } else if (payment.status === "Paid" && payment.receiptEmailSentAt === null) {
+        invoiceNumber ??= `MBA-TOUR-${paidAt.getFullYear()}-${String(payment.id).padStart(6, "0")}`;
+      } else if (payment.status === "Paid") {
+        return NextResponse.json({
+          success: true,
+          alreadyConfirmed: true,
+          receiptEmailSent: true,
+        });
+      } else {
+        return NextResponse.json(
+          { error: "This cash payment is no longer pending." },
+          { status: 409 },
+        );
+      }
+
+      if (!invoiceNumber) {
+        return NextResponse.json(
+          { error: "Could not create a receipt number." },
+          { status: 500 },
+        );
+      }
+
+      try {
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { invoiceNumber, paidAt },
+        });
+        await sendTournamentPaymentReceipt({
+          email: user.email,
+          name: payment.boxer.name || user.email,
+          tournamentName: payment.tournament.name,
+          amount: payment.amount,
+          invoiceNumber,
+          paidAt,
+        });
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: { receiptEmailSentAt: new Date() },
+        });
+        return NextResponse.json({
+          success: true,
+          paymentId: payment.id,
+          receiptEmailSent: true,
+          invoiceNumber,
+        });
+      } catch (error) {
+        const smtpError =
+          typeof error === "object" && error !== null
+            ? (error as { code?: unknown; responseCode?: unknown })
+            : {};
+        console.error("Tournament payment receipt email failed.", {
+          code: typeof smtpError.code === "string" ? smtpError.code : undefined,
+          responseCode:
+            typeof smtpError.responseCode === "number"
+              ? smtpError.responseCode
+              : undefined,
+        });
+        return NextResponse.json({
+          success: true,
+          paymentId: payment.id,
+          receiptEmailSent: false,
+          invoiceNumber,
+          emailError:
+            "Payment was approved, but the receipt email could not be sent. Retry the receipt from this page.",
+        });
+      }
+    }
 
     if (
       !payment ||
@@ -262,6 +445,7 @@ export async function POST(req: NextRequest) {
         data: {
           status: "Paid",
           method: "Cash",
+          paidAt: validFrom,
           membershipExpiry: expiry,
           invoiceNumber: `MBA-INV-${validFrom.getFullYear()}-${String(payment.id).padStart(6, "0")}`,
         },

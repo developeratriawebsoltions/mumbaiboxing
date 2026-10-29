@@ -1,6 +1,82 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
+import { cloudinaryUpload } from "@/lib/cloudinary";
+
+type TournamentFields = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
+
+const MAX_TOURNAMENT_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TOURNAMENT_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+async function readTournamentRequest(req: NextRequest) {
+  if (req.headers.get("content-type")?.includes("multipart/form-data")) {
+    const formData = await req.formData();
+    const fields: TournamentFields = {};
+    let image: File | null = null;
+
+    for (const [key, value] of formData.entries()) {
+      if (key === "image" && value instanceof File && value.size > 0) {
+        image = value;
+      } else if (typeof value === "string") {
+        fields[key] = value;
+      }
+    }
+
+    return { fields, image };
+  }
+
+  const body: unknown = await req.json();
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    throw new Error("Invalid tournament data");
+  }
+
+  const fields: TournamentFields = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (
+      value === null ||
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
+      fields[key] = value;
+    }
+  }
+
+  return { fields, image: null };
+}
+
+function validateTournamentImage(image: File | null) {
+  if (!image) return null;
+  if (!ALLOWED_TOURNAMENT_IMAGE_TYPES.has(image.type)) {
+    return "Tournament image must be a JPG, PNG, or WebP file.";
+  }
+  if (image.size > MAX_TOURNAMENT_IMAGE_SIZE) {
+    return "Tournament image must be 5 MB or smaller.";
+  }
+  return null;
+}
+
+function isFeaturedValue(value: TournamentFields[string]) {
+  return value === true || value === "true";
+}
+
+async function uploadTournamentImage(image: File | null) {
+  if (!image) return null;
+  const buffer = Buffer.from(await image.arrayBuffer());
+  return cloudinaryUpload(
+    buffer,
+    "mba/tournaments",
+    `tournament-${randomUUID()}`,
+  );
+}
 
 async function canManageTournaments(req: NextRequest) {
   const payload = await verifyToken(
@@ -96,7 +172,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json();
+  const { fields: body, image } = await readTournamentRequest(req);
+  const imageError = validateTournamentImage(image);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
+  }
 
   const {
     name,
@@ -116,7 +196,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const shouldFeature = Boolean(isFeatured);
+  let imageUrl: string | null = null;
+  try {
+    imageUrl = await uploadTournamentImage(image);
+  } catch (error) {
+    console.error("Tournament image upload failed:", error);
+    return NextResponse.json(
+      { error: "Tournament image upload failed. Please try again." },
+      { status: 500 },
+    );
+  }
+
+  const shouldFeature = isFeaturedValue(isFeatured);
 
   const tournament = await prisma.$transaction(async (tx) => {
     // If this tournament is selected for the homepage,
@@ -142,11 +233,11 @@ export async function POST(req: NextRequest) {
             : null,
 
         startDate: startDate
-          ? new Date(startDate)
+          ? new Date(String(startDate))
           : null,
 
         endDate: endDate
-          ? new Date(endDate)
+          ? new Date(String(endDate))
           : null,
 
         weightClass:
@@ -165,6 +256,7 @@ export async function POST(req: NextRequest) {
             : null,
 
         isFeatured: shouldFeature,
+        imageUrl,
       },
     });
   });
@@ -183,7 +275,11 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  const body = await req.json();
+  const { fields: body, image } = await readTournamentRequest(req);
+  const imageError = validateTournamentImage(image);
+  if (imageError) {
+    return NextResponse.json({ error: imageError }, { status: 400 });
+  }
 
   const {
     id,
@@ -213,7 +309,18 @@ export async function PUT(req: NextRequest) {
     );
   }
 
-  const shouldFeature = Boolean(isFeatured);
+  let imageUrl: string | null | undefined;
+  try {
+    imageUrl = image ? await uploadTournamentImage(image) : undefined;
+  } catch (error) {
+    console.error("Tournament image upload failed:", error);
+    return NextResponse.json(
+      { error: "Tournament image upload failed. Please try again." },
+      { status: 500 },
+    );
+  }
+
+  const shouldFeature = isFeaturedValue(isFeatured);
 
   const tournament = await prisma.$transaction(async (tx) => {
     // If this tournament should appear on the homepage,
@@ -249,11 +356,11 @@ export async function PUT(req: NextRequest) {
             : null,
 
         startDate: startDate
-          ? new Date(startDate)
+          ? new Date(String(startDate))
           : null,
 
         endDate: endDate
-          ? new Date(endDate)
+          ? new Date(String(endDate))
           : null,
 
         weightClass:
@@ -272,6 +379,7 @@ export async function PUT(req: NextRequest) {
             : null,
 
         isFeatured: shouldFeature,
+        imageUrl,
       },
     });
   });
@@ -306,16 +414,18 @@ export async function DELETE(req: NextRequest) {
     );
   }
 
-  await prisma.tournamententry.deleteMany({
-    where: {
-      tournamentId,
-    },
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.tournamententry.deleteMany({
+      where: {
+        tournamentId,
+      },
+    });
 
-  await prisma.tournament.delete({
-    where: {
-      id: tournamentId,
-    },
+    await tx.tournament.delete({
+      where: {
+        id: tournamentId,
+      },
+    });
   });
 
   return NextResponse.json({

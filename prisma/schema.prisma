@@ -169,12 +169,14 @@ model payment {
   coachId        Int?
   academyId      Int?
   refereeJudgeId Int?
+  tournamentId   Int?
 
   type             String
   amount           Int
   method           String?
   status           String    @default("Pending")
   membershipExpiry DateTime?
+  paidAt           DateTime?
   createdAt        DateTime  @default(now())
 
   razorpayOrderId   String? @unique
@@ -182,16 +184,19 @@ model payment {
   razorpaySignature String?
   isDeveloperBypass Boolean @default(false)
   invoiceNumber     String? @unique
+  receiptEmailSentAt DateTime?
 
   academy      academy?       @relation(fields: [academyId], references: [id], map: "Payment_academyId_fkey")
   boxer        boxer?         @relation(fields: [boxerId], references: [id], map: "Payment_boxerId_fkey")
   coach        coach?         @relation(fields: [coachId], references: [id], map: "Payment_coachId_fkey")
   refereeJudge referee_judge? @relation(fields: [refereeJudgeId], references: [id], map: "Payment_refereeJudgeId_fkey")
+  tournament   tournament?    @relation(fields: [tournamentId], references: [id], onDelete: Cascade, map: "Payment_tournamentId_fkey")
 
   @@index([academyId], map: "Payment_academyId_fkey")
   @@index([boxerId], map: "Payment_boxerId_fkey")
   @@index([coachId], map: "Payment_coachId_fkey")
   @@index([refereeJudgeId], map: "Payment_refereeJudgeId_fkey")
+  @@index([tournamentId], map: "Payment_tournamentId_fkey")
 }
 
 model tournament {
@@ -204,9 +209,11 @@ model tournament {
   status      String    @default("upcoming")
   entryFee    Int?      @default(500)
   isFeatured  Boolean   @default(false)
+  imageUrl    String?
   createdAt   DateTime  @default(now())
 
   tournamententry        tournamententry[]
+  payment                payment[]
   refereeJudgeTournament referee_judge_tournament[]
 }
 

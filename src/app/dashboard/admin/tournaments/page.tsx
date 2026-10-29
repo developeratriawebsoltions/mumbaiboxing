@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Trophy, Plus, Search, CalendarDays, MapPin, Users, Pencil, Trash2, ArrowUpRight, Star, RefreshCw, X, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import { useRole } from "@/hooks/useRole";
+import { tournamentUrl } from "@/lib/tournament-url";
 
 type Tournament = {
   id: number;
@@ -14,6 +17,7 @@ type Tournament = {
   weightClass: string | null;
   status: string;
   entryFee: number | null;
+  imageUrl: string | null;
   isFeatured: boolean;
   createdAt: string;
   _count: { entries: number };
@@ -99,20 +103,51 @@ export default function AdminTournamentsPage() {
 
   const [form, setForm] =
     useState<TournamentForm>(EMPTY);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const imagePreviewUrlRef = useRef<string | null>(null);
 
   const [editId, setEditId] = useState<number | null>(
     null
   );
 
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(
     null
   );
 
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [shareFeedback, setShareFeedback] = useState<{
+    tournamentId: number;
+    message: string;
+    isError: boolean;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState<
     "tournaments" | "registration" | "fees"
   >("tournaments");
+
+  useEffect(
+    () => () => {
+      if (imagePreviewUrlRef.current) {
+        URL.revokeObjectURL(imagePreviewUrlRef.current);
+      }
+    },
+    [],
+  );
+
+  function setTournamentImage(file: File | null) {
+    if (imagePreviewUrlRef.current) {
+      URL.revokeObjectURL(imagePreviewUrlRef.current);
+    }
+
+    imagePreviewUrlRef.current = file ? URL.createObjectURL(file) : null;
+    setImagePreviewUrl(imagePreviewUrlRef.current);
+    setSelectedImage(file);
+  }
 
   function load() {
     fetch("/api/admin/tournaments", {
@@ -169,6 +204,8 @@ export default function AdminTournamentsPage() {
 
   function openCreate() {
     setForm({ ...EMPTY });
+    setTournamentImage(null);
+    setExistingImageUrl(null);
     setEditId(null);
     setError("");
     setShowForm(true);
@@ -189,9 +226,60 @@ export default function AdminTournamentsPage() {
       isFeatured: t.isFeatured ?? false,
     });
 
+    setTournamentImage(null);
+    setExistingImageUrl(t.imageUrl);
     setEditId(t.id);
     setError("");
     setShowForm(true);
+  }
+
+  async function shareTournament(tournament: Tournament) {
+    const url = `${window.location.origin}${tournamentUrl(tournament)}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: tournament.name,
+          text: `View ${tournament.name}`,
+          url,
+        });
+        setShareFeedback({
+          tournamentId: tournament.id,
+          message: "Tournament link shared.",
+          isError: false,
+        });
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement("textarea");
+        input.value = url;
+        input.setAttribute("readonly", "");
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        const copied = document.execCommand("copy");
+        input.remove();
+        if (!copied) throw new Error("Copy command was not available.");
+      }
+
+      setShareFeedback({
+        tournamentId: tournament.id,
+        message: "Link copied to clipboard.",
+        isError: false,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      console.error("Could not share tournament link:", error);
+      setShareFeedback({
+        tournamentId: tournament.id,
+        message: "Could not share the link. Please try again.",
+        isError: true,
+      });
+    }
   }
 
   async function handleSave() {
@@ -213,15 +301,18 @@ export default function AdminTournamentsPage() {
           }
         : form;
 
+      const requestBody = new FormData();
+      Object.entries(body).forEach(([key, value]) => {
+        requestBody.append(key, String(value));
+      });
+      if (selectedImage) requestBody.append("image", selectedImage);
+
       const res = await fetch(
         "/api/admin/tournaments",
         {
           method,
-          headers: {
-            "Content-Type": "application/json",
-          },
           credentials: "include",
-          body: JSON.stringify(body),
+          body: requestBody,
         }
       );
 
@@ -237,6 +328,8 @@ export default function AdminTournamentsPage() {
       setShowForm(false);
       setEditId(null);
       setForm({ ...EMPTY });
+      setTournamentImage(null);
+      setExistingImageUrl(null);
 
       load();
     } catch {
@@ -247,6 +340,9 @@ export default function AdminTournamentsPage() {
   }
 
   async function handleDelete(id: number) {
+    setDeletingId(id);
+    setError("");
+
     try {
       const res = await fetch(
         `/api/admin/tournaments?id=${id}`,
@@ -268,6 +364,8 @@ export default function AdminTournamentsPage() {
       }
     } catch {
       setError("Failed to delete tournament.");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -283,324 +381,82 @@ export default function AdminTournamentsPage() {
     (t) => t.isFeatured
   );
 
+  const filteredTournaments = tournaments.filter((t) => {
+    const term = query.trim().toLowerCase();
+    return (statusFilter === "all" || t.status === statusFilter) &&
+      (!term || [t.name, t.location ?? "", t.weightClass ?? ""].some((v) => v.toLowerCase().includes(term)));
+  });
+
   return (
     <DashboardLayout role={role || undefined}>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-bold">
-              🥊 Upcoming Tournaments
-            </h2>
-
-            <p className="text-gray-500 text-sm">
-              North Bombay District Amateur Boxing
-              Association
-            </p>
-          </div>
-
-          <button
-            onClick={openCreate}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors self-start"
-          >
-            + Add Tournament
-          </button>
-        </div>
-
-        {/* Homepage Hero status */}
-        <div className="bg-white border rounded-xl shadow-sm p-5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                Homepage Hero Tournament
-              </p>
-
-              {featuredTournament ? (
-                <>
-                  <h3 className="font-semibold text-lg mt-1">
-                    {featuredTournament.name}
-                  </h3>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    {formatDate(
-                      featuredTournament.startDate
-                    )}
-                    {" · "}
-                    {featuredTournament.location ??
-                      "Venue TBD"}
-                  </p>
-                </>
-              ) : (
-                <p className="text-sm text-gray-500 mt-1">
-                  No tournament selected for the homepage
-                  Hero.
-                </p>
-              )}
+      <main className="mx-auto max-w-[1560px] space-y-6 pb-12 text-slate-900">
+        <section className="relative overflow-hidden rounded-[26px] bg-[#141922] p-6 text-white sm:p-9 lg:p-11">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_35%,rgba(220,38,38,.38),transparent_42%)]" />
+          <div className="relative z-10 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div className="max-w-2xl">
+              <p className="mb-3 text-xs font-extrabold uppercase tracking-[.2em] text-red-400">North Bombay District Amateur Boxing Association</p>
+              <h1 className="text-3xl font-black tracking-tight sm:text-5xl">Tournament Management<span className="text-red-500">.</span></h1>
+              <p className="mt-4 max-w-lg text-sm leading-7 text-slate-300">Create championships, manage boxer entries and keep your event calendar organised in one place.</p>
+              <button onClick={openCreate} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700"><Plus size={18}/> Create Tournament</button>
             </div>
-
-            <div>
-              {featuredTournament ? (
-                <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 px-3 py-1.5 text-xs font-semibold">
-                  ★ HERO ACTIVE
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-500 px-3 py-1.5 text-xs font-semibold">
-                  NO HERO
-                </span>
-              )}
+            <div className="grid grid-cols-3 gap-3 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:gap-8">
+              {[["Events",tournaments.length],["Open",tournaments.filter(t=>t.status === "open").length],["Boxer Entries",tournaments.reduce((n,t)=>n+(t._count?.entries ?? 0),0)]].map(([label,value])=><div key={String(label)}><p className="text-2xl font-black sm:text-3xl">{value}</p><p className="mt-1 text-[11px] text-slate-300">{label}</p></div>)}
             </div>
           </div>
+        </section>
+
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            {label:"Total Tournaments",value:tournaments.length,accent:"text-slate-900",icon:<Trophy size={20}/>},
+            {label:"Upcoming",value:upcoming.length,accent:"text-amber-600",icon:<CalendarDays size={20}/>},
+            {label:"Open / Ongoing",value:tournaments.filter(t=>["open","ongoing"].includes(t.status)).length,accent:"text-emerald-600",icon:<Users size={20}/>},
+            {label:"Completed",value:completed.length,accent:"text-red-600",icon:<Star size={20}/>},
+          ].map(s=><div key={s.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex items-center justify-between text-slate-400"><span className="text-xs font-semibold">{s.label}</span>{s.icon}</div><p className={`mt-3 text-3xl font-black ${s.accent}`}>{s.value}</p></div>)}
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
-          {(
-            [
-              "tournaments",
-              "registration",
-              "fees",
-            ] as const
-          ).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
-                activeTab === tab
-                  ? "bg-white shadow text-slate-900"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab === "tournaments"
-                ? "Tournaments"
-                : tab === "registration"
-                ? "Registration Form"
-                : "Fee Structure"}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+          {(["tournaments","registration","fees"] as const).map(tab=><button key={tab} onClick={()=>setActiveTab(tab)} className={`rounded-xl px-4 py-2.5 text-sm font-bold ${activeTab===tab?"bg-red-600 text-white":"bg-white text-slate-600 hover:bg-slate-100"}`}>{tab==="tournaments"?"Tournaments":tab==="registration"?"Registration Form":"Fee Structure"}</button>)}
         </div>
-
-        {/* Loading */}
-        {loading && (
-          <p className="text-gray-400 text-sm">
-            Loading...
-          </p>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-            <p className="text-red-600 text-sm">
-              {error}
-            </p>
+        {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error} <button onClick={()=>{setError("");setLoading(true);load();}} className="ml-3 font-bold underline">Retry</button></div>}
+        {activeTab === "tournaments" && <section className="space-y-5">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div><h2 className="text-xl font-black">All Tournaments</h2><p className="mt-1 text-xs text-slate-500">Manage published and upcoming boxing events</p></div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="relative"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input aria-label="Search tournaments" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search tournaments..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-red-400 sm:w-64"/></div>
+              <select aria-label="Filter status" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm">{["all",...STATUSES].map(x=><option key={x} value={x}>{x==="all"?"All Statuses":x[0].toUpperCase()+x.slice(1)}</option>)}</select>
+              <button onClick={()=>{setLoading(true);load();}} aria-label="Refresh tournaments" className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 hover:bg-slate-50"><RefreshCw size={17}/></button>
+            </div>
           </div>
-        )}
-
-        {/* TOURNAMENTS TAB */}
-        {activeTab === "tournaments" &&
-          !loading &&
-          !error && (
-            <>
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  {
-                    label: "Total",
-                    value: tournaments.length,
-                    color: "text-gray-800",
-                  },
-                  {
-                    label: "Upcoming",
-                    value: upcoming.length,
-                    color: "text-yellow-600",
-                  },
-                  {
-                    label: "Open / Ongoing",
-                    value: tournaments.filter(
-                      (t) =>
-                        t.status === "open" ||
-                        t.status === "ongoing"
-                    ).length,
-                    color: "text-green-600",
-                  },
-                  {
-                    label: "Completed",
-                    value: completed.length,
-                    color: "text-gray-400",
-                  },
-                ].map((s) => (
-                  <div
-                    key={s.label}
-                    className="bg-white border rounded-xl p-5 shadow-sm text-center"
-                  >
-                    <p
-                      className={`text-3xl font-bold ${s.color}`}
-                    >
-                      {s.value}
-                    </p>
-
-                    <p className="text-sm text-gray-500 mt-1">
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
+          {loading ? <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{[1,2,3].map(x=><div key={x} className="h-80 animate-pulse rounded-2xl bg-slate-100"/>)}</div> : filteredTournaments.length===0 ? <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center"><Trophy className="mx-auto text-slate-300" size={40}/><h3 className="mt-4 font-bold">No tournaments found</h3><p className="mt-2 text-sm text-slate-500">Try another search or create your first tournament.</p><button onClick={openCreate} className="mt-5 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white">Add Tournament</button></div> :
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {filteredTournaments.map(t=><article key={t.id} className="group flex min-w-0 flex-col overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+              <div className="relative h-44 overflow-hidden bg-[#171c26]">
+                {t.imageUrl ? <Image src={t.imageUrl} alt={t.name} fill unoptimized className="object-cover transition duration-500 group-hover:scale-105"/> : <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_70%_30%,#5c1b24,#151923_65%)]"><Trophy size={64} className="text-white/20"/></div>}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"/>
+                <div className="absolute left-4 top-4 flex gap-2">{t.isFeatured&&<span className="rounded-lg bg-red-600 px-2.5 py-1 text-[11px] font-extrabold text-white">★ Featured</span>}</div>
+                <span className={`absolute right-4 top-4 rounded-lg px-3 py-1 text-[11px] font-bold capitalize ${STATUS_COLOR[t.status]??"bg-slate-100 text-slate-700"}`}>{t.status}</span>
               </div>
-
-              {/* Tournament table */}
-              {tournaments.length === 0 ? (
-                <div className="bg-white border rounded-xl p-10 text-center text-gray-400">
-                  <p className="text-4xl mb-3">
-                    🏆
-                  </p>
-
-                  <p className="font-medium">
-                    No tournaments yet
-                  </p>
-
-                  <p className="text-sm mt-1">
-                    Click Add Tournament to create the first one.
-                  </p>
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="min-h-14 text-lg font-extrabold leading-7">{t.name}</h3>
+                <div className="mt-3 space-y-3 text-sm text-slate-500">
+                  <p className="flex items-start gap-2"><MapPin size={16} className="mt-0.5 shrink-0 text-red-500"/>{t.location||"Venue to be announced"}</p>
+                  <p className="flex items-start gap-2"><CalendarDays size={16} className="mt-0.5 shrink-0 text-red-500"/>{formatDate(t.startDate)}{t.endDate?` – ${formatDate(t.endDate)}`:""}</p>
+                  <p className="flex items-start gap-2"><Trophy size={16} className="mt-0.5 shrink-0 text-red-500"/>{t.weightClass||"All weight classes"}</p>
                 </div>
-              ) : (
-                <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-xs uppercase text-gray-500">
-                      <tr>
-                        {[
-                          "#",
-                          "Tournament Name",
-                          "Location",
-                          "Start Date",
-                          "End Date",
-                          "Weight Class",
-                          "Entry Fee",
-                          "Entries",
-                          "Status",
-                          "Homepage",
-                          "Actions",
-                        ].map((h) => (
-                          <th
-                            key={h}
-                            className="text-left px-4 py-3 whitespace-nowrap"
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-
-                    <tbody className="divide-y">
-                      {tournaments.map((t, i) => (
-                        <tr
-                          key={t.id}
-                          className="hover:bg-gray-50"
-                        >
-                          <td className="px-4 py-3 text-gray-400 text-xs">
-                            {i + 1}
-                          </td>
-
-                          <td className="px-4 py-3 font-medium whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <span>{t.name}</span>
-
-                              {t.isFeatured && (
-                                <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-[10px] font-bold">
-                                  HERO
-                                </span>
-                              )}
-                            </div>
-                          </td>
-
-                          <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                            {t.location ?? "—"}
-                          </td>
-
-                          <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                            {formatDate(t.startDate)}
-                          </td>
-
-                          <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                            {formatDate(t.endDate)}
-                          </td>
-
-                          <td className="px-4 py-3 text-gray-500">
-                            {t.weightClass ?? "—"}
-                          </td>
-
-                          <td className="px-4 py-3 font-semibold text-green-700">
-                            {t.entryFee != null
-                              ? `₹${t.entryFee}`
-                              : "—"}
-                          </td>
-
-                          <td className="px-4 py-3 text-center font-semibold text-blue-600">
-                            {t._count.entries}
-                          </td>
-
-                          <td className="px-4 py-3">
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full capitalize ${
-                                STATUS_COLOR[
-                                  t.status
-                                ] ??
-                                "bg-gray-100 text-gray-600"
-                              }`}
-                            >
-                              {t.status}
-                            </span>
-                          </td>
-
-                          <td className="px-4 py-3">
-                            {t.isFeatured ? (
-                              <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2.5 py-1 text-xs font-semibold whitespace-nowrap">
-                                ★ Active
-                              </span>
-                            ) : (
-                              <span className="text-xs text-gray-400">
-                                —
-                              </span>
-                            )}
-                          </td>
-
-                          <td className="px-4 py-3">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() =>
-                                  router.push(
-                                    `/dashboard/admin/tournaments/${t.id}`
-                                  )
-                                }
-                                className="text-xs bg-green-50 text-green-700 px-3 py-1 rounded-full hover:bg-green-100 font-medium"
-                              >
-                                👥 Entries
-                              </button>
-
-                              <button
-                                onClick={() =>
-                                  openEdit(t)
-                                }
-                                className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-100"
-                              >
-                                Edit
-                              </button>
-
-                              <button
-                                onClick={() =>
-                                  setDeleteId(t.id)
-                                }
-                                className="text-xs bg-red-50 text-red-500 px-3 py-1 rounded-full hover:bg-red-100"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </>
-          )}
+                <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 mt-5"><span className="flex items-center gap-2 text-xs font-semibold text-slate-500"><Users size={16}/>{t._count?.entries??0} entries</span><span className="text-lg font-black">{t.entryFee==null?"Fee TBD":`₹${t.entryFee.toLocaleString("en-IN")}`}</span></div>
+                <div className="mt-4 grid grid-cols-[1fr_auto_auto_auto] gap-2"><button onClick={()=>router.push(`/dashboard/admin/tournaments/${t.id}`)} className="flex items-center justify-center gap-1 rounded-xl bg-red-600 px-3 py-3 text-xs font-bold text-white hover:bg-red-700">View Entries <ArrowUpRight size={15}/></button><button onClick={()=>void shareTournament(t)} aria-label={`Share ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Share2 size={14}/>Share</button><button onClick={()=>openEdit(t)} aria-label={`Edit ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Pencil size={14}/>Edit</button><button onClick={()=>setDeleteId(t.id)} aria-label={`Delete ${t.name}`} className="flex items-center gap-1 rounded-xl border border-red-100 px-3 text-xs font-semibold text-red-600 hover:bg-red-50"><Trash2 size={14}/>Delete</button></div>
+                {shareFeedback?.tournamentId === t.id && (
+                  <p
+                    role={shareFeedback.isError ? "alert" : "status"}
+                    className={`mt-2 text-xs ${shareFeedback.isError ? "text-red-600" : "text-emerald-700"}`}
+                  >
+                    {shareFeedback.message}
+                  </p>
+                )}
+              </div>
+            </article>)}
+          </div>}
+        </section>}
 
         {/* REGISTRATION FORM TAB */}
         {activeTab === "registration" && (
@@ -829,7 +685,7 @@ export default function AdminTournamentsPage() {
             </p>
           </div>
         )}
-      </div>
+      </main>
 
       {/* CREATE / EDIT MODAL */}
       {showForm && (
@@ -900,6 +756,38 @@ export default function AdminTournamentsPage() {
                   placeholder="e.g. Kandivali Sports Complex, Mumbai"
                   className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
+              </div>
+
+              {/* Tournament Image */}
+              <div>
+                <label
+                  htmlFor="tournament-image"
+                  className="text-xs font-medium text-gray-600 block mb-1"
+                >
+                  Tournament Image
+                </label>
+                <input
+                  id="tournament-image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) =>
+                    setTournamentImage(e.target.files?.[0] ?? null)
+                  }
+                  className="w-full border rounded-lg px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-red-50 file:px-3 file:py-1 file:text-xs file:font-medium file:text-red-700"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  JPG, PNG, or WebP; maximum size 5 MB.
+                </p>
+                {(imagePreviewUrl || existingImageUrl) && (
+                  <Image
+                    src={imagePreviewUrl ?? existingImageUrl ?? ""}
+                    alt="Tournament preview"
+                    width={640}
+                    height={144}
+                    unoptimized
+                    className="mt-3 h-36 w-full rounded-lg border object-cover"
+                  />
+                )}
               </div>
 
               {/* Dates */}
@@ -1076,7 +964,9 @@ export default function AdminTournamentsPage() {
       {deleteId && (
         <div
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          onClick={() => setDeleteId(null)}
+          onClick={() => {
+            if (deletingId === null) setDeleteId(null);
+          }}
         >
           <div
             className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center space-y-4"
@@ -1085,7 +975,9 @@ export default function AdminTournamentsPage() {
             <p className="text-4xl">🗑️</p>
 
             <p className="font-semibold">
-              Delete this tournament?
+              Delete &quot;
+              {tournaments.find((tournament) => tournament.id === deleteId)?.name}
+              &quot;?
             </p>
 
             <p className="text-sm text-gray-500">
@@ -1096,6 +988,7 @@ export default function AdminTournamentsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteId(null)}
+                disabled={deletingId !== null}
                 className="flex-1 border rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50"
               >
                 Cancel
@@ -1105,9 +998,10 @@ export default function AdminTournamentsPage() {
                 onClick={() =>
                   handleDelete(deleteId)
                 }
-                className="flex-1 bg-red-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-red-700"
+                disabled={deletingId === deleteId}
+                className="flex-1 bg-red-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Delete
+                {deletingId === deleteId ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

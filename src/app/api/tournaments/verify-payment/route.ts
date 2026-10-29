@@ -74,10 +74,12 @@ export async function POST(req: NextRequest) {
     prisma.payment.create({
       data: {
         boxerId: boxer.id,
+        tournamentId,
         type: `Tournament: ${tournament.name}`,
         amount: tournament.entryFee ?? 500,
         method: "Razorpay",
         status: "Paid",
+        paidAt: new Date(),
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
         razorpaySignature: razorpay_signature,
