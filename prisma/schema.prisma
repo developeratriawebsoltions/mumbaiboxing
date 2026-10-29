@@ -277,6 +277,9 @@ enum user_role {
   coach
   academy
   referee_judge
+  association
+  school
+  taluka
   admin
   superadmin
 }

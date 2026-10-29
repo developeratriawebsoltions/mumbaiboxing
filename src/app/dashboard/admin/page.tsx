@@ -23,6 +23,7 @@ import DashboardLayout from "@/Components/layout/DashboardLayout";
 import PageSpinner from "@/Components/ui/PageSpinner";
 import { useRole } from "@/hooks/useRole";
 import PendingCashPayments from "@/Components/admin/PendingCashPayments";
+import { tournamentSlug } from "@/lib/tournament-url";
 
 type DashboardData = {
   stats: {
@@ -653,7 +654,7 @@ function AdminDashboardContent() {
             {data.upcomingTournaments.map((tournament) => (
               <Link
                 key={tournament.id}
-                href={`/dashboard/admin/tournaments/${tournament.id}`}
+                href={`/dashboard/admin/tournaments/${encodeURIComponent(tournamentSlug(tournament.name))}`}
                 className="block p-5 hover:bg-slate-50 transition"
               >
                 <div className="flex items-start justify-between gap-4">

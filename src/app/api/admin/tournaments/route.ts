@@ -94,74 +94,82 @@ async function canManageTournaments(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await canManageTournaments(req))) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  const { searchParams } = new URL(req.url);
-  const entriesFor = searchParams.get("entries");
-
-  // Get tournament entries
-  if (entriesFor) {
-    const tournamentId = Number(entriesFor);
-
-    if (!Number.isFinite(tournamentId)) {
+  try {
+    if (!(await canManageTournaments(req))) {
       return NextResponse.json(
-        { error: "Invalid tournament ID" },
-        { status: 400 }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
-    const entries = await prisma.tournamententry.findMany({
-      where: {
-        tournamentId,
-      },
-      include: {
-        boxer: {
-          select: {
-            id: true,
-            name: true,
-            weight: true,
-            ageGroup: true,
-            academy: {
-              select: {
-                name: true,
+    const { searchParams } = new URL(req.url);
+    const entriesFor = searchParams.get("entries");
+
+    // Get tournament entries
+    if (entriesFor) {
+      const tournamentId = Number(entriesFor);
+
+      if (!Number.isFinite(tournamentId)) {
+        return NextResponse.json(
+          { error: "Invalid tournament ID" },
+          { status: 400 }
+        );
+      }
+
+      const entries = await prisma.tournamententry.findMany({
+        where: {
+          tournamentId,
+        },
+        include: {
+          boxer: {
+            select: {
+              id: true,
+              name: true,
+              weight: true,
+              ageGroup: true,
+              academy: {
+                select: {
+                  name: true,
+                },
               },
             },
           },
         },
-      },
+        orderBy: {
+          createdAt: "asc",
+        },
+      });
+
+      return NextResponse.json(entries);
+    }
+
+    // Get all tournaments
+    const tournaments = await prisma.tournament.findMany({
       orderBy: {
-        createdAt: "asc",
+        startDate: "asc",
+      },
+      include: {
+        _count: {
+          select: {
+            tournamententry: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(entries);
+    return NextResponse.json(
+      tournaments.map(({ _count, ...tournament }) => ({
+        ...tournament,
+        _count: { entries: _count.tournamententry },
+      })),
+    );
+  } catch (error) {
+    console.error("Admin tournament listing failed:", error);
+    return NextResponse.json(
+      { error: "Could not load tournaments. Please retry." },
+      { status: 500 },
+    );
   }
-
-  // Get all tournaments
-  const tournaments = await prisma.tournament.findMany({
-    orderBy: {
-      startDate: "asc",
-    },
-    include: {
-      _count: {
-        select: {
-          tournamententry: true,
-        },
-      },
-    },
-  });
-
-  return NextResponse.json(
-    tournaments.map(({ _count, ...tournament }) => ({
-      ...tournament,
-      _count: { entries: _count.tournamententry },
-    })),
-  );
 }
 
 export async function POST(req: NextRequest) {

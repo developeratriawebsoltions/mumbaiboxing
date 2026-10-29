@@ -182,8 +182,12 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const paymentId = Number(body?.paymentId);
+    const action = body?.action ?? "approve";
     if (!Number.isInteger(paymentId) || paymentId <= 0) {
       return NextResponse.json({ error: "Invalid payment ID." }, { status: 400 });
+    }
+    if (action !== "approve" && action !== "reject") {
+      return NextResponse.json({ error: "Invalid payment action." }, { status: 400 });
     }
 
     const payment = await retryAfterConnectionDrop(() =>
@@ -209,6 +213,37 @@ export async function POST(req: NextRequest) {
         },
       })
     );
+
+    if (action === "reject") {
+      if (
+        !payment ||
+        payment.method !== "Cash" ||
+        payment.status !== "Pending" ||
+        (payment.tournamentId === null && payment.type !== "Membership")
+      ) {
+        return NextResponse.json(
+          { error: "This cash payment request is no longer pending." },
+          { status: 409 },
+        );
+      }
+
+      const rejected = await prisma.payment.updateMany({
+        where: {
+          id: payment.id,
+          method: "Cash",
+          status: "Pending",
+        },
+        data: { status: "Rejected" },
+      });
+      if (rejected.count !== 1) {
+        return NextResponse.json(
+          { error: "This cash payment request has already been processed." },
+          { status: 409 },
+        );
+      }
+
+      return NextResponse.json({ success: true, paymentId: payment.id });
+    }
 
     if (payment?.tournamentId !== null && payment?.tournamentId !== undefined) {
       if (
