@@ -12,6 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { tournamentUrl } from "@/lib/tournament-url";
+import TournamentShareButton from "@/Components/events/TournamentShareButton";
 
 type Tournament = {
   id: number;
@@ -323,13 +324,16 @@ export default function EventsPage() {
                       </EventDetail>
                     </div>
 
-                    <Link
-                      href={tournamentUrl(tournament)}
-                      className="mt-4 inline-flex min-h-[52px] w-full items-center justify-center gap-4 rounded-full bg-[#f50919] px-6 text-sm font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_10px_22px_rgba(245,9,25,0.15)] transition hover:bg-[#d60013] sm:mt-auto sm:w-fit sm:min-w-[208px]"
-                    >
-                      View details
-                      <ArrowRight size={17} aria-hidden="true" />
-                    </Link>
+                    <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-auto">
+                      <Link
+                        href={tournamentUrl(tournament)}
+                        className="inline-flex min-h-[52px] w-full items-center justify-center gap-4 rounded-full bg-[#f50919] px-6 text-sm font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_10px_22px_rgba(245,9,25,0.15)] transition hover:bg-[#d60013] sm:w-fit sm:min-w-[208px]"
+                      >
+                        View details
+                        <ArrowRight size={17} aria-hidden="true" />
+                      </Link>
+                      <TournamentShareButton tournament={tournament} />
+                    </div>
                   </div>
                 </article>
               );
