@@ -19,6 +19,7 @@ type Tournament = {
   weightClass: string | null;
   status: string;
   isFeatured: boolean;
+  imageUrl?: string | null;
 };
 
 function isTournament(value: unknown): value is Tournament {
@@ -30,6 +31,9 @@ function isTournament(value: unknown): value is Tournament {
     typeof item.name === "string" &&
     typeof item.status === "string" &&
     typeof item.isFeatured === "boolean" &&
+    (typeof item.imageUrl === "string" ||
+      item.imageUrl === null ||
+      item.imageUrl === undefined) &&
     (typeof item.location === "string" || item.location === null) &&
     (typeof item.startDate === "string" || item.startDate === null) &&
     (typeof item.endDate === "string" || item.endDate === null) &&
@@ -233,9 +237,10 @@ export default function HomeHighlights() {
                   }`}
                   style={{
                     backgroundImage: `url('${
-                      index === 0
+                      event.imageUrl ||
+                      (index === 0
                         ? "/home/hero-bg-desktop.png"
-                        : "/hero.png"
+                        : "/hero.png")
                     }')`,
                   }}
                 />
