@@ -18,6 +18,9 @@ type PendingPayment = {
   name: string;
   email: string;
   role: string;
+  paymentType: "membership" | "tournament";
+  tournamentName?: string;
+  receiptRetry?: boolean;
 };
 
 export default function PendingCashPayments() {
@@ -26,6 +29,7 @@ export default function PendingCashPayments() {
   const [error, setError] = useState("");
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
+  const [noticeIsError, setNoticeIsError] = useState(false);
   const [paymentToConfirm, setPaymentToConfirm] =
     useState<PendingPayment | null>(null);
 
@@ -82,16 +86,33 @@ export default function PendingCashPayments() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentId: payment.id }),
       });
-      const data = await response.json();
+      const data: {
+        error?: string;
+        receiptEmailSent?: boolean;
+        emailError?: string;
+      } = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Could not confirm cash payment.");
       }
 
-      setPayments((current) =>
-        current.filter((item) => item.id !== payment.id)
-      );
-      setNotice(`${payment.name}'s membership is active; they can now log in.`);
+      if (payment.paymentType === "tournament" && !data.receiptEmailSent) {
+        setNoticeIsError(true);
+        setNotice(
+          data.emailError ||
+            "Payment was approved, but the receipt email could not be sent. Retry it from this page.",
+        );
+      } else {
+        setPayments((current) =>
+          current.filter((item) => item.id !== payment.id)
+        );
+        setNoticeIsError(false);
+        setNotice(
+          payment.paymentType === "tournament"
+            ? `Cash payment confirmed for ${payment.tournamentName}. Receipt emailed to ${payment.email}.`
+            : `${payment.name}'s membership is active; they can now log in.`,
+        );
+      }
       setPaymentToConfirm(null);
     } catch (requestError) {
       console.error(requestError);
@@ -110,11 +131,10 @@ export default function PendingCashPayments() {
       <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
           <h2 className="text-lg font-bold text-slate-900">
-            Offline Membership Payments
+            Offline Payments
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Confirm cash only after it has been received. Confirmation
-            activates the account and allows the member to log in.
+            Confirm cash only after receiving it. Membership cash payments activate accounts; tournament cash payments confirm event registrations and send a receipt by email.
           </p>
         </div>
         <button
@@ -148,7 +168,7 @@ export default function PendingCashPayments() {
         </p>
       )}
       {notice && (
-        <p role="status" className="m-5 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700 sm:mx-6">
+        <p role={noticeIsError ? "alert" : "status"} className={`m-5 rounded-xl p-3 text-sm sm:mx-6 ${noticeIsError ? "bg-amber-50 text-amber-900" : "bg-emerald-50 text-emerald-700"}`}>
           {notice}
         </p>
       )}
@@ -179,7 +199,11 @@ export default function PendingCashPayments() {
                   {payment.email}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                  <span className="capitalize">{payment.role.replaceAll("_", " ")}</span>
+                  <span>
+                    {payment.paymentType === "tournament"
+                      ? payment.tournamentName
+                      : `${payment.role.replaceAll("_", " ")} membership`}
+                  </span>
                   <span className="inline-flex items-center gap-1">
                     <IndianRupee size={13} />
                     {payment.amount.toLocaleString("en-IN")}
@@ -197,7 +221,11 @@ export default function PendingCashPayments() {
                 type="button"
                 role="switch"
                 aria-checked="false"
-                aria-label={`Confirm cash received from ${payment.name}`}
+                aria-label={
+                  payment.receiptRetry
+                    ? `Retry receipt email for ${payment.name}`
+                    : `Confirm cash received from ${payment.name}`
+                }
                 disabled={processingId !== null}
                 onClick={() => setPaymentToConfirm(payment)}
                 className="inline-flex shrink-0 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
@@ -206,8 +234,12 @@ export default function PendingCashPayments() {
                   <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white" />
                 </span>
                 {processingId === payment.id
-                  ? "Activating..."
-                  : "Cash received"}
+                  ? payment.receiptRetry
+                    ? "Sending receipt..."
+                    : "Confirming..."
+                  : payment.receiptRetry
+                    ? "Retry receipt email"
+                    : "Cash received"}
               </button>
             </li>
           ))}
@@ -260,14 +292,17 @@ export default function PendingCashPayments() {
                 id="cash-confirm-title"
                 className="relative mt-2 text-2xl font-black tracking-tight"
               >
-                Confirm cash received?
+                {paymentToConfirm.receiptRetry
+                  ? "Retry receipt email?"
+                  : "Confirm cash received?"}
               </h3>
               <p
                 id="cash-confirm-description"
                 className="relative mt-2 max-w-sm text-sm leading-6 text-slate-300"
               >
-                Confirm only after the association has physically received the
-                full membership fee.
+                {paymentToConfirm.receiptRetry
+                  ? "This cash payment is already approved. Retry sending its receipt to the email address below."
+                  : "Confirm only after the association has physically received the full payment."}
               </p>
             </div>
 
@@ -282,7 +317,9 @@ export default function PendingCashPayments() {
                       {paymentToConfirm.email}
                     </p>
                     <p className="mt-2 text-xs font-semibold capitalize text-slate-500">
-                      {paymentToConfirm.role.replaceAll("_", " ")} membership
+                      {paymentToConfirm.paymentType === "tournament"
+                        ? paymentToConfirm.tournamentName
+                        : `${paymentToConfirm.role.replaceAll("_", " ")} membership`}
                     </p>
                   </div>
                   <div className="shrink-0 rounded-xl bg-white px-3 py-2 text-right shadow-sm ring-1 ring-slate-200">
@@ -304,8 +341,11 @@ export default function PendingCashPayments() {
                   className="mt-0.5 shrink-0 text-amber-600"
                 />
                 <p className="text-xs leading-5 text-amber-900">
-                  Confirming marks the payment as paid, activates the
-                  membership, and enables this member to log in.
+                  {paymentToConfirm.receiptRetry
+                    ? "Retrying sends the receipt email again; it will not create another tournament registration."
+                    : paymentToConfirm.paymentType === "tournament"
+                      ? "Confirming marks the payment as paid, confirms this tournament registration, and emails a PDF receipt."
+                      : "Confirming marks the payment as paid, activates the membership, and enables this member to log in."}
                 </p>
               </div>
 
@@ -326,8 +366,12 @@ export default function PendingCashPayments() {
                 >
                   <CheckCircle2 size={17} />
                   {processingId === paymentToConfirm.id
-                    ? "Confirming..."
-                    : "Confirm receipt"}
+                    ? paymentToConfirm.receiptRetry
+                      ? "Sending..."
+                      : "Confirming..."
+                    : paymentToConfirm.receiptRetry
+                      ? "Retry receipt email"
+                      : "Confirm receipt"}
                 </button>
               </div>
             </div>

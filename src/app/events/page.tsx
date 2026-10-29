@@ -22,6 +22,7 @@ type Tournament = {
   weightClass: string | null;
   status: string;
   entryFee: number | null;
+  imageUrl: string | null;
 };
 
 const STATUS_FILTERS = ["All", "upcoming", "open", "ongoing", "completed"];
@@ -271,12 +272,13 @@ export default function EventsPage() {
                 >
                   <div className="relative h-[230px] w-full shrink-0 overflow-hidden rounded-[13px] bg-[#e8edf3] sm:h-[304px] sm:w-[292px]">
                     <Image
-                      src="/home/hero-bg-mobile.png"
-                      alt="Boxer in the ring"
+                      src={tournament.imageUrl || "/home/hero-bg-mobile.png"}
+                      alt={tournament.name}
                       fill
                       sizes="(max-width: 640px) 100vw, 292px"
                       loading="eager"
                       fetchPriority="high"
+                      unoptimized
                       className="object-cover object-[72%_center] transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   </div>
