@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { tournamentUrl } from "@/lib/tournament-url";
+import TournamentShareButton from "@/Components/events/TournamentShareButton";
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -294,13 +295,16 @@ export default function HomeHighlights() {
                     )}
                   </div>
 
-                  <Link
-                    href={tournamentUrl(event)}
-                    className="mt-auto inline-flex items-center gap-3 rounded-full bg-red-600 px-5 py-2.5 text-[10px] font-extrabold text-white transition hover:bg-red-700"
-                  >
-                    VIEW DETAILS
-                    <ArrowRight size={15} />
-                  </Link>
+                  <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
+                    <Link
+                      href={tournamentUrl(event)}
+                      className="inline-flex items-center gap-3 rounded-full bg-red-600 px-5 py-2.5 text-[10px] font-extrabold text-white transition hover:bg-red-700"
+                    >
+                      VIEW DETAILS
+                      <ArrowRight size={15} />
+                    </Link>
+                    <TournamentShareButton tournament={event} />
+                  </div>
                 </div>
               </article>
             ))}
