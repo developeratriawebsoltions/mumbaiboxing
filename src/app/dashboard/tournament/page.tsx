@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, Clock3, CreditCard, MapPin, RefreshCw, Search, ShieldCheck, Trophy, Users, X, AlertCircle, Medal } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, Clock3, MapPin, RefreshCw, Search, ShieldCheck, Trophy, Users, X, AlertCircle, Medal } from "lucide-react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import { useRole } from "@/hooks/useRole";
 import { useSearchParams } from "next/navigation";
@@ -36,7 +36,6 @@ function TournamentDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [paying, setPaying] = useState<number | null>(null);
-  const [successId, setSuccessId] = useState<number | null>(null);
   const [cashPendingId, setCashPendingId] = useState<number | null>(null);
   const [paymentTournament, setPaymentTournament] = useState<Tournament | null>(null);
 
@@ -70,155 +69,6 @@ function TournamentDashboardContent() {
       setError("Failed to load tournaments.");
     } finally {
       setLoading(false);
-    }
-  }
-
-  function loadRazorpay(): Promise<boolean> {
-    return new Promise((resolve) => {
-      if (window.Razorpay) {
-        resolve(true);
-        return;
-      }
-
-      const script = document.createElement("script");
-
-      script.src =
-        "https://checkout.razorpay.com/v1/checkout.js";
-
-      script.onload = () => resolve(true);
-
-      script.onerror = () => resolve(false);
-
-      document.body.appendChild(script);
-    });
-  }
-
-  async function handleRegister(tournament: Tournament) {
-    setPaying(tournament.id);
-
-    try {
-      const loaded = await loadRazorpay();
-
-      if (!loaded) {
-        alert(
-          "Payment gateway failed to load. Please try again."
-        );
-        setPaying(null);
-        return;
-      }
-      const RazorpayCheckout = window.Razorpay;
-      if (!RazorpayCheckout) {
-        setPaying(null);
-        throw new Error("Payment gateway is unavailable.");
-      }
-
-      const res = await fetch(
-        "/api/tournaments/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            tournamentId: tournament.id,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(
-          data?.error ||
-            "Tournament registration failed."
-        );
-        setPaying(null);
-        return;
-      }
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-
-        amount: data.amount,
-
-        currency: "INR",
-
-        name: "Mumbai Boxing Association",
-
-        description: `Entry Fee – ${data.tournamentName}`,
-
-        order_id: data.orderId,
-
-        handler: async (response: RazorpayResponse) => {
-          try {
-            const verify = await fetch(
-              "/api/tournaments/verify-payment",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({
-                  razorpay_order_id:
-                    response.razorpay_order_id,
-
-                  razorpay_payment_id:
-                    response.razorpay_payment_id,
-
-                  razorpay_signature:
-                    response.razorpay_signature,
-
-                  tournamentId: tournament.id,
-                }),
-              }
-            );
-
-            const vData = await verify.json();
-
-            if (verify.ok && vData.success) {
-              setSuccessId(tournament.id);
-
-              await loadTournaments();
-            } else {
-              alert(
-                vData?.error ||
-                  "Payment verification failed."
-              );
-            }
-
-          } catch {
-            alert(
-              "Payment verification failed. Please contact support if the amount was deducted."
-            );
-          } finally {
-            setPaying(null);
-          }
-        },
-
-        prefill: {},
-
-        theme: {
-          color: "#0f172a",
-        },
-
-        modal: {
-          ondismiss: () => {
-            setPaying(null);
-          },
-        },
-      };
-
-      const rzp = new RazorpayCheckout(options);
-
-      rzp.open();
-    } catch {
-      alert(
-        "Something went wrong. Please try again."
-      );
-
-      setPaying(null);
     }
   }
 
@@ -310,7 +160,6 @@ function TournamentDashboardContent() {
         </section>
 
         {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><span className="flex items-center gap-2"><AlertCircle className="h-5 w-5" />{error}</span><button type="button" onClick={loadTournaments} className="font-bold underline">Retry</button></div>}
-        {successId !== null && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"><span className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5" />Online payment and tournament registration confirmed.</span><button type="button" onClick={() => setSuccessId(null)} aria-label="Dismiss success message"><X className="h-4 w-4" /></button></div>}
         {cashPendingId !== null && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900"><span className="flex items-center gap-2"><Clock3 className="h-5 w-5" />Cash payment requested for {tournaments.find(tournament => tournament.id === cashPendingId)?.name ?? "this tournament"}. Your registration will be confirmed and the receipt emailed after an admin approves the cash.</span><button type="button" onClick={() => setCashPendingId(null)} aria-label="Dismiss cash request message"><X className="h-4 w-4" /></button></div>}
 
         {loading ? <div className="space-y-5"><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[1,2,3,4].map(i => <div key={i} className="h-36 animate-pulse rounded-[20px] bg-slate-100" />)}</div><div className="h-80 animate-pulse rounded-[22px] bg-slate-100" /></div> : !error && <>
@@ -334,7 +183,7 @@ function TournamentDashboardContent() {
               <div className="grid gap-5 p-5 md:grid-cols-2 xl:grid-cols-3 sm:p-6">
                 {visible.map(tournament => <article key={tournament.id} className={`flex min-w-0 flex-col overflow-hidden rounded-[20px] border bg-white transition hover:-translate-y-0.5 hover:shadow-lg ${tournament.id === selectedTournamentId ? "border-red-500 ring-2 ring-red-100" : "border-slate-200 hover:border-red-200"}`}>
                   <div className="relative overflow-hidden bg-[#07172c] p-5 text-white"><div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-44 w-10 rotate-[25deg] bg-red-600" /><div aria-hidden="true" className="pointer-events-none absolute right-8 top-0 h-40 w-4 rotate-[25deg] bg-red-500/30" /><div className="relative flex items-center justify-between gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10"><Trophy className="h-6 w-6 text-red-400" /></div><span className={`rounded-full border px-3 py-1 text-[10px] font-bold capitalize ${statusStyle(tournament.status)}`}>{tournament.status}</span></div><p className="relative mt-6 text-[10px] font-extrabold uppercase tracking-[.18em] text-red-300">MBA Boxing Event</p><h3 className="relative mt-2 min-h-[58px] break-words text-xl font-extrabold leading-7">{tournament.name}</h3>{tournament.registered && <span className="relative mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-3 py-1.5 text-[11px] font-bold text-emerald-200"><CheckCircle2 className="h-3.5 w-3.5" /> Registered</span>}{tournament.registrationPending && <span className="relative mt-3 inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-amber-500/20 px-3 py-1.5 text-[11px] font-bold text-amber-100"><Clock3 className="h-3.5 w-3.5" /> Cash payment pending</span>}{tournament.id === selectedTournamentId && <span className="relative mt-3 ml-2 inline-flex rounded-full bg-red-500 px-3 py-1.5 text-[11px] font-bold">Selected Event</span>}</div>
-                  <div className="flex flex-1 flex-col p-5"><div className="space-y-4"><TournamentDetail icon={<CalendarDays className="h-4 w-4" />} label="Event Dates" value={`${formatDate(tournament.startDate)}${tournament.endDate ? ` – ${formatDate(tournament.endDate)}` : ""}`} /><TournamentDetail icon={<MapPin className="h-4 w-4" />} label="Venue" value={tournament.location || "Venue TBD"} /><TournamentDetail icon={<Medal className="h-4 w-4" />} label="Weight Class" value={tournament.weightClass || "Not specified"} />{tournament._count && <TournamentDetail icon={<Users className="h-4 w-4" />} label="Registered Boxers" value={String(tournament._count.entries)} />}</div><div className="mt-auto pt-5"><div className="mb-4 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-xs font-semibold text-slate-500">Entry Fee</span><span className="text-xl font-black text-[#07172c]">₹{(tournament.entryFee ?? 500).toLocaleString("en-IN")}</span></div>{role === "boxer" && !tournament.registered && !tournament.registrationPending && tournament.status.toLowerCase() === "open" ? <button type="button" onClick={() => setPaymentTournament(tournament)} disabled={paying !== null} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ed1c24] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#c9151e] disabled:cursor-not-allowed disabled:opacity-50"><CreditCard className="h-4 w-4" />Register for this event</button> : <div className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold ${tournament.registered ? "bg-emerald-50 text-emerald-700" : tournament.registrationPending ? "bg-amber-50 text-amber-800" : "bg-slate-100 text-slate-500"}`}>{tournament.registered ? <><CheckCircle2 className="h-4 w-4" /> Registration Confirmed</> : tournament.registrationPending ? <><Clock3 className="h-4 w-4" /> Awaiting cash approval</> : <><Clock3 className="h-4 w-4" />{role !== "boxer" ? "View Only" : "Registration Unavailable"}</>}</div>}</div></div>
+                  <div className="flex flex-1 flex-col p-5"><div className="space-y-4"><TournamentDetail icon={<CalendarDays className="h-4 w-4" />} label="Event Dates" value={`${formatDate(tournament.startDate)}${tournament.endDate ? ` – ${formatDate(tournament.endDate)}` : ""}`} /><TournamentDetail icon={<MapPin className="h-4 w-4" />} label="Venue" value={tournament.location || "Venue TBD"} /><TournamentDetail icon={<Medal className="h-4 w-4" />} label="Weight Class" value={tournament.weightClass || "Not specified"} />{tournament._count && <TournamentDetail icon={<Users className="h-4 w-4" />} label="Registered Boxers" value={String(tournament._count.entries)} />}</div><div className="mt-auto pt-5"><div className="mb-4 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-xs font-semibold text-slate-500">Entry Fee</span><span className="text-xl font-black text-[#07172c]">₹{(tournament.entryFee ?? 500).toLocaleString("en-IN")}</span></div>{role === "boxer" && !tournament.registered && !tournament.registrationPending && tournament.status.toLowerCase() === "open" ? <button type="button" onClick={() => setPaymentTournament(tournament)} disabled={paying !== null} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ed1c24] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#c9151e] disabled:cursor-not-allowed disabled:opacity-50">                  <Users className="h-4 w-4" />Register for this event</button> : <div className={`flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold ${tournament.registered ? "bg-emerald-50 text-emerald-700" : tournament.registrationPending ? "bg-amber-50 text-amber-800" : "bg-slate-100 text-slate-500"}`}>{tournament.registered ? <><CheckCircle2 className="h-4 w-4" /> Registration Confirmed</> : tournament.registrationPending ? <><Clock3 className="h-4 w-4" /> Awaiting cash approval</> : <><Clock3 className="h-4 w-4" />{role !== "boxer" ? "View Only" : "Registration Unavailable"}</>}</div>}</div></div>
                 </article>)}
               </div>
               <div className="flex flex-col justify-between gap-3 border-t border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6"><p className="text-xs text-slate-500">Showing <strong className="text-slate-800">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)}</strong> of <strong className="text-slate-800">{filtered.length}</strong> tournaments</p><div className="flex items-center gap-3"><button type="button" aria-label="Previous page" disabled={currentPage === 1} onClick={() => setPage(p => Math.max(1,p-1))} className="rounded-lg border border-slate-200 p-2 disabled:opacity-40"><ArrowLeft className="h-4 w-4" /></button><span className="text-xs font-bold">Page {currentPage} of {pages}</span><button type="button" aria-label="Next page" disabled={currentPage === pages} onClick={() => setPage(p => Math.min(pages,p+1))} className="rounded-lg border border-slate-200 p-2 disabled:opacity-40"><ArrowRight className="h-4 w-4" /></button></div></div>
@@ -377,19 +226,6 @@ function TournamentDashboardContent() {
               </button>
             </div>
             <div className="mt-6 grid gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const tournament = paymentTournament;
-                  setPaymentTournament(null);
-                  void handleRegister(tournament);
-                }}
-                disabled={paying !== null}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60"
-              >
-                <CreditCard className="h-4 w-4" />
-                Pay online
-              </button>
               <button
                 type="button"
                 onClick={() => void handleCashRegistration(paymentTournament)}

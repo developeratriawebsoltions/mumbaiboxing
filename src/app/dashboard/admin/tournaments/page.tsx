@@ -6,6 +6,7 @@ import { Trophy, Plus, Search, CalendarDays, MapPin, Users, Pencil, Trash2, Arro
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import { useRole } from "@/hooks/useRole";
+import { tournamentSlug } from "@/lib/tournament-url";
 import { tournamentUrl } from "@/lib/tournament-url";
 
 type Tournament = {
@@ -90,6 +91,30 @@ const FEE_TABLE = [
   },
 ];
 
+async function readApiResponse<T>(response: Response): Promise<T> {
+  const responseText = await response.text();
+  if (!responseText) {
+    throw new Error(
+      response.ok
+        ? "The server returned an empty response. Please retry."
+        : `The request failed (${response.status}). Please retry.`,
+    );
+  }
+
+  let data: unknown;
+  try {
+    data = JSON.parse(responseText);
+  } catch {
+    throw new Error(
+      response.ok
+        ? "The server returned an invalid response. Please retry."
+        : `The request failed (${response.status}). Please retry.`,
+    );
+  }
+
+  return data as T;
+}
+
 export default function AdminTournamentsPage() {
   const router = useRouter();
   const role = useRole();
@@ -154,11 +179,13 @@ export default function AdminTournamentsPage() {
       credentials: "include",
     })
       .then(async (r) => {
-        const data = await r.json();
+        const data = await readApiResponse<{ error?: string } | Tournament[]>(r);
 
         if (!r.ok) {
           throw new Error(
-            data?.error || "Failed to load."
+            !Array.isArray(data) && data?.error
+              ? data.error
+              : "Failed to load tournaments."
           );
         }
 
@@ -316,7 +343,7 @@ export default function AdminTournamentsPage() {
         }
       );
 
-      const data = await res.json();
+      const data = await readApiResponse<{ error?: string }>(res);
 
       if (!res.ok) {
         setError(
@@ -352,7 +379,7 @@ export default function AdminTournamentsPage() {
         }
       );
 
-      const data = await res.json();
+      const data = await readApiResponse<{ error?: string }>(res);
 
       if (res.ok) {
         setDeleteId(null);
@@ -444,7 +471,7 @@ export default function AdminTournamentsPage() {
                   <p className="flex items-start gap-2"><Trophy size={16} className="mt-0.5 shrink-0 text-red-500"/>{t.weightClass||"All weight classes"}</p>
                 </div>
                 <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 mt-5"><span className="flex items-center gap-2 text-xs font-semibold text-slate-500"><Users size={16}/>{t._count?.entries??0} entries</span><span className="text-lg font-black">{t.entryFee==null?"Fee TBD":`₹${t.entryFee.toLocaleString("en-IN")}`}</span></div>
-                <div className="mt-4 grid grid-cols-[1fr_auto_auto_auto] gap-2"><button onClick={()=>router.push(`/dashboard/admin/tournaments/${t.id}`)} className="flex items-center justify-center gap-1 rounded-xl bg-red-600 px-3 py-3 text-xs font-bold text-white hover:bg-red-700">View Entries <ArrowUpRight size={15}/></button><button onClick={()=>void shareTournament(t)} aria-label={`Share ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Share2 size={14}/>Share</button><button onClick={()=>openEdit(t)} aria-label={`Edit ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Pencil size={14}/>Edit</button><button onClick={()=>setDeleteId(t.id)} aria-label={`Delete ${t.name}`} className="flex items-center gap-1 rounded-xl border border-red-100 px-3 text-xs font-semibold text-red-600 hover:bg-red-50"><Trash2 size={14}/>Delete</button></div>
+                <div className="mt-4 grid grid-cols-[1fr_auto_auto_auto] gap-2"><button onClick={()=>router.push(`/dashboard/admin/tournaments/${encodeURIComponent(tournamentSlug(t.name))}`)} className="flex items-center justify-center gap-1 rounded-xl bg-red-600 px-3 py-3 text-xs font-bold text-white hover:bg-red-700">View Entries <ArrowUpRight size={15}/></button><button onClick={()=>void shareTournament(t)} aria-label={`Share ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Share2 size={14}/>Share</button><button onClick={()=>openEdit(t)} aria-label={`Edit ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Pencil size={14}/>Edit</button><button onClick={()=>setDeleteId(t.id)} aria-label={`Delete ${t.name}`} className="flex items-center gap-1 rounded-xl border border-red-100 px-3 text-xs font-semibold text-red-600 hover:bg-red-50"><Trash2 size={14}/>Delete</button></div>
                 {shareFeedback?.tournamentId === t.id && (
                   <p
                     role={shareFeedback.isError ? "alert" : "status"}

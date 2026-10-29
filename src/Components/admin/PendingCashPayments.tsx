@@ -32,6 +32,9 @@ export default function PendingCashPayments() {
   const [noticeIsError, setNoticeIsError] = useState(false);
   const [paymentToConfirm, setPaymentToConfirm] =
     useState<PendingPayment | null>(null);
+  const [confirmationAction, setConfirmationAction] = useState<
+    "approve" | "reject"
+  >("approve");
 
   const fetchPayments = useCallback(async () => {
     const response = await fetch("/api/admin/offline-payments", {
@@ -120,6 +123,42 @@ export default function PendingCashPayments() {
         requestError instanceof Error
           ? requestError.message
           : "Could not confirm cash payment."
+      );
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
+  async function rejectCashRequest(payment: PendingPayment) {
+    setProcessingId(payment.id);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await fetch("/api/admin/offline-payments", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentId: payment.id, action: "reject" }),
+      });
+      const data: { error?: string } = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not reject cash payment request.");
+      }
+
+      setPayments((current) => current.filter((item) => item.id !== payment.id));
+      setNoticeIsError(false);
+      setNotice(
+        `Cash payment request for ${payment.name} was rejected. They can submit a new request if needed.`,
+      );
+      setPaymentToConfirm(null);
+    } catch (requestError) {
+      console.error(requestError);
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Could not reject cash payment request.",
       );
     } finally {
       setProcessingId(null);
@@ -217,30 +256,45 @@ export default function PendingCashPayments() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                role="switch"
-                aria-checked="false"
-                aria-label={
-                  payment.receiptRetry
-                    ? `Retry receipt email for ${payment.name}`
-                    : `Confirm cash received from ${payment.name}`
-                }
-                disabled={processingId !== null}
-                onClick={() => setPaymentToConfirm(payment)}
-                className="inline-flex shrink-0 items-center justify-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
-              >
-                <span className="relative h-5 w-9 rounded-full bg-white/30">
-                  <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white" />
-                </span>
-                {processingId === payment.id
-                  ? payment.receiptRetry
-                    ? "Sending receipt..."
-                    : "Confirming..."
-                  : payment.receiptRetry
-                    ? "Retry receipt email"
-                    : "Cash received"}
-              </button>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {!payment.receiptRetry && (
+                  <button
+                    type="button"
+                    disabled={processingId !== null}
+                    onClick={() => {
+                      setConfirmationAction("reject");
+                      setPaymentToConfirm(payment);
+                    }}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-3 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <X size={16} />
+                    Reject request
+                  </button>
+                )}
+                <button
+                  type="button"
+                  aria-label={
+                    payment.receiptRetry
+                      ? `Retry receipt email for ${payment.name}`
+                      : `Confirm cash received from ${payment.name}`
+                  }
+                  disabled={processingId !== null}
+                  onClick={() => {
+                    setConfirmationAction("approve");
+                    setPaymentToConfirm(payment);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+                >
+                  <CheckCircle2 size={16} />
+                  {processingId === payment.id
+                    ? payment.receiptRetry
+                      ? "Sending receipt..."
+                      : "Confirming..."
+                    : payment.receiptRetry
+                      ? "Retry receipt email"
+                      : "Cash received"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
@@ -292,7 +346,9 @@ export default function PendingCashPayments() {
                 id="cash-confirm-title"
                 className="relative mt-2 text-2xl font-black tracking-tight"
               >
-                {paymentToConfirm.receiptRetry
+                {confirmationAction === "reject"
+                  ? "Reject this request?"
+                  : paymentToConfirm.receiptRetry
                   ? "Retry receipt email?"
                   : "Confirm cash received?"}
               </h3>
@@ -300,7 +356,9 @@ export default function PendingCashPayments() {
                 id="cash-confirm-description"
                 className="relative mt-2 max-w-sm text-sm leading-6 text-slate-300"
               >
-                {paymentToConfirm.receiptRetry
+                {confirmationAction === "reject"
+                  ? "Reject this cash payment request if the payment was not received or cannot be accepted."
+                  : paymentToConfirm.receiptRetry
                   ? "This cash payment is already approved. Retry sending its receipt to the email address below."
                   : "Confirm only after the association has physically received the full payment."}
               </p>
@@ -341,7 +399,9 @@ export default function PendingCashPayments() {
                   className="mt-0.5 shrink-0 text-amber-600"
                 />
                 <p className="text-xs leading-5 text-amber-900">
-                  {paymentToConfirm.receiptRetry
+                  {confirmationAction === "reject"
+                    ? "The request will be marked rejected. The member can submit a new cash payment request later."
+                    : paymentToConfirm.receiptRetry
                     ? "Retrying sends the receipt email again; it will not create another tournament registration."
                     : paymentToConfirm.paymentType === "tournament"
                       ? "Confirming marks the payment as paid, confirms this tournament registration, and emails a PDF receipt."
@@ -360,18 +420,34 @@ export default function PendingCashPayments() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => confirmCashReceived(paymentToConfirm)}
+                  onClick={() =>
+                    confirmationAction === "reject"
+                      ? rejectCashRequest(paymentToConfirm)
+                      : confirmCashReceived(paymentToConfirm)
+                  }
                   disabled={processingId !== null}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60"
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg transition disabled:cursor-wait disabled:opacity-60 ${
+                    confirmationAction === "reject"
+                      ? "bg-red-600 shadow-red-600/20 hover:bg-red-700"
+                      : "bg-emerald-600 shadow-emerald-600/20 hover:bg-emerald-700"
+                  }`}
                 >
-                  <CheckCircle2 size={17} />
+                  {confirmationAction === "reject" ? (
+                    <X size={17} />
+                  ) : (
+                    <CheckCircle2 size={17} />
+                  )}
                   {processingId === paymentToConfirm.id
-                    ? paymentToConfirm.receiptRetry
-                      ? "Sending..."
-                      : "Confirming..."
-                    : paymentToConfirm.receiptRetry
-                      ? "Retry receipt email"
-                      : "Confirm receipt"}
+                    ? confirmationAction === "reject"
+                      ? "Rejecting..."
+                      : paymentToConfirm.receiptRetry
+                        ? "Sending..."
+                        : "Confirming..."
+                    : confirmationAction === "reject"
+                      ? "Reject request"
+                      : paymentToConfirm.receiptRetry
+                        ? "Retry receipt email"
+                        : "Confirm receipt"}
                 </button>
               </div>
             </div>
