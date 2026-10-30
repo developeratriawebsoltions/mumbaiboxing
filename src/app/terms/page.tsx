@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Terms of Use",
+  description:
+    "Review the terms for using the North Bombay District Amateur Boxing Association website and online services.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

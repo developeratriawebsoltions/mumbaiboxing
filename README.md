@@ -20,6 +20,14 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## SEO configuration
+
+Set `NEXT_PUBLIC_SITE_URL` to the canonical production origin (for example,
+`https://your-domain.example`) before deployment. The value is used for
+canonical metadata, JSON-LD, `robots.txt`, and `sitemap.xml`. The app currently
+uses `https://www.nbdaba.org` as a fallback; replace it with the verified
+production domain to avoid publishing incorrect URLs.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft, Mail, Phone, ShieldCheck } from "lucide-react";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Grievance Cell",
+  description:
+    "Find the NBDABA grievance channel for raising concerns about association services and the online member portal.",
+  path: "/grievance",
+});
 
 export default function GrievancePage() {
   return (

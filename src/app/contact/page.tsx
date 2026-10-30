@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/seo";
 
 import {
   ArrowRight,
@@ -19,35 +20,12 @@ import {
    SEO
    ========================================================= */
 
-export const metadata: Metadata = {
-  title: "Contact Us | North Bombay District Amateur Boxing Association (NBDABA)",
+export const metadata: Metadata = createPageMetadata({
+  title: "Contact Us",
   description:
-    "Contact the North Bombay District Amateur Boxing Association (NBDABA) for enquiries regarding boxing, athlete registration, tournaments, academies, affiliation and association activities.",
-  keywords: [
-    "North Bombay District Amateur Boxing Association (NBDABA) contact",
-    "North Bombay District Amateur Boxing Association (NBDABA) email",
-    "NBDABA boxing contact",
-    "North Bombay boxing contact",
-    "boxing association Mumbai",
-  ],
-  alternates: {
-    canonical: "/contact",
-  },
-  openGraph: {
-    title: "Contact Us | North Bombay District Amateur Boxing Association (NBDABA)",
-    description:
-      "Get in touch with the North Bombay District Amateur Boxing Association (NBDABA) for official enquiries, registrations, tournaments and affiliation.",
-    type: "website",
-    url: "/contact",
-    siteName: "North Bombay District Amateur Boxing Association (NBDABA)",
-  },
-  twitter: {
-    card: "summary",
-    title: "Contact Us | North Bombay District Amateur Boxing Association (NBDABA)",
-    description:
-      "Contact the North Bombay District Amateur Boxing Association (NBDABA) for official enquiries and assistance.",
-  },
-};
+    "Contact NBDABA for enquiries about boxing, athlete registration, tournaments, academies, affiliation, and association activities.",
+  path: "/contact",
+});
 
 /* =========================================================
    PAGE

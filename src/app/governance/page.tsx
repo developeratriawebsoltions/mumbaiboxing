@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/seo";
 import {
   ArrowRight,
   BadgeCheck,
@@ -17,14 +18,14 @@ import {
 } from "lucide-react";
 import { committeeMembers } from "@/data/committee";
 
-export const metadata: Metadata = {
-  title: "Governance & Committees | North Bombay District Amateur Boxing Association (NBDABA)",
+export const metadata: Metadata = createPageMetadata({
+  title: "Governance & Committees",
   description:
-    "Explore the North Bombay District Amateur Boxing Association executive committee and governance commissions for athlete welfare, fair selection, technical standards and accountability.",
-  alternates: {
-    canonical: "/governance",
-  },
-};
+    "Explore NBDABA's executive committee and governance commissions for athlete welfare, fair selection, technical standards, and accountability.",
+  path: "/governance",
+  image: "/gov/commitee-bg-hero.png",
+  imageAlt: "NBDABA governance and committees",
+});
 
 const governanceCommittees = [
   {

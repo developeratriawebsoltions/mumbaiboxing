@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Sitemap",
+  description:
+    "Browse the main public pages, events, rankings, registration information, and association services available on the NBDABA website.",
+  path: "/sitemap",
+});
 
 const sections = [
   {

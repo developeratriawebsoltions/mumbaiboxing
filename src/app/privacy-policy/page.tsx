@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description:
+    "Read how the North Bombay District Amateur Boxing Association handles information submitted through its website and member services.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/seo";
 
 import {
   ArrowRight,
@@ -21,37 +22,12 @@ import { news } from "@/data/news";
    SEO
    ========================================================= */
 
-export const metadata: Metadata = {
-  title: "News & Announcements | North Bombay District Amateur Boxing Association (NBDABA)",
+export const metadata: Metadata = createPageMetadata({
+  title: "News & Announcements",
   description:
-    "Read the latest news, official announcements, boxing activities, athlete development updates and events from the North Bombay District Amateur Boxing Association (NBDABA).",
-  keywords: [
-    "North Bombay District Amateur Boxing Association (NBDABA) news",
-    "NBDABA boxing news",
-    "North Bombay boxing news",
-    "boxing announcements Mumbai",
-    "North Bombay boxing",
-    "boxing events Mumbai",
-    "boxing academy Mumbai",
-  ],
-  alternates: {
-    canonical: "/news",
-  },
-  openGraph: {
-    title: "News & Announcements | North Bombay District Amateur Boxing Association (NBDABA)",
-    description:
-      "Latest news, official announcements and updates from the North Bombay District Amateur Boxing Association (NBDABA).",
-    type: "website",
-    url: "/news",
-    siteName: "North Bombay District Amateur Boxing Association (NBDABA)",
-  },
-  twitter: {
-    card: "summary",
-    title: "News & Announcements | North Bombay District Amateur Boxing Association (NBDABA)",
-    description:
-      "Latest news, official announcements and updates from the North Bombay District Amateur Boxing Association (NBDABA).",
-  },
-};
+    "Read the latest news, official announcements, boxing activities, athlete development updates, and events from NBDABA.",
+  path: "/news",
+});
 
 /* =========================================================
    PAGE
