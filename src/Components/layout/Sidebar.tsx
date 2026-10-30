@@ -471,21 +471,14 @@ export default function Sidebar({
           href={brandHref}
           className="block"
         >
-          <h1
-            className="
-              text-[25px]
-              leading-[1.08]
-              font-extrabold
-              tracking-tight
-              text-white
-            "
-          >
-            MUMBAI
-            <br />
-            BOXING
-            <br />
-            ASSOCIATION
-          </h1>
+          <div className="text-white">
+            <h1 className="text-[25px] font-extrabold leading-[1.08] tracking-tight">
+              NBDABA
+            </h1>
+            <p className="mt-2 max-w-[220px] text-[10px] font-semibold uppercase leading-relaxed tracking-[0.08em] text-slate-400">
+              North Bombay District Amateur Boxing Association
+            </p>
+          </div>
         </Link>
 
         <div className="mt-7 h-px bg-white/10" />

@@ -68,6 +68,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${bebasNeue.variable} antialiased`}
       >
         <PublicSiteChrome>{children}</PublicSiteChrome>
