@@ -52,7 +52,7 @@ export async function sendTournamentPaymentReceipt(
   });
   const pdf = new jsPDF();
   pdf.setFontSize(20);
-  pdf.text("Mumbai Boxing Association", 20, 25);
+  pdf.text("North Bombay District Amateur Boxing Association (NBDABA)", 20, 25);
   pdf.setFontSize(16);
   pdf.text("Tournament Payment Receipt", 20, 42);
   pdf.setFontSize(11);
@@ -77,10 +77,10 @@ export async function sendTournamentPaymentReceipt(
     from,
     to: receipt.email,
     subject: `Tournament payment receipt - ${receipt.tournamentName}`,
-    text: `Hello ${receipt.name},\n\nYour cash payment has been received and approved.\n\nTournament: ${receipt.tournamentName}\nAmount: INR ${receipt.amount.toLocaleString("en-IN")}\nPayment method: Cash\nReceipt number: ${receipt.invoiceNumber}\nDate: ${date}\n\nThank you,\nMumbai Boxing Association`,
+    text: `Hello ${receipt.name},\n\nYour cash payment has been received and approved.\n\nTournament: ${receipt.tournamentName}\nAmount: INR ${receipt.amount.toLocaleString("en-IN")}\nPayment method: Cash\nReceipt number: ${receipt.invoiceNumber}\nDate: ${date}\n\nThank you,\nNorth Bombay District Amateur Boxing Association (NBDABA)`,
     html: `
       <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6">
-        <h2 style="color:#b91c1c">Mumbai Boxing Association</h2>
+        <h2 style="color:#b91c1c">North Bombay District Amateur Boxing Association (NBDABA)</h2>
         <p>Hello ${escapeHtml(receipt.name)},</p>
         <p>Your cash payment has been received and approved. Your tournament registration is confirmed.</p>
         <p><strong>Tournament:</strong> ${escapeHtml(receipt.tournamentName)}<br />

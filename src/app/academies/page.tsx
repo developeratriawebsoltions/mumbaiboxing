@@ -29,7 +29,7 @@ import {
 const academies = [
   {
     id: 1,
-    name: "Mumbai Boxing Academy",
+    name: "NBDABA Academy",
     location: "Andheri",
     taluka: "Andheri",
     address: "Andheri, Mumbai, Maharashtra",
@@ -195,7 +195,7 @@ export default function AcademiesPage() {
               <span className="h-[2px] w-9 bg-red-600 shadow-[0_0_12px_rgba(220,38,38,0.45)]" />
 
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </p>
 
             </div>
@@ -216,7 +216,7 @@ export default function AcademiesPage() {
 
             <p className="mt-7 max-w-[850px] text-base leading-8 text-slate-400 sm:text-lg sm:leading-9">
               Explore the boxing academies and clubs affiliated
-              with the Mumbai Boxing Association. Find registered
+              with the North Bombay District Amateur Boxing Association (NBDABA). Find registered
               training centres, their locations and affiliation
               information across the Mumbai region.
             </p>
@@ -877,7 +877,7 @@ export default function AcademiesPage() {
 
                 <p className="mt-4 text-base leading-8 text-slate-400">
                   Through its affiliated network, the
-                  Mumbai Boxing Association supports
+                  North Bombay District Amateur Boxing Association (NBDABA) supports
                   organized athlete development,
                   competition pathways, coaching and
                   sporting standards.
@@ -955,7 +955,7 @@ export default function AcademiesPage() {
 
                 <p className="mt-4 leading-7 text-slate-500">
                   Learn more about membership and
-                  affiliation with the Mumbai Boxing
+                  affiliation with the NBDABA
                   Association.
                 </p>
 

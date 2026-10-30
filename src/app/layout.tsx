@@ -15,9 +15,9 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Mumbai Boxing Association",
+  title: "North Bombay District Amateur Boxing Association (NBDABA)",
   description:
-    "Mumbai Boxing Association — Developing grassroots boxing talent and strengthening the boxing community.",
+    "North Bombay District Amateur Boxing Association (NBDABA) — Developing grassroots boxing talent and strengthening the boxing community.",
 
   icons: {
     icon: [

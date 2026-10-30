@@ -132,7 +132,7 @@ export default function BoxerVerificationPage({
               </div>
               <div>
                 <p className="text-xs font-semibold tracking-[0.18em] text-red-100">
-                  MUMBAI BOXING ASSOCIATION
+                  NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION
                 </p>
                 <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
                   Membership Verification
@@ -182,7 +182,7 @@ export default function BoxerVerificationPage({
                     }`}
                   >
                     {verified
-                      ? "This membership is currently valid and verified by Mumbai Boxing Association."
+                      ? "This membership is currently valid and verified by North Bombay District Amateur Boxing Association (NBDABA)."
                       : data?.error ||
                         "This membership is not currently valid."
                     }

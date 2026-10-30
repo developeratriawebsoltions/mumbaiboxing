@@ -209,7 +209,7 @@ export async function issueMembershipCertificate(
       membershipRole: input.role,
       membershipExpiresAt: input.membershipExpiresAt,
       type: "Membership Certificate",
-      event: `Mumbai Boxing Association Membership ${input.issuedAt.getFullYear()}-${input.membershipExpiresAt.getFullYear()}`,
+      event: `North Bombay District Amateur Boxing Association (NBDABA) Membership ${input.issuedAt.getFullYear()}-${input.membershipExpiresAt.getFullYear()}`,
       issuedAt: input.issuedAt,
       qrStatus: "verified",
     },
@@ -260,7 +260,7 @@ export function createCertificatePdf(certificate: CertificateRecord) {
   pdf.setTextColor(185, 28, 28);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(13);
-  pdf.text("MUMBAI BOXING ASSOCIATION", center, 104, { align: "center" });
+  pdf.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", center, 104, { align: "center" });
 
   pdf.setTextColor(15, 23, 42);
   pdf.setFontSize(31);
@@ -295,7 +295,7 @@ export function createCertificatePdf(certificate: CertificateRecord) {
   pdf.setFontSize(14);
   pdf.text(
     isMembershipCertificate
-      ? `is registered as a ${certificate.membershipRole?.replace("_", " ") || "member"} of the Mumbai Boxing Association.`
+      ? `is registered as a ${certificate.membershipRole?.replace("_", " ") || "member"} of the North Bombay District Amateur Boxing Association (NBDABA).`
       : `has been awarded this certificate for ${certificate.event || certificate.type}.`,
     center,
     310,
@@ -346,7 +346,7 @@ export function createCertificatePdf(certificate: CertificateRecord) {
   );
   pdf.setFont("helvetica", "bold");
   pdf.setTextColor(185, 28, 28);
-  pdf.text("MUMBAI BOXING ASSOCIATION", width - 164, height - 92, {
+  pdf.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", width - 164, height - 92, {
     align: "center",
   });
 
@@ -389,11 +389,11 @@ export async function emailMembershipCertificate(
     await transporter.sendMail({
       from,
       to: email,
-      subject: "Your Mumbai Boxing Association membership certificate",
-      text: `Hello ${certificate.memberName || "Member"},\n\nYour Mumbai Boxing Association membership certificate is attached. You can also download it from your member dashboard.\n\nMembership ID: ${certificate.membershipId || "—"}\nValid until: ${certificate.membershipExpiresAt?.toLocaleDateString("en-IN") || "—"}\n`,
+      subject: "Your North Bombay District Amateur Boxing Association (NBDABA) membership certificate",
+      text: `Hello ${certificate.memberName || "Member"},\n\nYour North Bombay District Amateur Boxing Association (NBDABA) membership certificate is attached. You can also download it from your member dashboard.\n\nMembership ID: ${certificate.membershipId || "—"}\nValid until: ${certificate.membershipExpiresAt?.toLocaleDateString("en-IN") || "—"}\n`,
       html: `
         <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6">
-          <h2 style="color:#b91c1c">Mumbai Boxing Association</h2>
+          <h2 style="color:#b91c1c">North Bombay District Amateur Boxing Association (NBDABA)</h2>
           <p>Hello ${escapeHtml(certificate.memberName || "Member")},</p>
           <p>Your membership is active. Your official membership certificate is attached as a PDF.</p>
           <p><strong>Membership ID:</strong> ${escapeHtml(certificate.membershipId || "—")}<br />

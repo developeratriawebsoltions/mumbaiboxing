@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
           userId: payload.id,
           title: "Test Notification",
           message:
-            "This is a test notification from the Mumbai Boxing Association dashboard.",
+            "This is a test notification from the North Bombay District Amateur Boxing Association (NBDABA) dashboard.",
         },
         select: {
           id: true,

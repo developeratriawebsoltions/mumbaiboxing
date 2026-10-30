@@ -111,7 +111,7 @@ export default function RefereeJudgeProfilePage() {
           <div className="relative flex flex-wrap items-start justify-between gap-5">
             <div>
               <Link href="/dashboard/referee-judge" className="inline-flex items-center gap-2 text-xs font-semibold text-white/65 transition hover:text-white"><ArrowLeft size={15} /> Back to Dashboard</Link>
-              <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.22em] text-[#ff6670]">Mumbai Boxing Association / Member Portal</p>
+              <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.22em] text-[#ff6670]">North Bombay District Amateur Boxing Association (NBDABA) / Member Portal</p>
               <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">My Profile<span className="text-[#ed1c24]">.</span></h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">Your registered identity, officiating credentials and membership information in one place.</p>
             </div>
@@ -145,7 +145,7 @@ export default function RefereeJudgeProfilePage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-3"><h2 className="break-words text-2xl font-black text-[#07172c] sm:text-3xl">{profile.name}</h2><StatusBadge active={membership.active} status={user.registrationStatus} /></div>
-                  <p className="mt-1 text-sm font-medium text-slate-500">{profile.designation || "Referee / Judge"} · Mumbai Boxing Association</p>
+                  <p className="mt-1 text-sm font-medium text-slate-500">{profile.designation || "Referee / Judge"} · North Bombay District Amateur Boxing Association (NBDABA)</p>
                   <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600"><span className="inline-flex items-center gap-2"><Mail size={15} className="text-[#ed1c24]" /> <span className="break-all">{user.email}</span></span><span className="inline-flex items-center gap-2"><Phone size={15} className="text-[#ed1c24]" /> {profile.phone || "—"}</span></div>
                 </div>
                 <div className="w-full rounded-xl border border-slate-200 bg-slate-50 p-5 lg:w-64">

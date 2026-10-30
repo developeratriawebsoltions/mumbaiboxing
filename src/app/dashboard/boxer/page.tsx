@@ -604,7 +604,7 @@ export default function BoxerDashboard() {
 
       doc.setFontSize(5);
 
-      doc.text("MUMBAI BOXING ASSOCIATION", 16, 7.5);
+      doc.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", 16, 7.5);
 
       doc.setFontSize(3.8);
 
@@ -813,7 +813,7 @@ export default function BoxerDashboard() {
 
       doc.setFontSize(3.2);
 
-      doc.text("Mumbai Boxing Association", 43, 50, {
+      doc.text("North Bombay District Amateur Boxing Association (NBDABA)", 43, 50, {
         align: "center",
       });
 
@@ -998,7 +998,7 @@ export default function BoxerDashboard() {
           <div aria-hidden="true" className="pointer-events-none absolute right-20 -top-20 hidden h-[160%] w-7 rotate-[24deg] bg-red-500/40 lg:block" />
           <div className="relative z-10 flex flex-col gap-7 px-6 py-8 sm:px-9 sm:py-10 lg:flex-row lg:items-center lg:justify-between lg:px-11">
             <div className="min-w-0 max-w-2xl">
-              <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.18em] text-red-400"><span className="h-2 w-2 rounded-full bg-red-500" /> Mumbai Boxing Association · Boxer Portal</p>
+              <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[.18em] text-red-400"><span className="h-2 w-2 rounded-full bg-red-500" /> North Bombay District Amateur Boxing Association (NBDABA) · Boxer Portal</p>
               <p className="mt-6 text-sm font-medium text-slate-300">{greeting},</p>
               <h1 className="mt-1 break-words text-[34px] font-black leading-[1.1] tracking-[-.04em] sm:text-[46px]">{boxer?.name || "Boxer"}<span className="text-red-500">.</span></h1>
               <p className="mt-4 text-sm leading-6 text-slate-300">Your boxing journey, membership and achievements — all in one place.</p>

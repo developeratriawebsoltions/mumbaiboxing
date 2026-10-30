@@ -18,7 +18,7 @@ import {
 import { committeeMembers } from "@/data/committee";
 
 export const metadata: Metadata = {
-  title: "Governance & Committees | Mumbai Boxing Association",
+  title: "Governance & Committees | North Bombay District Amateur Boxing Association (NBDABA)",
   description:
     "Explore the North Bombay District Amateur Boxing Association executive committee and governance commissions for athlete welfare, fair selection, technical standards and accountability.",
   alternates: {
@@ -167,7 +167,7 @@ export default function GovernancePage() {
               <span className="text-[#ff3043]">Committees</span>
             </h1>
             <p className="mt-6 max-w-[650px] text-sm leading-7 text-slate-100 sm:text-base sm:leading-8 xl:text-lg">
-              Meet the association&apos;s executive committee and explore the commissions that support athlete representation, safe sport, fair selection, technical standards and accountable governance in Mumbai boxing.
+              Meet the NBDABA executive committee and explore the commissions that support athlete representation, safe sport, fair selection, technical standards and accountable governance in North Bombay boxing.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <a href="#executive-committee" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#f50919] px-6 py-3 text-xs font-extrabold text-white transition hover:bg-[#d50919] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-sm">

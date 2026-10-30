@@ -127,7 +127,7 @@ function CertificateCard({ certificate }: { certificate: CertificateItem }) {
               <h3 className="break-words text-lg font-extrabold text-[#07172c] sm:text-xl">{certificateName(certificate)}</h3>
               <StatusPill status={certificate.status} />
             </div>
-            <p className="mt-1 text-sm text-slate-500">Mumbai Boxing Association · Referee / Judge</p>
+            <p className="mt-1 text-sm text-slate-500">North Bombay District Amateur Boxing Association (NBDABA) · Referee / Judge</p>
             <div className="mt-5 grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2 xl:grid-cols-3">
               <Info icon={FileText} label="Certificate number" value={certificate.certificateNumber || "Not provided"} />
               <Info icon={CalendarDays} label="Issue date" value={formatDate(issueDate)} />
@@ -295,7 +295,7 @@ export default function RefereeJudgeCertificatesPage() {
                   <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-14 text-center">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm"><Award size={31} /></div>
                     <h3 className="mt-4 text-lg font-extrabold text-[#07172c]">{certificates.length === 0 ? "No certificates issued yet" : "No matching certificates"}</h3>
-                    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{certificates.length === 0 ? "Certificates will appear here when they are issued by the Mumbai Boxing Association." : "Try a different search or change the status filter."}</p>
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{certificates.length === 0 ? "Certificates will appear here when they are issued by the North Bombay District Amateur Boxing Association (NBDABA)." : "Try a different search or change the status filter."}</p>
                     {certificates.length > 0 && <button type="button" onClick={() => { setQuery(""); setFilter("all"); }} className="mt-4 text-sm font-bold text-[#ed1c24]">Clear filters</button>}
                   </div>
                 )}

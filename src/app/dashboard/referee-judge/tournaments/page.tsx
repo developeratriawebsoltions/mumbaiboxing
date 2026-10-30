@@ -83,7 +83,7 @@ function AssignmentCard({ assignment }: { assignment: TournamentAssignment }) {
         {t.weightClass && <Detail icon={<Trophy size={17} />} label="Weight class" value={t.weightClass} />}
       </div>
       {assignment.notes && <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4"><div className="flex items-center gap-2 text-xs font-bold text-blue-800"><FileText size={15} /> Assignment notes</div><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-blue-800">{assignment.notes}</p></div>}
-      <div className="mt-auto border-t border-slate-100 pt-4 text-xs font-medium text-slate-400" style={{ marginTop: "1.25rem" }}>Mumbai Boxing Association · Referee / Judge</div>
+      <div className="mt-auto border-t border-slate-100 pt-4 text-xs font-medium text-slate-400" style={{ marginTop: "1.25rem" }}>North Bombay District Amateur Boxing Association (NBDABA) · Referee / Judge</div>
     </div>
   </article>;
 }
@@ -140,7 +140,7 @@ export default function RefereeJudgeTournamentsPage() {
       <div className="pointer-events-none absolute -top-20 right-[19%] hidden h-[180%] w-12 rotate-[25deg] bg-[#ed1c24] lg:block" />
       <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-center"><div>
         <Link href="/dashboard/referee-judge" className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white"><ArrowLeft size={16} /> Back to Dashboard</Link>
-        <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-300"><span className="h-2 w-2 rounded-full bg-red-500" /> Mumbai Boxing Association</p>
+        <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-300"><span className="h-2 w-2 rounded-full bg-red-500" /> North Bombay District Amateur Boxing Association (NBDABA)</p>
         <h1 className="mt-4 text-[34px] font-black tracking-tight sm:text-[44px]">My Tournaments<span className="text-red-500">.</span></h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Manage your officiating assignments, review upcoming events and access your tournament history.</p>
       </div><div className="flex items-center gap-4 self-start rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-sm"><span className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-600"><Trophy size={24} /></span><div><p className="text-xs text-slate-300">Total assignments</p><p className="text-3xl font-black">{assignments.length}</p></div></div></div>

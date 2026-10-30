@@ -93,7 +93,7 @@ function LoginForm() {
   return (
     <main className={styles.loginPage}>
       <div className={styles.loginShell}>
-        <section className={styles.heroPanel} aria-label="Mumbai Boxing Association">
+        <section className={styles.heroPanel} aria-label="North Bombay District Amateur Boxing Association (NBDABA)">
           <div className={styles.heroRings} aria-hidden="true" />
 
           <Link className={styles.brand} href="/" aria-label="MBA home">
@@ -151,7 +151,7 @@ function LoginForm() {
             <header className={styles.loginHeader}>
               <div className={styles.mobileBrand}>
                 <span className={styles.mobileLogo}>MBA</span>
-                <span>MUMBAI BOXING ASSOCIATION</span>
+                <span>NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION</span>
               </div>
               <div className={styles.welcomeMark} aria-hidden="true">
                 <LockKeyhole size={20} />
@@ -330,7 +330,7 @@ function LoginForm() {
           </div>
 
           <footer className={styles.loginFooter}>
-            © 2025 Mumbai Boxing Association. All rights reserved.
+            © 2025 North Bombay District Amateur Boxing Association (NBDABA). All rights reserved.
           </footer>
         </section>
       </div>

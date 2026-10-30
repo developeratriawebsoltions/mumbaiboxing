@@ -15,7 +15,7 @@ export default function TermsPage() {
 
         <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-600">
-            Mumbai Boxing Association
+            North Bombay District Amateur Boxing Association (NBDABA)
           </p>
 
           <h1 className="mt-2 text-3xl font-bold tracking-tight">
@@ -33,7 +33,7 @@ export default function TermsPage() {
               </h2>
 
               <p>
-                By accessing or using the Mumbai Boxing Association website
+                By accessing or using the North Bombay District Amateur Boxing Association (NBDABA) website
                 and portal, you agree to use the services responsibly and in
                 accordance with these Terms of Use.
               </p>

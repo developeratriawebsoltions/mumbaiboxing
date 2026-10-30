@@ -163,7 +163,7 @@ export default function Hero() {
         <div className="mba-hero-copy relative z-10 w-full mt-12 max-w-[650px]">
           <div className="mb-5 flex flex-wrap items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#101820] sm:text-[13px]">
             <span className="mr-1 h-[3px] w-7 bg-[#f50919]" />
-            Mumbai Boxing Association
+            North Bombay District Amateur Boxing Association (NBDABA)
 
             <span className="border-l border-slate-400 pl-2 text-slate-500">
               EST. 1985
@@ -179,7 +179,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-5 max-w-[520px] text-[14px] font-medium leading-[1.7] text-[#253140] sm:text-[15px] lg:text-[16px]">
-            Mumbai Boxing Association is dedicated to developing boxers,
+            North Bombay District Amateur Boxing Association (NBDABA) is dedicated to developing boxers,
             promoting the sport, and building a stronger boxing community
             across Mumbai.
           </p>

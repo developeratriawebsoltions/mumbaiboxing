@@ -21,7 +21,7 @@ const pageResults: SearchResult[] = [
     href: "/",
     category: "Page",
     description:
-      "Welcome to the Mumbai Boxing Association. Find association updates, tournaments, rankings and more.",
+      "Welcome to the North Bombay District Amateur Boxing Association (NBDABA). Find association updates, tournaments, rankings and more.",
     keywords: ["MBA", "Mumbai", "boxing", "champions"],
   },
   {
@@ -29,7 +29,7 @@ const pageResults: SearchResult[] = [
     href: "/about",
     category: "Page",
     description:
-      "Learn about the Mumbai Boxing Association and its work to develop boxing across Mumbai.",
+      "Learn about the North Bombay District Amateur Boxing Association (NBDABA) and its work to develop boxing across Mumbai.",
     keywords: ["mission", "history", "athletes", "clubs"],
   },
   {
@@ -53,7 +53,7 @@ const pageResults: SearchResult[] = [
     href: "/news",
     category: "News",
     description:
-      "Read official Mumbai Boxing Association news, notices and updates.",
+      "Read official North Bombay District Amateur Boxing Association (NBDABA) news, notices and updates.",
     keywords: ["latest", "updates", "circular", "notice"],
   },
   {
@@ -84,7 +84,7 @@ const pageResults: SearchResult[] = [
     title: "Contact Us",
     href: "/contact",
     category: "Support",
-    description: "Get in touch with the Mumbai Boxing Association.",
+    description: "Get in touch with the North Bombay District Amateur Boxing Association (NBDABA).",
     keywords: ["email", "phone", "address", "location"],
   },
   {
@@ -100,7 +100,7 @@ const pageResults: SearchResult[] = [
     href: "/login",
     category: "Membership",
     description:
-      "Sign in to access your Mumbai Boxing Association member dashboard.",
+      "Sign in to access your North Bombay District Amateur Boxing Association (NBDABA) member dashboard.",
     keywords: ["account", "dashboard", "sign in"],
   },
   {
@@ -184,7 +184,7 @@ function SearchPageContent({ initialQuery }: { initialQuery: string }) {
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
           <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#f50919]">
-            Mumbai Boxing Association
+            North Bombay District Amateur Boxing Association (NBDABA)
           </p>
           <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
             Search the site
@@ -209,7 +209,7 @@ function SearchPageContent({ initialQuery }: { initialQuery: string }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search tournaments, boxers, academies..."
-              aria-label="Search the Mumbai Boxing Association website"
+              aria-label="Search the North Bombay District Amateur Boxing Association (NBDABA) website"
               className="min-w-0 flex-1 bg-transparent py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:text-base"
             />
             {query && (

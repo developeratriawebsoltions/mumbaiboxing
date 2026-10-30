@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
 
         <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-600">
-            Mumbai Boxing Association
+            North Bombay District Amateur Boxing Association (NBDABA)
           </p>
 
           <h1 className="mt-2 text-3xl font-bold tracking-tight">
@@ -33,7 +33,7 @@ export default function PrivacyPolicyPage() {
               </h2>
 
               <p>
-                The Mumbai Boxing Association portal may collect information
+                The North Bombay District Amateur Boxing Association (NBDABA) portal may collect information
                 required for account creation, membership registration, boxer
                 and coach records, academy affiliation, tournament
                 participation, certificates, payments, notifications, and

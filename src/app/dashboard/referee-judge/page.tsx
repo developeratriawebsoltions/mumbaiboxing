@@ -362,7 +362,7 @@ export default function RefereeJudgeDashboard() {
 
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(5);
-      doc.text("MUMBAI BOXING ASSOCIATION", 16, 7.5);
+      doc.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", 16, 7.5);
 
       doc.setFontSize(3.8);
       doc.setFont("helvetica", "normal");
@@ -541,7 +541,7 @@ export default function RefereeJudgeDashboard() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(3.2);
 
-      doc.text("Mumbai Boxing Association", 43, 50, {
+      doc.text("North Bombay District Amateur Boxing Association (NBDABA)", 43, 50, {
         align: "center",
       });
 
@@ -577,7 +577,7 @@ export default function RefereeJudgeDashboard() {
           <div className="pointer-events-none absolute -top-20 right-[16%] hidden h-[180%] w-4 rotate-[24deg] bg-red-500/30 lg:block" />
           <div className="relative flex flex-col justify-between gap-7 lg:flex-row lg:items-center">
             <div>
-              <div className="mb-4 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[.2em] text-red-300"><span className="h-2 w-2 rounded-full bg-red-500"/> Mumbai Boxing Association</div>
+              <div className="mb-4 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[.2em] text-red-300"><span className="h-2 w-2 rounded-full bg-red-500"/> North Bombay District Amateur Boxing Association (NBDABA)</div>
               <h1 className="text-3xl font-black tracking-tight sm:text-[42px]">{greeting}, {data?.profile?.name?.split(" ")[0] || "Official"}<span className="text-red-500">.</span></h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Your Referee / Judge membership, credentials, documents and payment overview.</p>
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold"><ShieldCheck size={15} className="text-red-400"/> Official Referee / Judge Portal</div>

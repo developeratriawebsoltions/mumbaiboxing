@@ -91,7 +91,7 @@ export default function RefereeJudgePaymentsPage() {
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Link href="/dashboard/referee-judge" className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-slate-300 transition hover:text-white"><ArrowLeft size={15}/> Back to Dashboard</Link>
-            <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-red-300"><span className="h-1.5 w-1.5 rounded-full bg-[#ed1c24]"/> Mumbai Boxing Association</div>
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-red-300"><span className="h-1.5 w-1.5 rounded-full bg-[#ed1c24]"/> North Bombay District Amateur Boxing Association (NBDABA)</div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Payment Receipts<span className="text-[#ed1c24]">.</span></h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Review membership transactions, track payment status and access your available invoices.</p>
           </div>

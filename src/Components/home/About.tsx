@@ -124,7 +124,7 @@ export default function About() {
             <div className="mb-7 flex items-center gap-3">
               <span className="h-[3px] w-8 shrink-0 bg-[#f50919]" />
               <span className="text-[10px] font-extrabold uppercase tracking-[0.17em] text-[#f50919] sm:text-xs">
-                About Mumbai Boxing Association
+                About North Bombay District Amateur Boxing Association (NBDABA)
               </span>
             </div>
 
@@ -145,7 +145,7 @@ export default function About() {
             </h2>
 
             <p className="mt-8 max-w-[650px] text-[15px] font-medium leading-[1.85] text-[#17212d] sm:text-[17px]">
-              Mumbai Boxing Association is dedicated to
+              North Bombay District Amateur Boxing Association (NBDABA) is dedicated to
               strengthening grassroots boxing, developing
               athletes, supporting coaches and academies,
               and creating opportunities for boxers to

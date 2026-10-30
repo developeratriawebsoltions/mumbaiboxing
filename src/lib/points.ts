@@ -11,7 +11,7 @@ export type Medal =
   | "NONE";
 
 /**
- * Mumbai Boxing Association
+ * North Bombay District Amateur Boxing Association (NBDABA)
  * Tournament Points Table
  */
 export const POINTS_TABLE: Record<

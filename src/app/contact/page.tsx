@@ -20,32 +20,32 @@ import {
    ========================================================= */
 
 export const metadata: Metadata = {
-  title: "Contact Us | Mumbai Boxing Association",
+  title: "Contact Us | North Bombay District Amateur Boxing Association (NBDABA)",
   description:
-    "Contact the Mumbai Boxing Association for enquiries regarding boxing, athlete registration, tournaments, academies, affiliation and association activities.",
+    "Contact the North Bombay District Amateur Boxing Association (NBDABA) for enquiries regarding boxing, athlete registration, tournaments, academies, affiliation and association activities.",
   keywords: [
-    "Mumbai Boxing Association contact",
-    "Mumbai Boxing Association email",
-    "Mumbai boxing contact",
+    "North Bombay District Amateur Boxing Association (NBDABA) contact",
+    "North Bombay District Amateur Boxing Association (NBDABA) email",
+    "NBDABA boxing contact",
+    "North Bombay boxing contact",
     "boxing association Mumbai",
-    "MBA boxing contact",
   ],
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Contact Us | Mumbai Boxing Association",
+    title: "Contact Us | North Bombay District Amateur Boxing Association (NBDABA)",
     description:
-      "Get in touch with the Mumbai Boxing Association for official enquiries, registrations, tournaments and affiliation.",
+      "Get in touch with the North Bombay District Amateur Boxing Association (NBDABA) for official enquiries, registrations, tournaments and affiliation.",
     type: "website",
     url: "/contact",
-    siteName: "Mumbai Boxing Association",
+    siteName: "North Bombay District Amateur Boxing Association (NBDABA)",
   },
   twitter: {
     card: "summary",
-    title: "Contact Us | Mumbai Boxing Association",
+    title: "Contact Us | North Bombay District Amateur Boxing Association (NBDABA)",
     description:
-      "Contact the Mumbai Boxing Association for official enquiries and assistance.",
+      "Contact the North Bombay District Amateur Boxing Association (NBDABA) for official enquiries and assistance.",
   },
 };
 
@@ -140,7 +140,7 @@ export default function ContactPage() {
         <span className="h-[3px] w-10 bg-[#ff1026] shadow-[0_0_14px_rgba(255,16,38,0.5)]" />
 
         <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#ff3549] sm:text-[11px]">
-          Mumbai Boxing Association
+          North Bombay District Amateur Boxing Association (NBDABA)
         </p>
       </div>
 
@@ -156,7 +156,7 @@ export default function ContactPage() {
       <p className="mt-7 max-w-[710px] text-[15px] leading-[1.9] text-slate-200 sm:text-[17px] lg:mt-9 lg:text-[18px]">
         Have an enquiry about boxing, athlete registration,
         tournaments, academy affiliation or the activities
-        of the Mumbai Boxing Association? Get in touch with
+        of the North Bombay District Amateur Boxing Association (NBDABA)? Get in touch with
         us through the official contact details below.
       </p>
 
@@ -222,7 +222,7 @@ export default function ContactPage() {
         <p className="mt-5 max-w-[650px] text-[15px] leading-8 text-slate-600 sm:text-base">
           Have questions about boxing, athlete registrations,
           tournaments or academy affiliation? Reach out to
-          the Mumbai Boxing Association through our official
+          the North Bombay District Amateur Boxing Association (NBDABA) through our official
           contact channels.
         </p>
       </div>
@@ -337,7 +337,7 @@ export default function ContactPage() {
         </h3>
 
         <p className="mt-4 text-[14px] leading-7 text-slate-500">
-          Mumbai Boxing Association and its affiliated
+          North Bombay District Amateur Boxing Association (NBDABA) and its affiliated
           boxing network operate across Mumbai,
           supporting athletes and academies.
         </p>
@@ -348,7 +348,7 @@ export default function ContactPage() {
           </span>
 
           <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-slate-600">
-            Mumbai Boxing Network
+            NBDABA Network
           </span>
         </div>
       </div>
@@ -389,7 +389,7 @@ export default function ContactPage() {
         </h2>
 
         <p className="mt-6 max-w-[580px] text-[15px] leading-8 text-slate-600 sm:text-base">
-          Have a question about the Mumbai Boxing Association?
+          Have a question about the North Bombay District Amateur Boxing Association (NBDABA)?
           Our team is here to guide you with athlete registration,
           tournaments, academy affiliation and other official
           enquiries.
@@ -597,7 +597,7 @@ export default function ContactPage() {
       </h2>
 
       <p className="mx-auto mt-5 max-w-[700px] text-[15px] leading-8 text-slate-500 sm:text-base">
-        Explore the different sections of the Mumbai Boxing
+        Explore the different sections of the NBDABA
         Association website.
       </p>
     </div>
@@ -701,7 +701,7 @@ export default function ContactPage() {
         <div className="flex items-center gap-3">
           <span className="h-[2px] w-10 bg-[#ff1730]" />
           <span className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#ff3045]">
-            Join Mumbai Boxing Association
+            Join North Bombay District Amateur Boxing Association (NBDABA)
           </span>
         </div>
 
@@ -804,7 +804,7 @@ export default function ContactPage() {
 
               <Link
                 href="/register"
-                aria-label="Register with Mumbai Boxing Association"
+                aria-label="Register with North Bombay District Amateur Boxing Association (NBDABA)"
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f50919] text-white transition-all duration-300 hover:scale-110 hover:bg-red-700"
               >
                 <ArrowRight size={21} />

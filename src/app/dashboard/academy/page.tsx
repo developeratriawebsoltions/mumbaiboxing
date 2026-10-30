@@ -364,7 +364,7 @@ export default function AcademyDashboard() {
                   </h2>
 
                   <p className="mt-2 text-xs text-slate-400">
-                    Mumbai Boxing Association Affiliated Academy
+                    North Bombay District Amateur Boxing Association (NBDABA) Affiliated Academy
                   </p>
                 </div>
               </div>
@@ -399,7 +399,7 @@ export default function AcademyDashboard() {
                 Registered Academy
               </div>
               <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </span>
             </div>
           </section>
@@ -943,7 +943,7 @@ export default function AcademyDashboard() {
         <div className="flex items-center justify-center gap-3 py-3">
           <span className="h-px w-10 bg-slate-200" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            Mumbai Boxing Association
+            North Bombay District Amateur Boxing Association (NBDABA)
           </span>
           <span className="h-px w-10 bg-slate-200" />
         </div>

@@ -149,7 +149,7 @@ function TournamentDashboardContent() {
           <div className="relative z-10 flex flex-col justify-between gap-7 lg:flex-row lg:items-center">
             <div>
               <a href={role === "coach" ? "/dashboard/coach" : role === "boxer" ? "/dashboard/boxer" : "/dashboard"} className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white"><ArrowLeft className="h-4 w-4" /> Back to Dashboard</a>
-              <div className="mb-4 flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-red-500" /><span className="text-[10px] font-extrabold uppercase tracking-[.2em] text-red-300">Mumbai Boxing Association</span></div>
+              <div className="mb-4 flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-red-500" /><span className="text-[10px] font-extrabold uppercase tracking-[.2em] text-red-300">North Bombay District Amateur Boxing Association (NBDABA)</span></div>
               <h1 className="text-[34px] font-black tracking-tight sm:text-[44px]">Tournaments<span className="text-red-500">.</span></h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Explore boxing events, check entry details and manage your tournament registrations.</p>
               <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold"><ShieldCheck className="h-4 w-4 text-red-400" /> Official MBA Events</span>

@@ -292,7 +292,7 @@ export default function CoachBoxersPage() {
               <div className="mb-4 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-red-500" />
                 <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-red-300">
-                  Mumbai Boxing Association
+                  North Bombay District Amateur Boxing Association (NBDABA)
                 </span>
               </div>
 

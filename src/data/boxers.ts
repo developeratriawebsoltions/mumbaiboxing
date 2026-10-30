@@ -4,7 +4,7 @@ export const boxers = [
     name: "Rahul Sharma",
     ageGroup: "Senior",
     weight: "60 KG",
-    academy: "Mumbai Boxing Academy",
+    academy: "NBDABA Academy",
     rank: 1,
   },
   {

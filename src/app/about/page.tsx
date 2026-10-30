@@ -198,7 +198,7 @@ export default function AboutPage() {
               <span className="h-[2px] w-9 bg-red-600" />
 
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </p>
             </div>
 
@@ -210,7 +210,7 @@ export default function AboutPage() {
             </h1>
 
             <p className="mt-8 max-w-[760px] text-base leading-8 text-slate-300 sm:text-lg sm:leading-9">
-              Mumbai Boxing Association is committed to developing world-class
+              North Bombay District Amateur Boxing Association (NBDABA) is committed to developing world-class
               athletes, strengthening the boxing community, and creating
               inclusive pathways from school-level participation to national
               and international competition.
@@ -329,7 +329,7 @@ export default function AboutPage() {
           </div>
 
           <p className="text-[15px] leading-[1.9] text-slate-600 sm:text-[16px]">
-            Mumbai Boxing Association is dedicated to creating a
+            North Bombay District Amateur Boxing Association (NBDABA) is dedicated to creating a
             professional, accessible, and athlete-focused environment
             for the development of boxing across the region.
           </p>
@@ -501,7 +501,7 @@ export default function AboutPage() {
           <div className="mt-7 flex items-center gap-3">
             <span className="h-[2px] w-9 bg-[#f50919]" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-              Mumbai Boxing Association
+              North Bombay District Amateur Boxing Association (NBDABA)
             </span>
           </div>
         </div>
@@ -936,7 +936,7 @@ export default function AboutPage() {
               />
 
               <span>
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </span>
             </div>
 

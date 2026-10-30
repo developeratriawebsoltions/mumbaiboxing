@@ -45,7 +45,7 @@ function CompleteRegistrationForm() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <section className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-9">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-600">
-          Mumbai Boxing Association
+          North Bombay District Amateur Boxing Association (NBDABA)
         </p>
         {tournamentId && (
           <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-4">
@@ -70,7 +70,7 @@ function CompleteRegistrationForm() {
               Cash payment request submitted
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Pay your membership fee in cash to the Mumbai Boxing
+              Pay your membership fee in cash to the NBDABA
               Association. An administrator or super administrator will
               activate your account after confirming receipt.
             </p>

@@ -124,7 +124,7 @@ export default function RefereeJudgeDocumentsPage() {
             </div>
             {visible.length ? <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3 sm:p-6">{visible.map((entry) => <DocumentCard key={entry.key} title={entry.title} description={entry.description} icon={entry.icon} doc={entry.doc} />)}</div> : <div className="px-5 py-16 text-center"><Search className="mx-auto text-slate-300" size={30} /><h3 className="mt-3 font-bold">No matching documents</h3><p className="mt-1 text-sm text-slate-500">Try a different search or status filter.</p><button onClick={() => { setFilter("all"); setQuery(""); }} className="mt-4 text-sm font-bold text-[#ed1c24]">Clear filters</button></div>}
           </section>
-          <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600"><ShieldAlert size={19} className="mt-0.5 shrink-0 text-[#ed1c24]" /><p>Documents are reviewed by the Mumbai Boxing Association. Rejected documents display the reviewer's reason. This page is read-only; submitting replacements requires an existing upload workflow.</p></div>
+          <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600"><ShieldAlert size={19} className="mt-0.5 shrink-0 text-[#ed1c24]" /><p>Documents are reviewed by the North Bombay District Amateur Boxing Association (NBDABA). Rejected documents display the reviewer's reason. This page is read-only; submitting replacements requires an existing upload workflow.</p></div>
         </>}
       </main>
     </DashboardLayout>

@@ -71,7 +71,7 @@ export default function CTA() {
 
         {/* Small eyebrow */}
         <p className="mb-4 text-[9px] font-semibold uppercase tracking-[0.35em] text-slate-600">
-          Mumbai Boxing Association
+          North Bombay District Amateur Boxing Association (NBDABA)
         </p>
 
         {/* Headline */}
@@ -90,7 +90,7 @@ export default function CTA() {
         {/* Description */}
         <p className="mx-auto mt-7 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base sm:leading-7 lg:text-lg">
           Register as a boxer, coach or academy on the
-          official Mumbai Boxing Association portal.
+          official North Bombay District Amateur Boxing Association (NBDABA) portal.
           Get your digital ID, track rankings and enter
           tournaments — all in one place.
         </p>
