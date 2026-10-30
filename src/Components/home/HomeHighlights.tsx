@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { tournamentUrl } from "@/lib/tournament-url";
+import TournamentShareButton from "@/Components/events/TournamentShareButton";
 import { useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -19,6 +20,7 @@ type Tournament = {
   weightClass: string | null;
   status: string;
   isFeatured: boolean;
+  imageUrl?: string | null;
 };
 
 function isTournament(value: unknown): value is Tournament {
@@ -30,6 +32,9 @@ function isTournament(value: unknown): value is Tournament {
     typeof item.name === "string" &&
     typeof item.status === "string" &&
     typeof item.isFeatured === "boolean" &&
+    (typeof item.imageUrl === "string" ||
+      item.imageUrl === null ||
+      item.imageUrl === undefined) &&
     (typeof item.location === "string" || item.location === null) &&
     (typeof item.startDate === "string" || item.startDate === null) &&
     (typeof item.endDate === "string" || item.endDate === null) &&
@@ -233,9 +238,10 @@ export default function HomeHighlights() {
                   }`}
                   style={{
                     backgroundImage: `url('${
-                      index === 0
+                      event.imageUrl ||
+                      (index === 0
                         ? "/home/hero-bg-desktop.png"
-                        : "/hero.png"
+                        : "/hero.png")
                     }')`,
                   }}
                 />
@@ -289,13 +295,16 @@ export default function HomeHighlights() {
                     )}
                   </div>
 
-                  <Link
-                    href={tournamentUrl(event)}
-                    className="mt-auto inline-flex items-center gap-3 rounded-full bg-red-600 px-5 py-2.5 text-[10px] font-extrabold text-white transition hover:bg-red-700"
-                  >
-                    VIEW DETAILS
-                    <ArrowRight size={15} />
-                  </Link>
+                  <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
+                    <Link
+                      href={tournamentUrl(event)}
+                      className="inline-flex items-center gap-3 rounded-full bg-red-600 px-5 py-2.5 text-[10px] font-extrabold text-white transition hover:bg-red-700"
+                    >
+                      VIEW DETAILS
+                      <ArrowRight size={15} />
+                    </Link>
+                    <TournamentShareButton tournament={event} />
+                  </div>
                 </div>
               </article>
             ))}
