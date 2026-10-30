@@ -84,9 +84,11 @@ export default function Footer() {
               <h2 className="text-[21px] font-extrabold leading-tight tracking-tight sm:text-[26px]">
                 Official{" "}
                 <span className="text-[#ff172b]">
-                  Mumbai Boxing
+                  North Bombay District Amateur Boxing Association
                 </span>{" "}
-                Association
+                <span className="text-[14px] font-bold tracking-[0.18em] text-[#f7c4c8]">
+                  (NBDABA)
+                </span>
               </h2>
 
               <p className="mt-2 text-[13px] leading-relaxed text-[#aab9cc] sm:text-[15px]">
@@ -119,7 +121,7 @@ export default function Footer() {
               <div className="relative h-[72px] w-[72px] shrink-0">
                 <Image
                   src="/logo/download.webp"
-                  alt="Mumbai Boxing Association"
+                  alt="North Bombay District Amateur Boxing Association (NBDABA)"
                   fill
                   sizes="72px"
                   className="object-contain"
@@ -128,13 +130,10 @@ export default function Footer() {
 
               <div>
                 <div className="text-[19px] font-black uppercase leading-tight tracking-tight">
-                  Mumbai{" "}
-                  <span className="text-[#ff172b]">
-                    Boxing
-                  </span>
+                  NBDABA
                 </div>
-                <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.3em] text-[#cbd5e1]">
-                  Association
+                <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#cbd5e1]">
+                  North Bombay District
                 </div>
               </div>
             </Link>
@@ -289,7 +288,7 @@ export default function Footer() {
         <div className="mx-auto grid max-w-[1880px] grid-cols-1 items-center gap-5 px-5 py-7 text-center sm:px-8 lg:grid-cols-3 lg:px-12 lg:text-left xl:px-20">
 
           <p className="text-[12px] text-[#b9c5d5]">
-            © {new Date().getFullYear()} Mumbai Boxing Association.
+            © {new Date().getFullYear()} North Bombay District Amateur Boxing Association (NBDABA).
             All rights reserved.
           </p>
 

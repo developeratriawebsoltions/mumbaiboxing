@@ -219,7 +219,7 @@ export default function Navbar() {
           >
             <Image
               src="/logo/download.webp"
-              alt="Mumbai Boxing Association"
+              alt="North Bombay District Amateur Boxing Association (NBDABA)"
               fill
               priority
               sizes="54px"
@@ -231,27 +231,24 @@ export default function Navbar() {
             <div
               className="
                 whitespace-nowrap
-                text-[16px] font-black
-                tracking-[0.015em]
+                text-[15px] font-black
+                tracking-[0.06em]
                 text-[#071015]
-                xl:text-[19px]
+                xl:text-[17px]
               "
             >
-              MUMBAI{" "}
-              <span className="text-[#f50919]">
-                BOXING
-              </span>
+              NBDABA
             </div>
 
             <div
               className="
-                mt-1.5 text-[9px]
+                mt-1.5 text-[8px]
                 font-bold uppercase
-                tracking-[0.30em]
+                tracking-[0.22em]
                 text-[#536174]
               "
             >
-              ASSOCIATION
+              North Bombay District
             </div>
           </div>
         </Link>

@@ -315,9 +315,7 @@ export default function Header() {
             tracking-tight
           "
         >
-          MUMBAI
-          <br />
-          BOXING ASSOCIATION
+          NBDABA
         </p>
       </div>
 

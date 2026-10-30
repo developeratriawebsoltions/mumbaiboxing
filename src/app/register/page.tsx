@@ -1309,7 +1309,7 @@ function downloadMembershipCard(
   doc.setTextColor(220, 38, 38);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('MUMBAI BOXING ASSOCIATION', 6, 9);
+  doc.text('NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION', 6, 9);
 
   doc.setTextColor(241, 245, 249);
   doc.setFontSize(6);
@@ -1379,7 +1379,7 @@ function downloadInvoice(
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('MUMBAI BOXING ASSOCIATION', 20, 25);
+  doc.text('NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION', 20, 25);
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
@@ -1480,7 +1480,7 @@ function downloadInvoice(
   doc.setTextColor(100, 116, 139);
 
   doc.text(
-    'This is a computer-generated invoice issued by Mumbai Boxing Association.',
+    'This is a computer-generated invoice issued by North Bombay District Amateur Boxing Association (NBDABA).',
     20,
     220
   );
@@ -2025,7 +2025,7 @@ const fee =
               <span>Dreams</span>
             </h1>
             <p>
-              Join Mumbai Boxing Association
+              Join North Bombay District Amateur Boxing Association (NBDABA)
               <br className={styles.desktopBreak} />
               and be part of a community
               <br className={styles.desktopBreak} />
@@ -2061,7 +2061,7 @@ const fee =
               </span>
               <div>
                 <h1>Create Account</h1>
-                <p>Register with Mumbai Boxing Association</p>
+                <p>Register with North Bombay District Amateur Boxing Association (NBDABA)</p>
               </div>
             </header>
 
@@ -2429,7 +2429,7 @@ const fee =
                       className="mt-1 text-sm"
                       style={{ color: '#64748B' }}
                     >
-                      Your Mumbai Boxing Association
+                      Your North Bombay District Amateur Boxing Association (NBDABA)
                       membership is now active.
                     </p>
                     <p
@@ -2457,7 +2457,7 @@ const fee =
                         className="text-xs font-bold uppercase tracking-widest"
                         style={{ color: '#DC2626' }}
                       >
-                        Mumbai Boxing Association
+                        North Bombay District Amateur Boxing Association (NBDABA)
                       </span>
 
                       <span
@@ -2786,7 +2786,7 @@ const fee =
                         className="text-xs font-bold uppercase tracking-widest"
                         style={{ color: '#DC2626' }}
                       >
-                        Mumbai Boxing Association
+                        North Bombay District Amateur Boxing Association (NBDABA)
                       </span>
 
                       <span
@@ -2979,7 +2979,7 @@ const fee =
           )}
           </div>
           <p className={styles.registerFooter}>
-          © 2025 Mumbai Boxing Association. All rights reserved.
+          © 2025 North Bombay District Amateur Boxing Association (NBDABA). All rights reserved.
           </p>
         </section>
       </div>

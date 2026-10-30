@@ -309,7 +309,7 @@ export default function RankingsPage() {
             <div className="mb-6 flex items-center gap-5">
               <span className="h-[3px] w-12 bg-[#ff1024]" />
               <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff3042] sm:text-sm">
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </span>
             </div>
 
@@ -322,7 +322,7 @@ export default function RankingsPage() {
               Track verified athlete performance across tournaments,
               categories, medals, and points. Rankings are calculated
               from approved tournament results recorded through the
-              Mumbai Boxing Association system.
+              North Bombay District Amateur Boxing Association (NBDABA) system.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-4">

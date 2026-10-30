@@ -22,15 +22,15 @@ import { news } from "@/data/news";
    ========================================================= */
 
 export const metadata: Metadata = {
-  title: "News & Announcements | Mumbai Boxing Association",
+  title: "News & Announcements | North Bombay District Amateur Boxing Association (NBDABA)",
   description:
-    "Read the latest news, official announcements, boxing activities, athlete development updates and events from the Mumbai Boxing Association.",
+    "Read the latest news, official announcements, boxing activities, athlete development updates and events from the North Bombay District Amateur Boxing Association (NBDABA).",
   keywords: [
-    "Mumbai Boxing Association news",
-    "Mumbai boxing news",
-    "MBA boxing news",
+    "North Bombay District Amateur Boxing Association (NBDABA) news",
+    "NBDABA boxing news",
+    "North Bombay boxing news",
     "boxing announcements Mumbai",
-    "Mumbai boxing",
+    "North Bombay boxing",
     "boxing events Mumbai",
     "boxing academy Mumbai",
   ],
@@ -38,18 +38,18 @@ export const metadata: Metadata = {
     canonical: "/news",
   },
   openGraph: {
-    title: "News & Announcements | Mumbai Boxing Association",
+    title: "News & Announcements | North Bombay District Amateur Boxing Association (NBDABA)",
     description:
-      "Latest news, official announcements and updates from the Mumbai Boxing Association.",
+      "Latest news, official announcements and updates from the North Bombay District Amateur Boxing Association (NBDABA).",
     type: "website",
     url: "/news",
-    siteName: "Mumbai Boxing Association",
+    siteName: "North Bombay District Amateur Boxing Association (NBDABA)",
   },
   twitter: {
     card: "summary",
-    title: "News & Announcements | Mumbai Boxing Association",
+    title: "News & Announcements | North Bombay District Amateur Boxing Association (NBDABA)",
     description:
-      "Latest news, official announcements and updates from the Mumbai Boxing Association.",
+      "Latest news, official announcements and updates from the North Bombay District Amateur Boxing Association (NBDABA).",
   },
 };
 
@@ -135,7 +135,7 @@ export default function NewsPage() {
         <div className="flex items-center gap-4">
           <span className="h-[2px] w-10 bg-[#ff1730]" />
           <p className="text-[10px] font-extrabold uppercase tracking-[0.26em] text-[#ff3045] sm:text-xs">
-            Mumbai Boxing Association
+            North Bombay District Amateur Boxing Association (NBDABA)
           </p>
         </div>
 
@@ -151,7 +151,7 @@ export default function NewsPage() {
           Stay informed with the latest news, official
           announcements, association activities, athlete
           development initiatives and updates from the
-          Mumbai boxing community.
+          North Bombay boxing community.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -382,7 +382,7 @@ export default function NewsPage() {
        
 {/* =====================================================
     LATEST NEWS & ANNOUNCEMENTS
-    Redesigned — Mumbai Boxing Association
+    Redesigned — North Bombay District Amateur Boxing Association (NBDABA)
 ===================================================== */}
 
 <section id="latest-news" className="relative mt-16">
@@ -406,7 +406,7 @@ export default function NewsPage() {
 
       <p className="mt-4 max-w-[720px] text-sm leading-7 text-slate-400 sm:text-base">
         Official updates and important information from the
-        Mumbai Boxing Association.
+        North Bombay District Amateur Boxing Association (NBDABA).
       </p>
     </div>
 
@@ -683,7 +683,7 @@ export default function NewsPage() {
 
                 <p className="mt-6 text-base leading-8 text-slate-500">
                   This page provides updates relating to the
-                  Mumbai Boxing Association, its affiliated
+                  North Bombay District Amateur Boxing Association (NBDABA), its affiliated
                   clubs, athletes, coaches, tournaments and
                   sporting activities.
                 </p>
@@ -726,7 +726,7 @@ export default function NewsPage() {
 
                 <p className="mt-5 text-sm leading-7 text-slate-500">
                   Explore tournaments, rankings and affiliated
-                  academies through the Mumbai Boxing
+                  academies through the NBDABA
                   Association website.
                 </p>
 
@@ -775,7 +775,7 @@ export default function NewsPage() {
               <div className="max-w-2xl">
 
                 <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-500">
-                  Mumbai Boxing Association
+                  North Bombay District Amateur Boxing Association (NBDABA)
                 </p>
 
                 <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">

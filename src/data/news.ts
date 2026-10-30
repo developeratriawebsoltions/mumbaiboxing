@@ -12,14 +12,14 @@ export type NewsItem = {
 export const news: NewsItem[] = [
   {
     id: 1,
-    title: "Mumbai Boxing Association Announces New Competitive Season",
+    title: "North Bombay District Amateur Boxing Association (NBDABA) Announces New Competitive Season",
     date: "2026-09-01",
     category: "Association Update",
     location: "Mumbai, Maharashtra",
     summary:
-      "The Mumbai Boxing Association is preparing for another active competitive season with a focus on athlete development, structured competitions and affiliated clubs.",
+      "The North Bombay District Amateur Boxing Association (NBDABA) is preparing for another active competitive season with a focus on athlete development, structured competitions and affiliated clubs.",
     content: [
-      "The Mumbai Boxing Association has announced the beginning of a new competitive season for boxers, coaches and affiliated clubs across the region.",
+      "The North Bombay District Amateur Boxing Association (NBDABA) has announced the beginning of a new competitive season for boxers, coaches and affiliated clubs across the region.",
       "The association will continue to focus on grassroots athlete development and provide structured opportunities for boxers to participate in recognized competitions.",
       "Affiliated academies and clubs are encouraged to maintain updated athlete records and follow the association's competition and sporting guidelines.",
       "Further tournament announcements, registration information and official circulars will be published through the association's official communication channels.",
@@ -36,7 +36,7 @@ export const news: NewsItem[] = [
     summary:
       "MBA affiliated academies and clubs continue to play an important role in identifying and developing boxing talent at the grassroots level.",
     content: [
-      "Boxing academies affiliated with the Mumbai Boxing Association continue to contribute to the development of young and emerging athletes.",
+      "Boxing academies affiliated with the North Bombay District Amateur Boxing Association (NBDABA) continue to contribute to the development of young and emerging athletes.",
       "Training centres across different locations provide athletes with opportunities to learn boxing fundamentals, improve their technical abilities and prepare for competitive events.",
       "The association remains committed to strengthening its affiliated club network and creating a structured pathway for athletes from grassroots participation to higher-level competitions.",
     ],
@@ -45,7 +45,7 @@ export const news: NewsItem[] = [
 
   {
     id: 3,
-    title: "Mumbai Boxing Community Continues to Grow",
+    title: "NBDABA Community Continues to Grow",
     date: "2026-08-10",
     category: "Community",
     location: "Mumbai, Maharashtra",

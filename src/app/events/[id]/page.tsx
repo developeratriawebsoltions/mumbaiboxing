@@ -264,7 +264,7 @@ export default function TournamentDetailsPage() {
                 />
                 <p>
                   Tournament entry is available to registered boxers with an
-                  active Mumbai Boxing Association membership. Sign in or
+                  active North Bombay District Amateur Boxing Association (NBDABA) membership. Sign in or
                   create a boxer account, complete membership payment if
                   needed, then return here to finish tournament entry.
                 </p>

@@ -331,7 +331,7 @@ export default function RankingsPage() {
               <span className="h-[2px] w-9 bg-red-600" />
 
               <p className="text-[16px] font-bold uppercase tracking-[0.28em] text-red-500">
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </p>
 
             </div>
@@ -347,7 +347,7 @@ export default function RankingsPage() {
 <p className="mt-7 max-w-[850px] text-lg leading-8 text-slate-400 sm:text-xl sm:leading-9 lg:text-2xl">
   Explore verified athlete performances across tournaments, weight
   categories, medals, and ranking points. Every ranking reflects
-  approved tournament results recorded by the Mumbai Boxing Association.
+  approved tournament results recorded by the North Bombay District Amateur Boxing Association (NBDABA).
 </p>
 
 
@@ -683,7 +683,7 @@ export default function RankingsPage() {
 
                             <p className="mt-1 truncate text-[10px] text-slate-600">
                               {ranking.academy?.name ||
-                                "Mumbai Boxing Association"}
+                                "North Bombay District Amateur Boxing Association (NBDABA)"}
                             </p>
 
                           </div>
@@ -927,7 +927,7 @@ export default function RankingsPage() {
 
                         <p className="truncate text-xs text-slate-500">
                           {ranking.academy?.name ||
-                            "Mumbai Boxing Association"}
+                            "North Bombay District Amateur Boxing Association (NBDABA)"}
                         </p>
 
                         {/* Medals */}
@@ -1000,7 +1000,7 @@ export default function RankingsPage() {
 
                               <p className="mt-1 truncate text-[10px] text-slate-600">
                                 {ranking.academy?.name ||
-                                  "Mumbai Boxing Association"}
+                                  "North Bombay District Amateur Boxing Association (NBDABA)"}
                               </p>
 
                             </div>

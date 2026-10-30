@@ -82,7 +82,7 @@ export default function SuperAdminLoginPage() {
             <h1>
               Super Admin <span>Portal</span>
             </h1>
-            <p>Mumbai Boxing Association</p>
+            <p>North Bombay District Amateur Boxing Association (NBDABA)</p>
           </header>
 
           <div className={styles.superAdminCard}>

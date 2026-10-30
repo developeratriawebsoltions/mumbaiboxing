@@ -75,7 +75,7 @@ export default function PublicDashboard() {
           <div className="relative z-10 flex flex-col justify-between gap-7 lg:flex-row lg:items-center">
             <div className="max-w-2xl">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[.18em] text-red-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-400" /> Mumbai Boxing Association
+                <span className="h-1.5 w-1.5 rounded-full bg-red-400" /> North Bombay District Amateur Boxing Association (NBDABA)
               </div>
               <h1 className="text-3xl font-black tracking-tight sm:text-[44px]">Public Directory<span className="text-red-500">.</span></h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">Your gateway to boxing in Mumbai. Explore registered athletes, coaches, academies, rankings, event results and official notices.</p>
@@ -139,7 +139,7 @@ export default function PublicDashboard() {
             )}
           </div>
         </section>
-        <div className="flex items-center gap-2 px-1 text-xs text-slate-500"><CheckCircle2 className="h-4 w-4 shrink-0 text-red-600" /><span>Designed for the Mumbai Boxing Association public directory. Only connected data sources can provide verified records.</span></div>
+        <div className="flex items-center gap-2 px-1 text-xs text-slate-500"><CheckCircle2 className="h-4 w-4 shrink-0 text-red-600" /><span>Designed for the North Bombay District Amateur Boxing Association (NBDABA) public directory. Only connected data sources can provide verified records.</span></div>
       </main>
     </DashboardLayout>
   );

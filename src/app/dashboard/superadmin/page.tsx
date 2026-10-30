@@ -190,7 +190,7 @@ export default function SuperAdminPage() {
           </h1>
 
           <p className="mt-2 text-sm text-slate-500">
-            Manage and monitor the Mumbai Boxing Association.
+            Manage and monitor the North Bombay District Amateur Boxing Association (NBDABA).
           </p>
         </div>
 

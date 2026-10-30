@@ -27,7 +27,7 @@ type LiveMatch = {
 };
 
 const MOCK: LiveMatch = {
-  tournamentName: "Mumbai Boxing Championship 2025",
+  tournamentName: "NBDABA Championship 2025",
   round: "SEMI FINAL",
   redCorner: {
     name: "Vikas Patil",

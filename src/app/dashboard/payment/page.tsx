@@ -103,7 +103,7 @@ async function downloadReceipt(
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
-  doc.text("MUMBAI BOXING ASSOCIATION", W / 2, 43, {
+  doc.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", W / 2, 43, {
     align: "center",
   });
 
@@ -186,7 +186,7 @@ async function downloadReceipt(
   );
 
   doc.text(
-    "Mumbai Boxing Association | mumbaiboxing.in",
+    "North Bombay District Amateur Boxing Association (NBDABA) | mumbaiboxing.in",
     W / 2,
     y + 60,
     { align: "center" }

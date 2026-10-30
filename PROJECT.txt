@@ -1,9 +1,9 @@
-MUMBAI BOXING ASSOCIATION - PROJECT OVERVIEW
-============================================
+NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION (NBDABA) - PROJECT OVERVIEW
+===============================================================================
 
 WHAT THIS PROJECT IS
 --------------------
-A web application for the Mumbai Boxing Association to manage boxers,
+A web application for the North Bombay District Amateur Boxing Association (NBDABA) to manage boxers,
 coaches, academies, tournaments, medical records, certificates, and
 payments. Users sign up / log in by role and get role-specific dashboards.
 

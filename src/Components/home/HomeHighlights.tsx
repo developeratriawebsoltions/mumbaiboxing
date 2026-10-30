@@ -153,7 +153,7 @@ export default function HomeHighlights() {
           <div>
             <p className="mb-2 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-red-600">
               <span className="h-[2px] w-6 bg-red-600" />
-              Mumbai Boxing Association
+              North Bombay District Amateur Boxing Association (NBDABA)
             </p>
             <h2
               id="home-upcoming-tournaments"

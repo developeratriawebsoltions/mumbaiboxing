@@ -93,7 +93,7 @@ function ForgotPasswordForm() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <section className="w-full max-w-md rounded-3xl border border-red-100 bg-white p-6 shadow-xl sm:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-600">
-          Mumbai Boxing Association
+          North Bombay District Amateur Boxing Association (NBDABA)
         </p>
         <h1 className="mt-3 text-2xl font-extrabold text-slate-900">
           Reset your password

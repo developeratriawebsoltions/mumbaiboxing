@@ -288,7 +288,7 @@ function AdminDashboardContent() {
           </h1>
 
           <p className="mt-1 text-sm sm:text-base text-slate-500">
-            Mumbai Boxing Association management overview
+            North Bombay District Amateur Boxing Association (NBDABA) management overview
           </p>
         </div>
 

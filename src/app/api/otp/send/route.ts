@@ -63,11 +63,11 @@ export async function POST(req: NextRequest) {
         from,
         to: normalizedEmail,
         subject: isPasswordReset
-          ? "Reset your Mumbai Boxing Association password"
-          : "Your Mumbai Boxing Association OTP",
+          ? "Reset your North Bombay District Amateur Boxing Association (NBDABA) password"
+          : "Your North Bombay District Amateur Boxing Association (NBDABA) OTP",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2>Mumbai Boxing Association</h2>
+            <h2>North Bombay District Amateur Boxing Association (NBDABA)</h2>
             <p>Your ${isPasswordReset ? "password reset" : "registration"} OTP is:</p>
             <h1 style="letter-spacing: 6px;">${otp}</h1>
             <p>This OTP expires in 5 minutes.</p>

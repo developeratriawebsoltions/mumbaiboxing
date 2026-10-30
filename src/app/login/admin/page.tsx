@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
                 <ShieldCheck size={34} strokeWidth={1.8} aria-hidden="true" />
               </div>
               <h2>Admin Login</h2>
-              <p>Mumbai Boxing Association</p>
+              <p>North Bombay District Amateur Boxing Association (NBDABA)</p>
             </header>
 
             <form onSubmit={handleSubmit}>
@@ -215,7 +215,7 @@ export default function AdminLoginPage() {
           </div>
 
           <footer className={styles.adminFooter}>
-            © 2025 Mumbai Boxing Association. All rights reserved.
+            © 2025 North Bombay District Amateur Boxing Association (NBDABA). All rights reserved.
           </footer>
         </section>
       </div>

@@ -21,7 +21,7 @@ export default function GrievancePage() {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-600">
-                Mumbai Boxing Association
+                North Bombay District Amateur Boxing Association (NBDABA)
               </p>
 
               <h1 className="mt-2 text-3xl font-bold tracking-tight">
@@ -45,7 +45,7 @@ export default function GrievancePage() {
                 If you have a concern regarding registration, membership,
                 tournaments, certificates, payments, academy affiliation,
                 account access, or any association service, please contact the
-                Mumbai Boxing Association with the relevant details.
+                North Bombay District Amateur Boxing Association (NBDABA) with the relevant details.
               </p>
             </section>
 
