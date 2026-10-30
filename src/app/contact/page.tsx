@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-[#05070a] text-white">
+    <main className="contact-page min-h-screen bg-[#f5f4f0] text-[#292824]">
 
 
       {/* =====================================================
@@ -63,25 +63,7 @@ export default function ContactPage() {
       ===================================================== */}
 
     
-<section className="relative isolate min-h-[580px] overflow-hidden border-b border-white/10 bg-[#05070a] sm:min-h-[640px] lg:min-h-[680px] xl:min-h-[720px]">
-
-  {/* Full-width boxing background */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 -z-30 bg-[url('/contact/contact-hero.webp')] bg-cover bg-[position:65%_center] bg-no-repeat sm:bg-[position:60%_center] lg:bg-center"
-  />
-
-  {/* Dark gradient for readability */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-r from-[#05070a]/95 via-[#05070a]/85 to-[#05070a]/30 lg:from-[#05070a]/95 lg:via-[#05070a]/65 lg:to-transparent"
-  />
-
-  {/* Mobile dark overlay */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 -z-10 bg-[#05070a]/20 lg:hidden"
-  />
+<section className="contact-hero relative isolate min-h-[500px] overflow-hidden border-b border-white/10 bg-[#080b10] sm:min-h-[540px] lg:min-h-[580px]">
 
   {/* Red diagonal graphic */}
   <div
@@ -89,30 +71,8 @@ export default function ContactPage() {
     className="pointer-events-none absolute inset-y-0 left-[58%] hidden w-[110px] -skew-x-[28deg] bg-gradient-to-b from-red-600/50 via-red-600/25 to-transparent lg:block"
   />
 
-  {/* Subtle grid on left */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 opacity-[0.045] lg:block"
-    style={{
-      backgroundImage:
-        "linear-gradient(rgba(255,255,255,0.7) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.7) 1px,transparent 1px)",
-      backgroundSize: "65px 65px",
-    }}
-  />
-
-  {/* Decorative red dots */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute left-5 top-24 hidden h-28 w-28 opacity-70 lg:block"
-    style={{
-      backgroundImage:
-        "radial-gradient(circle,#ff1730 2px,transparent 2.5px)",
-      backgroundSize: "29px 29px",
-    }}
-  />
-
   {/* Main content */}
-  <div className="relative mx-auto flex min-h-[580px] max-w-[1600px] flex-col justify-center px-5 py-16 sm:min-h-[640px] sm:px-8 lg:min-h-[680px] lg:px-12 lg:py-24 xl:min-h-[720px] xl:px-16">
+  <div className="relative mx-auto flex min-h-[500px] max-w-[1900px] flex-col justify-center px-5 py-14 sm:min-h-[540px] sm:px-8 lg:min-h-[580px] lg:px-12 lg:py-20 xl:px-16">
 
     <div className="max-w-[800px]">
 
@@ -195,13 +155,13 @@ export default function ContactPage() {
           CONTACT INFORMATION
       ===================================================== */}
 
-<section className="relative overflow-hidden border-b border-slate-200 bg-[#f7f8fa]">
+<section className="contact-details relative overflow-hidden border-b border-slate-200 bg-[#f5f4f0]">
 
   {/* Subtle background accents */}
   <div className="pointer-events-none absolute -left-40 top-10 h-[420px] w-[420px] rounded-full bg-red-500/[0.035] blur-[120px]" />
   <div className="pointer-events-none absolute -right-40 bottom-0 h-[420px] w-[420px] rounded-full bg-red-500/[0.035] blur-[120px]" />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
     {/* SECTION HEADER */}
     <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
@@ -242,7 +202,7 @@ export default function ContactPage() {
       {/* EMAIL CARD */}
       <a
         href="mailto:info@mumbaiboxing.org"
-        className="group relative flex min-h-[330px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white p-7 shadow-[0_8px_35px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1.5 hover:border-red-200 hover:shadow-[0_20px_55px_rgba(15,23,42,0.10)] sm:p-9"
+        className="contact-method-card group relative flex min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 shadow-[0_8px_35px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-[0_20px_55px_rgba(15,23,42,0.10)] sm:p-8"
       >
 
         <span className="absolute right-8 top-8 text-[12px] font-black tracking-[0.12em] text-slate-300">
@@ -281,7 +241,7 @@ export default function ContactPage() {
       {/* PHONE CARD */}
       <a
         href="tel:+912212345678"
-        className="group relative flex min-h-[330px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white p-7 shadow-[0_8px_35px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1.5 hover:border-red-200 hover:shadow-[0_20px_55px_rgba(15,23,42,0.10)] sm:p-9"
+        className="contact-method-card group relative flex min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 shadow-[0_8px_35px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-[0_20px_55px_rgba(15,23,42,0.10)] sm:p-8"
       >
 
         <span className="absolute right-8 top-8 text-[12px] font-black tracking-[0.12em] text-slate-300">
@@ -318,7 +278,7 @@ export default function ContactPage() {
       </a>
 
       {/* LOCATION CARD */}
-      <div className="group relative flex min-h-[330px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white p-7 shadow-[0_8px_35px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1.5 hover:border-red-200 hover:shadow-[0_20px_55px_rgba(15,23,42,0.10)] sm:p-9 md:col-span-2 lg:col-span-1">
+      <div className="contact-method-card group relative flex min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 shadow-[0_8px_35px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-red-200 hover:shadow-[0_20px_55px_rgba(15,23,42,0.10)] sm:p-8 md:col-span-2 lg:col-span-1">
 
         <span className="absolute right-8 top-8 text-[12px] font-black tracking-[0.12em] text-slate-300">
           03 / 03
@@ -362,11 +322,11 @@ export default function ContactPage() {
           ENQUIRY SECTION
       ===================================================== */}
 
-<section className="relative overflow-hidden border-y border-slate-200 bg-white">
+<section className="contact-enquiries relative overflow-hidden border-y border-slate-200 bg-white">
   {/* Soft background decoration */}
   <div className="pointer-events-none absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-red-500/[0.035] blur-[110px]" />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:gap-20">
 
@@ -549,7 +509,7 @@ export default function ContactPage() {
     EXPLORE MBA — WHITE PREMIUM DESIGN
 ===================================================== */}
 
-<section className="relative isolate overflow-hidden bg-[#f7f9fc]">
+<section className="contact-links relative isolate overflow-hidden bg-[#f5f4f0]">
 
   {/* Decorative background */}
   <div
@@ -574,7 +534,7 @@ export default function ContactPage() {
     }}
   />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-10 lg:py-28">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-20 sm:px-7 sm:py-24 lg:px-10 lg:py-28">
 
     {/* Heading */}
     <div className="mx-auto max-w-[1000px] text-center">
@@ -682,20 +642,11 @@ export default function ContactPage() {
     MEMBERSHIP CTA — PREMIUM SPLIT DESIGN
 ===================================================== */}
 
-<section className="relative isolate overflow-hidden bg-[#070a10]">
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 opacity-[0.025]"
-    style={{
-      backgroundImage:
-        "linear-gradient(#ffffff 1px,transparent 1px),linear-gradient(90deg,#ffffff 1px,transparent 1px)",
-      backgroundSize: "64px 64px",
-    }}
-  />
+<section className="contact-membership relative isolate overflow-hidden bg-[#070a10]">
 
   <div className="pointer-events-none absolute -right-32 top-0 h-[500px] w-[500px] rounded-full bg-red-600/10 blur-[120px]" />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
     <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
       <div className="relative z-10">
         <div className="flex items-center gap-3">
@@ -816,36 +767,6 @@ export default function ContactPage() {
     </div>
   </div>
 </section>
-
-
-{/* =====================================================
-    BOTTOM BRAND LINE
-===================================================== */}
-
-<section className="border-t border-white/10 bg-[#070b10]">
-
-  <div className="mx-auto max-w-[1600px] px-5 py-9 sm:px-7 lg:px-10">
-
-    <div className="flex items-center justify-center gap-4">
-
-      <span className="h-px w-10 bg-white/20 sm:w-20" />
-
-      <span className="h-2 w-2 shrink-0 rounded-full bg-[#ff1730] shadow-[0_0_12px_rgba(255,23,48,0.8)]" />
-
-      <p className="text-center text-[9px] font-bold uppercase tracking-[0.3em] text-slate-400 sm:text-[11px]">
-        Train · Compete · Belong
-      </p>
-
-      <span className="h-2 w-2 shrink-0 rounded-full bg-[#ff1730] shadow-[0_0_12px_rgba(255,23,48,0.8)]" />
-
-      <span className="h-px w-10 bg-white/20 sm:w-20" />
-
-    </div>
-
-  </div>
-</section>
-
-
     </main>
   );
 }

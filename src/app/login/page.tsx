@@ -5,15 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
-  Dumbbell,
   Eye,
   EyeOff,
-  Landmark,
   LockKeyhole,
   Mail,
   Scale,
-  ShieldCheck,
-  Trophy,
+  Dumbbell,
+  Landmark,
   UserRound,
 } from "lucide-react";
 import { Suspense } from "react";
@@ -93,71 +91,18 @@ function LoginForm() {
   return (
     <main className={styles.loginPage}>
       <div className={styles.loginShell}>
-        <section className={styles.heroPanel} aria-label="North Bombay District Amateur Boxing Association (NBDABA)">
-          <div className={styles.heroRings} aria-hidden="true" />
-
-          <Link className={styles.brand} href="/" aria-label="MBA home">
-            <span className={styles.brandLogo} aria-hidden="true">
-              MBA
-            </span>
-            <span className={styles.brandDivider} />
-            <span className={styles.brandName}>
-              MUMBAI
-              <br />
-              BOXING
-              <br />
-              ASSOCIATION
-            </span>
-          </Link>
-
-          <div className={styles.heroCopy}>
-            <span className={styles.heroEyebrow}>
-              <Trophy size={15} aria-hidden="true" />
-              THE SPIRIT OF CHAMPIONS
-            </span>
-            <h1>
-              More Than
-              <br />
-              <span>A Sport</span>
-            </h1>
-            <div className={styles.heroUnderline} />
-            <p>
-              Building Stronger
-              <br />
-              Athletes for a
-              <br />
-              Brighter Tomorrow.
-            </p>
-            <div className={styles.heroStats}>
-              <div>
-                <strong>01</strong>
-                <span>ONE COMMUNITY</span>
-              </div>
-              <div>
-                <strong>∞</strong>
-                <span>LIMITLESS POTENTIAL</span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.heroBottom}>
-            <ShieldCheck size={17} aria-hidden="true" />
-            <span>EMPOWERING THE NEXT GENERATION</span>
-          </div>
-        </section>
-
         <section className={styles.loginPanel} aria-label="Sign in">
           <div className={styles.loginCard}>
             <header className={styles.loginHeader}>
               <div className={styles.mobileBrand}>
-                <span className={styles.mobileLogo}>MBA</span>
+                <span className={styles.mobileLogo}>NBDABA</span>
                 <span>NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION</span>
               </div>
               <div className={styles.welcomeMark} aria-hidden="true">
                 <LockKeyhole size={20} />
               </div>
               <h2>Welcome Back</h2>
-              <p>Sign in to your MBA portal account</p>
+              <p>Sign in to your NBDABA portal account</p>
               {!tournamentId && (
                 <Link className={styles.tournamentLink} href="/events">
                   Browse tournaments
@@ -330,7 +275,7 @@ function LoginForm() {
           </div>
 
           <footer className={styles.loginFooter}>
-            © 2025 North Bombay District Amateur Boxing Association (NBDABA). All rights reserved.
+            © 2026 North Bombay District Amateur Boxing Association (NBDABA). All rights reserved.
           </footer>
         </section>
       </div>

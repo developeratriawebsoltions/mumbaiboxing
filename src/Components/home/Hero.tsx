@@ -158,7 +158,7 @@ export default function Hero() {
         className="mba-red-streak mba-red-streak-two"
       />
 
-      <div className="mba-hero-inner relative mx-auto grid w-full max-w-[1600px] grid-cols-1 items-start gap-8 px-5 pb-12 pt-9 sm:px-8 md:min-h-[calc(100svh-80px)] md:px-8 md:pb-9 md:pt-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10 xl:px-10 xl:pt-12 2xl:px-10">
+      <div className="mba-hero-inner relative mx-auto grid w-full max-w-[1900px] grid-cols-1 items-start gap-8 px-5 pb-12 pt-9 sm:px-8 md:min-h-[calc(100svh-80px)] md:px-8 md:pb-9 md:pt-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10 xl:px-10 xl:pt-12 2xl:px-10">
         {/* LEFT CONTENT */}
         <div className="mba-hero-copy relative z-10 w-full mt-12 max-w-[650px]">
           <div className="mb-5 flex flex-wrap items-center gap-2 text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#101820] sm:text-[13px]">

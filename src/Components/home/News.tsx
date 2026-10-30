@@ -24,7 +24,7 @@ export default function News() {
       id="news"
       className="relative w-full overflow-hidden border-t border-slate-100 bg-white"
     >
-      <div className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20">
+      <div className="mx-auto max-w-[1900px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20">
 
         {/* SECTION HEADER */}
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">

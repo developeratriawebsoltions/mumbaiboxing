@@ -219,7 +219,7 @@ export default function UpcomingTournaments() {
           CONTENT
       ===================================================== */}
 
-      <div className="relative mx-auto w-full max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+      <div className="relative mx-auto w-full max-w-[1900px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
 
         {/* =====================================================
             HEADER

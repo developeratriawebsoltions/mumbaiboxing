@@ -135,13 +135,13 @@ function CommitteeMemberCard({ member }: { member: typeof committeeMembers[0] })
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[#05070a] text-white">
+    <main className="about-page min-h-screen bg-[#f5f4f0] text-[#292824]">
 
       {/* =========================================================
           HERO
       ========================================================= */}
 
-      <section className="relative isolate min-h-[680px] overflow-hidden border-b border-white/10 bg-[#05070a] lg:min-h-[740px]">
+      <section className="about-hero relative isolate min-h-[600px] overflow-hidden border-b border-white/10 bg-[#05070a] lg:min-h-[660px]">
         <div className="pointer-events-none absolute inset-0">
           <Image
             src="/about/about-hero.png"
@@ -157,22 +157,7 @@ export default function AboutPage() {
 
         {/* Ambient Glow */}
 
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-red-600/15 blur-3xl" />
-
-        <div className="pointer-events-none absolute -bottom-48 -left-48 h-[520px] w-[520px] rounded-full bg-red-600/10 blur-3xl" />
-
-        {/* Grid */}
-
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        <div className="relative z-10 mx-auto w-full max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+        <div className="about-hero-content relative z-10 mx-auto w-full max-w-[1900px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
           {/* Breadcrumb */}
 
           <div className="mb-10 flex items-center gap-2 text-xs text-slate-500">
@@ -251,7 +236,7 @@ export default function AboutPage() {
       ========================================================= */}
 
      
-<section className="relative overflow-hidden border-b border-slate-200 bg-[#f8fafc]">
+<section className="about-intro relative overflow-hidden border-b border-slate-200 bg-[#f5f4f0]">
   {/* Subtle decorative background */}
   <div
     aria-hidden="true"
@@ -267,7 +252,7 @@ export default function AboutPage() {
 
   <div className="pointer-events-none absolute -right-32 -top-40 h-[480px] w-[480px] rounded-full bg-red-100/50 blur-[110px]" />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
 
     <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
 
@@ -404,7 +389,7 @@ export default function AboutPage() {
   
 <section
   id="vision"
-  className="relative isolate overflow-hidden bg-[#070b10] py-16 sm:py-20 lg:py-24"
+  className="about-vision relative isolate overflow-hidden bg-[#070b10] py-16 sm:py-20 lg:py-24"
 >
   {/* Background decorative grid */}
   <div
@@ -420,7 +405,7 @@ export default function AboutPage() {
   {/* Red ambient glow */}
   <div className="pointer-events-none absolute -right-40 top-0 h-[550px] w-[550px] rounded-full bg-red-600/10 blur-[130px]" />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 sm:px-7 lg:px-8 xl:px-10 2xl:px-12">
+  <div className="relative mx-auto max-w-[1900px] px-5 sm:px-7 lg:px-8 xl:px-10 2xl:px-12">
 
     {/* MAIN VISION CARD */}
     <div className="relative isolate overflow-hidden rounded-[26px] border border-red-600/40 bg-[#0b0d12] shadow-[0_30px_90px_rgba(0,0,0,.35)] sm:rounded-[34px]">
@@ -539,7 +524,7 @@ export default function AboutPage() {
           MISSION
       ========================================================= */}
 
-<section className="relative overflow-hidden bg-[#05080d] text-white">
+<section className="about-mission relative overflow-hidden bg-[#05080d] text-white">
   {/* Subtle background grid */}
   <div
     aria-hidden="true"
@@ -564,7 +549,7 @@ export default function AboutPage() {
     <div className="absolute inset-0 bg-gradient-to-r from-[#05080d] via-[#05080d]/90 to-[#05080d]/10" />
     <div className="absolute inset-0 bg-gradient-to-t from-[#05080d] via-transparent to-transparent" />
 
-    <div className="relative mx-auto flex min-h-[420px] max-w-[1600px] items-center px-5 py-20 sm:px-8 md:min-h-[480px] lg:min-h-[510px] lg:px-12">
+    <div className="relative mx-auto flex min-h-[420px] max-w-[1900px] items-center px-5 py-20 sm:px-8 md:min-h-[480px] lg:min-h-[510px] lg:px-12">
       <div className="max-w-[670px]">
         <div className="mb-6 flex items-center gap-4">
           <span className="h-[3px] w-12 bg-[#ff102b]" />
@@ -592,7 +577,7 @@ export default function AboutPage() {
   </div>
 
   {/* MISSION CARDS */}
-  <div className="relative z-10 mx-auto max-w-[1600px] px-5 pb-20 sm:px-8 lg:px-12 lg:pb-28">
+  <div className="relative z-10 mx-auto max-w-[1900px] px-5 pb-20 sm:px-8 lg:px-12 lg:pb-28">
     <div className="-mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
       {missions.map((mission, index) => {
         const Icon = mission.icon;
@@ -678,7 +663,7 @@ export default function AboutPage() {
 
    
 
-<section className="relative isolate overflow-hidden border-b border-white/10 bg-[#070b10]">
+<section className="about-focus relative isolate overflow-hidden border-b border-white/10 bg-[#070b10]">
 
   {/* FULL SECTION BACKGROUND IMAGE */}
   <div
@@ -713,7 +698,7 @@ export default function AboutPage() {
   {/* Mobile background darkening */}
   <div className="pointer-events-none absolute inset-0 -z-10 bg-[#070b10]/30 lg:bg-transparent" />
 
-  <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28">
 
     <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
 
@@ -813,26 +798,9 @@ export default function AboutPage() {
 
       <section
         id="committee"
-        className="relative overflow-hidden border-b border-white/10 bg-[#090c11]"
+        className="about-committee relative overflow-hidden border-b border-[#e5e2dc] bg-[#f5f4f0]"
       >
-        {/* Ambient glow */}
-
-        <div className="pointer-events-none absolute -right-40 top-20 h-96 w-96 rounded-full bg-red-600/5 blur-3xl" />
-
-        <div className="pointer-events-none absolute -left-40 bottom-0 h-96 w-96 rounded-full bg-red-600/[0.035] blur-3xl" />
-
-        {/* Grid */}
-
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.018]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-
-        <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+        <div className="relative mx-auto max-w-[1900px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
           {/* =====================================================
               COMMITTEE HEADER
           ===================================================== */}
@@ -874,13 +842,9 @@ export default function AboutPage() {
           GOVERNANCE STATEMENT
       ========================================================= */}
 
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#05070a] text-white">
-        <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-red-600/10 blur-3xl" />
-
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-red-600/5 blur-3xl" />
-
-        <div className="relative mx-auto max-w-[1600px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
-          <div className="rounded-[28px] border border-white/10 bg-[#090c11] p-7 sm:p-10 lg:p-12">
+      <section className="about-governance relative overflow-hidden border-b border-[#e5e2dc] bg-white">
+        <div className="relative mx-auto max-w-[1900px] px-5 py-20 sm:px-7 sm:py-24 lg:px-8 lg:py-28 xl:px-10 2xl:px-12">
+          <div className="rounded-2xl border border-[#e5e2dc] bg-[#f5f4f0] p-7 sm:p-10 lg:p-12">
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
               <div className="max-w-[850px]">
                 <div className="flex items-center gap-3">
@@ -926,8 +890,8 @@ export default function AboutPage() {
           REGISTRATION
       ========================================================= */}
 
-      <section className="border-b border-white/10 bg-[#090c11]">
-        <div className="mx-auto max-w-[1600px] px-5 py-8 sm:px-7 lg:px-8 xl:px-10 2xl:px-12">
+      <section className="about-registration border-b border-[#e5e2dc] bg-[#f5f4f0]">
+        <div className="mx-auto max-w-[1900px] px-5 py-8 sm:px-7 lg:px-8 xl:px-10 2xl:px-12">
           <div className="flex flex-col gap-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Award

@@ -55,7 +55,7 @@ export default function Stats() {
         />
       </div>
 
-      <div className="relative mx-auto w-full max-w-[1600px]">
+      <div className="relative mx-auto w-full max-w-[1900px]">
 
         {/* =====================================================
             STATS CARD

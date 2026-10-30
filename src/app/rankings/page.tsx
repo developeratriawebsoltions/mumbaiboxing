@@ -268,11 +268,11 @@ export default function RankingsPage() {
     );
 
   return (
-    <main className="min-h-screen bg-[#05070a] text-white">
+    <main className="rankings-page min-h-screen bg-[#f5f4f0] text-[#262522]">
 
       {/* ================= RANKINGS HERO ================= */}
 
-      <section className="relative isolate overflow-hidden bg-[#05080c] text-white">
+      <section className="rankings-hero relative isolate overflow-hidden bg-[#05080c] text-white">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-20 bg-[url('/rankings/rankings-hero.png')] bg-cover bg-no-repeat bg-[position:65%_center] lg:bg-center"
@@ -285,7 +285,7 @@ export default function RankingsPage() {
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]"
+          className="rankings-grid pointer-events-none absolute inset-0 -z-10 opacity-[0.06]"
           style={{
             backgroundImage:
               "linear-gradient(90deg, white 1px, transparent 1px), linear-gradient(white 1px, transparent 1px)",
@@ -293,7 +293,7 @@ export default function RankingsPage() {
           }}
         />
 
-        <div className="relative mx-auto flex min-h-[610px] max-w-[1650px] flex-col justify-center px-5 py-16 sm:px-8 lg:min-h-[560px] lg:px-12 xl:px-16">
+        <div className="relative mx-auto flex min-h-[610px] max-w-[1900px] flex-col justify-center px-5 py-16 sm:px-8 lg:min-h-[560px] lg:px-12 xl:px-16">
           <nav
             aria-label="Breadcrumb"
             className="mb-12 flex items-center gap-3 text-sm font-medium text-slate-300"
@@ -350,8 +350,8 @@ export default function RankingsPage() {
 
       {/* ================= LIVE STATISTICS ================= */}
 
-      <section className="border-y border-white/20 bg-[#080c11] text-white">
-        <div className="mx-auto grid max-w-[1650px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
+      <section className="rankings-stats border-y border-white/20 bg-[#080c11] text-white">
+        <div className="mx-auto grid max-w-[1900px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12 xl:px-16">
           {[
             {
               label: "Ranked Athletes",
@@ -408,7 +408,7 @@ export default function RankingsPage() {
           RANKING CONTENT
       ========================================================= */}
 
-      <section id="athlete-rankings" className="relative overflow-hidden bg-[#05070a]">
+      <section id="athlete-rankings" className="rankings-content relative overflow-hidden bg-[#f5f4f0]">
 
         <div className="pointer-events-none absolute -left-40 top-40 h-[500px] w-[500px] rounded-full bg-red-600/[0.035] blur-[150px]" />
 
@@ -423,7 +423,7 @@ export default function RankingsPage() {
           }}
         />
 
-        <div className="relative mx-auto max-w-[1600px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
+        <div className="relative mx-auto max-w-[1900px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
 
           {/* =====================================================
               TITLE

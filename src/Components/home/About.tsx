@@ -110,7 +110,7 @@ export default function About() {
 
         <div
           className="
-            relative mx-auto grid w-full max-w-[1500px]
+            relative mx-auto grid w-full max-w-[1900px]
             grid-cols-1 items-center gap-12
             px-5 pb-20 pt-20
             sm:px-8 sm:py-24
@@ -267,14 +267,14 @@ export default function About() {
       </div>
 
       {/* SECTION DIVIDER */}
-      <div className="mx-auto max-w-[1380px] px-5 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-[1900px] px-5 sm:px-8 lg:px-12">
         <div className="h-px w-full bg-[#e6e9ee]" />
       </div>
 
       {/* MANAGING COMMITTEE */}
       <div
         className="
-          relative mx-auto w-full max-w-[1500px]
+          relative mx-auto w-full max-w-[1900px]
           px-5 pb-20 pt-20
           sm:px-8 sm:pb-24
           lg:px-12 lg:pt-24

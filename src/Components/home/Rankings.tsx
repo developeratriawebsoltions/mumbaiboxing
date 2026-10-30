@@ -347,7 +347,7 @@ export default function RankingsPage() {
 <p className="mt-7 max-w-[850px] text-lg leading-8 text-slate-400 sm:text-xl sm:leading-9 lg:text-2xl">
   Explore verified athlete performances across tournaments, weight
   categories, medals, and ranking points. Every ranking reflects
-  approved tournament results recorded by the North Bombay District Amateur Boxing Association (NBDABA).
+  approved tournament results recorded by the Mumbai Boxing Association.
 </p>
 
 

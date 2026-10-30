@@ -53,7 +53,7 @@ export default function Notices() {
       id="news"
       className="w-full overflow-hidden bg-white"
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 xl:px-10 2xl:py-24">
+      <div className="mx-auto w-full max-w-[1900px] px-4 py-16 sm:px-6 sm:py-20 lg:px-8 xl:px-10 2xl:py-24">
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.12fr_0.88fr] xl:gap-7">
 

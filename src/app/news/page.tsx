@@ -69,7 +69,7 @@ export default function NewsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#05070a] text-white">
+    <main className="news-page min-h-screen bg-[#f5f4f0] text-[#292824]">
 
       {/* =====================================================
           HERO
@@ -80,18 +80,7 @@ export default function NewsPage() {
     NEWS & ANNOUNCEMENTS — REDESIGNED HERO
 ===================================================== */}
 
-<section className="relative isolate overflow-hidden border-b border-white/10 bg-[#070a0f]">
-
-  {/* Background decorative elements */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 opacity-[0.025]"
-    style={{
-      backgroundImage:
-        "linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,.7) 1px,transparent 1px)",
-      backgroundSize: "56px 56px",
-    }}
-  />
+<section className="news-hero relative isolate overflow-hidden border-b border-white/10 bg-[#070a0f]">
 
   {/* Red diagonal stripes */}
   <div
@@ -103,20 +92,8 @@ export default function NewsPage() {
     className="pointer-events-none absolute -bottom-40 -right-16 hidden h-[600px] w-28 -skew-x-[28deg] bg-red-700/25 lg:block"
   />
 
-  <div className="pointer-events-none absolute -left-40 bottom-[-200px] h-[500px] w-[500px] rounded-full bg-red-600/15 blur-[130px]" />
 
-  {/* Dotted pattern */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute right-8 top-12 hidden h-32 w-32 opacity-30 lg:block"
-    style={{
-      backgroundImage:
-        "radial-gradient(#ff263b 1.5px,transparent 1.5px)",
-      backgroundSize: "24px 24px",
-    }}
-  />
-
-  <div className="relative mx-auto max-w-[1600px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
+  <div className="relative mx-auto max-w-[1900px] px-5 py-16 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
 
     {/* Breadcrumb */}
     <nav aria-label="Breadcrumb" className="mb-12 flex items-center gap-3 text-xs">
@@ -192,14 +169,6 @@ export default function NewsPage() {
 
       {/* RIGHT SIDE */}
       <div className="relative z-10">
-
-        {/* Decorative news symbol */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-20 top-1/2 hidden h-56 w-56 -translate-y-1/2 items-center justify-center rounded-[40px] border border-red-500/20 bg-[#121019]/80 text-red-500/50 shadow-[0_0_90px_rgba(220,38,38,0.12)] -rotate-12 xl:flex"
-        >
-          <Newspaper size={110} strokeWidth={1.1} />
-        </div>
 
         <div className="relative ml-auto max-w-[520px] space-y-3">
 
@@ -322,26 +291,10 @@ export default function NewsPage() {
           NEWS CONTENT
       ===================================================== */}
 
-      <section className="relative overflow-hidden bg-[#090c11]">
+      <section className="news-content relative overflow-hidden bg-[#f5f4f0]">
 
-        {/* Ambient background */}
 
-        <div className="pointer-events-none absolute -left-40 top-80 h-[500px] w-[500px] rounded-full bg-red-600/[0.035] blur-[150px]" />
-
-        <div className="pointer-events-none absolute -right-40 top-[45%] h-[500px] w-[500px] rounded-full bg-red-900/[0.04] blur-[150px]" />
-
-        {/* Grid */}
-
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.018]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)",
-            backgroundSize: "72px 72px",
-          }}
-        />
-
-        <div className="relative mx-auto max-w-[1600px] px-5 py-14 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
+        <div className="relative mx-auto max-w-[1900px] px-5 py-14 sm:px-7 sm:py-20 lg:px-8 lg:py-24 xl:px-10 2xl:px-12">
 
           {/* =================================================
               STATISTICS
@@ -813,25 +766,6 @@ export default function NewsPage() {
             </div>
 
           </section>
-
-          {/* Bottom decoration */}
-
-          <div className="mt-16 flex items-center justify-center gap-3 sm:mt-20">
-
-            <span className="h-px w-16 bg-white/[0.07]" />
-
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-
-            <span className="text-[8px] font-semibold uppercase tracking-[0.3em] text-slate-700">
-              Train · Compete · Belong
-            </span>
-
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-
-            <span className="h-px w-16 bg-white/[0.07]" />
-
-          </div>
-
         </div>
 
       </section>

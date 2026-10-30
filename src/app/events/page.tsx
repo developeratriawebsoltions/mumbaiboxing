@@ -215,11 +215,11 @@ export default function EventsPage() {
         )}
 
         {loading && (
-          <div className="grid max-w-[840px] gap-5">
-            {[1, 2].map((item) => (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((item) => (
               <div
                 key={item}
-                className="h-[326px] animate-pulse rounded-[18px] border border-[#e3e9f1] bg-white shadow-[0_14px_40px_rgba(20,38,62,0.06)]"
+                className="h-[420px] animate-pulse rounded-[18px] border border-[#e3e9f1] bg-white shadow-[0_14px_40px_rgba(20,38,62,0.06)]"
                 aria-label="Loading tournaments"
               />
             ))}
@@ -227,7 +227,7 @@ export default function EventsPage() {
         )}
 
         {!loading && error && (
-          <div className="max-w-[840px] rounded-[18px] border border-red-100 bg-white px-6 py-12 text-center shadow-[0_14px_40px_rgba(20,38,62,0.06)]">
+          <div className="rounded-[18px] border border-red-100 bg-white px-6 py-12 text-center shadow-[0_14px_40px_rgba(20,38,62,0.06)]">
             <h2 className="text-lg font-bold text-[#101b2d]">
               Events could not load
             </h2>
@@ -245,7 +245,7 @@ export default function EventsPage() {
         )}
 
         {!loading && !error && filtered.length === 0 && (
-          <div className="max-w-[840px] rounded-[18px] border border-[#e3e9f1] bg-white px-6 py-16 text-center shadow-[0_14px_40px_rgba(20,38,62,0.06)]">
+          <div className="rounded-[18px] border border-[#e3e9f1] bg-white px-6 py-16 text-center shadow-[0_14px_40px_rgba(20,38,62,0.06)]">
             <CalendarDays size={36} className="mx-auto text-[#f50919]" />
             <h2 className="mt-4 text-lg font-bold text-[#101b2d]">
               No tournaments found
@@ -257,7 +257,7 @@ export default function EventsPage() {
         )}
 
         {!loading && !error && filtered.length > 0 && (
-          <div className="grid max-w-[840px] gap-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((tournament) => {
               const isOpen = tournament.status.toLowerCase() === "open";
               const badgeStyle = isOpen
@@ -269,14 +269,14 @@ export default function EventsPage() {
               return (
                 <article
                   key={tournament.id}
-                  className="group flex flex-col gap-5 rounded-[18px] border border-[#e3e9f1] bg-white p-3 shadow-[0_14px_40px_rgba(20,38,62,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(20,38,62,0.12)] sm:flex-row sm:gap-7 sm:p-3"
+                  className="group flex flex-col rounded-[18px] border border-[#e3e9f1] bg-white shadow-[0_14px_40px_rgba(20,38,62,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_48px_rgba(20,38,62,0.12)] overflow-hidden"
                 >
-                  <div className="relative h-[230px] w-full shrink-0 overflow-hidden rounded-[13px] bg-[#e8edf3] sm:h-[304px] sm:w-[292px]">
+                  <div className="relative h-[220px] w-full shrink-0 overflow-hidden bg-[#e8edf3]">
                     <Image
                       src={tournament.imageUrl || "/home/hero-bg-mobile.png"}
                       alt={tournament.name}
                       fill
-                      sizes="(max-width: 640px) 100vw, 292px"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       loading="eager"
                       fetchPriority="high"
                       unoptimized
@@ -284,10 +284,10 @@ export default function EventsPage() {
                     />
                   </div>
 
-                  <div className="flex min-w-0 flex-1 flex-col px-2 pb-2 pt-1 sm:py-3 sm:pr-5">
+                  <div className="flex flex-1 flex-col p-5">
                     <div className="flex items-center justify-between gap-3">
                       <span
-                        className={`inline-flex min-h-[34px] items-center gap-2 rounded-full px-3.5 text-xs font-bold ${badgeStyle}`}
+                        className={`inline-flex min-h-[30px] items-center gap-2 rounded-full px-3 text-xs font-bold ${badgeStyle}`}
                       >
                         <span
                           className={`h-2 w-2 rounded-full ${
@@ -296,12 +296,12 @@ export default function EventsPage() {
                         />
                         {statusLabel(tournament.status)}
                       </span>
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff0f1] text-[#f50919]">
-                        <ArrowUpRight size={17} aria-hidden="true" />
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#fff0f1] text-[#f50919]">
+                        <ArrowUpRight size={15} aria-hidden="true" />
                       </span>
                     </div>
 
-                    <h2 className="mt-3 text-[23px] font-black leading-tight tracking-[-0.035em] text-[#101b2d] sm:text-[25px]">
+                    <h2 className="mt-3 text-[19px] font-black leading-tight tracking-[-0.03em] text-[#101b2d]">
                       {tournament.name}
                     </h2>
 
@@ -324,13 +324,13 @@ export default function EventsPage() {
                       </EventDetail>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-3 sm:mt-auto">
+                    <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
                       <Link
                         href={tournamentUrl(tournament)}
-                        className="inline-flex min-h-[52px] w-full items-center justify-center gap-4 rounded-full bg-[#f50919] px-6 text-sm font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_10px_22px_rgba(245,9,25,0.15)] transition hover:bg-[#d60013] sm:w-fit sm:min-w-[208px]"
+                        className="inline-flex min-h-[46px] w-full items-center justify-center gap-3 rounded-full bg-[#f50919] px-5 text-sm font-extrabold uppercase tracking-[0.06em] text-white shadow-[0_10px_22px_rgba(245,9,25,0.15)] transition hover:bg-[#d60013]"
                       >
                         View details
-                        <ArrowRight size={17} aria-hidden="true" />
+                        <ArrowRight size={15} aria-hidden="true" />
                       </Link>
                       <TournamentShareButton tournament={tournament} />
                     </div>

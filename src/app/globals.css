@@ -926,6 +926,375 @@ video {
   }
 }
 
+/* Rankings and academies pages */
+.rankings-page,
+.academies-page,
+.news-page {
+  --page-ink: #292824;
+  --page-muted: #716e67;
+  --page-faint: #918d85;
+  --page-border: #e5e2dc;
+  color: var(--page-ink);
+  background: #f5f4f0;
+}
+
+.rankings-page .rankings-hero,
+.academies-page .academies-hero {
+  color: #fff;
+}
+
+.rankings-page .rankings-hero [class~="text-white"],
+.academies-page .academies-hero [class~="text-white"]:not(a):not(button) {
+  color: #fff !important;
+}
+
+.rankings-page .rankings-hero[class~="text-white"] {
+  color: #fff !important;
+}
+
+.rankings-page .rankings-hero [class~="text-slate-200"],
+.academies-page .academies-hero [class~="text-slate-200"] {
+  color: #e2e4e6 !important;
+}
+
+.rankings-page .rankings-hero [class~="text-slate-300"],
+.academies-page .academies-hero [class~="text-slate-300"] {
+  color: #cbd1d7 !important;
+}
+
+.rankings-page .rankings-hero [class~="text-slate-400"],
+.academies-page .academies-hero [class~="text-slate-400"] {
+  color: #aab2bb !important;
+}
+
+.rankings-page .rankings-hero [class~="text-slate-500"],
+.academies-page .academies-hero [class~="text-slate-500"] {
+  color: #89929d !important;
+}
+
+.rankings-page .rankings-hero [class~="text-slate-600"],
+.academies-page .academies-hero [class~="text-slate-600"] {
+  color: #78828e !important;
+}
+
+.rankings-page [class~="text-white"],
+.academies-page [class~="text-white"]:not(a):not(button),
+.news-page .news-content [class~="text-white"] {
+  color: var(--page-ink) !important;
+}
+
+.rankings-page [class~="text-slate-200"],
+.rankings-page [class~="text-slate-300"],
+.academies-page [class~="text-slate-200"],
+.academies-page [class~="text-slate-300"],
+.news-page .news-content [class~="text-slate-200"],
+.news-page .news-content [class~="text-slate-300"] {
+  color: #514f49 !important;
+}
+
+.rankings-page [class~="text-slate-400"],
+.academies-page [class~="text-slate-400"],
+.news-page .news-content [class~="text-slate-400"] {
+  color: #625f58 !important;
+}
+
+.rankings-page [class~="text-slate-500"],
+.academies-page [class~="text-slate-500"],
+.news-page .news-content [class~="text-slate-500"] {
+  color: var(--page-muted) !important;
+}
+
+.rankings-page [class~="text-slate-600"],
+.rankings-page [class~="text-slate-700"],
+.academies-page [class~="text-slate-600"],
+.academies-page [class~="text-slate-700"],
+.news-page .news-content [class~="text-slate-600"],
+.news-page .news-content [class~="text-slate-700"] {
+  color: var(--page-faint) !important;
+}
+
+.rankings-page [class*="bg-[#05070a]"],
+.rankings-page [class*="bg-[#090c11]"],
+.rankings-page [class*="bg-[#080c11]"],
+.academies-page [class*="bg-[#05070a]"],
+.academies-page [class*="bg-[#090c11]"],
+.news-page .news-content [class*="bg-[#05070a]"],
+.news-page .news-content [class*="bg-[#090c11]"],
+.news-page .news-content [class*="bg-[#0b1017]"] {
+  background-color: #fff !important;
+}
+
+.rankings-page [class*="bg-white/["],
+.academies-page [class*="bg-white/["],
+.news-page .news-content [class*="bg-white/["] {
+  background-color: #f8f7f4 !important;
+}
+
+.rankings-page [class*="border-white"],
+.academies-page [class*="border-white"],
+.news-page .news-content [class*="border-white"] {
+  border-color: var(--page-border) !important;
+}
+
+.rankings-page [class*="rounded-[26px]"],
+.rankings-page [class*="rounded-[24px]"],
+.rankings-page [class*="rounded-[28px]"],
+.academies-page [class*="rounded-[26px]"],
+.academies-page [class*="rounded-[24px]"],
+.academies-page [class*="rounded-[22px]"],
+.academies-page [class*="rounded-[28px]"],
+.news-page .news-content [class*="rounded-[26px]"],
+.news-page .news-content [class*="rounded-[24px]"],
+.news-page .news-content [class*="rounded-[22px]"],
+.news-page .news-content [class*="rounded-[28px]"] {
+  border-radius: 0.875rem !important;
+}
+
+.rankings-page [class*="shadow-"],
+.academies-page [class*="shadow-"],
+.news-page .news-content [class*="shadow-"] {
+  box-shadow: 0 8px 22px rgb(34 31 26 / 6%) !important;
+}
+
+.rankings-page .rankings-hero [class*="border-white"],
+.academies-page .academies-hero [class*="border-white"] {
+  border-color: rgb(255 255 255 / 28%) !important;
+}
+
+.rankings-page .rankings-hero [class*="bg-white/"],
+.academies-page .academies-hero [class*="bg-white/"] {
+  background-color: rgb(255 255 255 / 8%) !important;
+}
+
+.rankings-page .rankings-hero .rankings-grid {
+  display: none;
+}
+
+.rankings-page .rankings-stats {
+  border-color: var(--page-border);
+  background: #fff;
+  color: var(--page-ink);
+}
+
+.rankings-page .rankings-content,
+.academies-page .academies-content,
+.news-page .news-content {
+  background: #f5f4f0;
+}
+
+.rankings-page .rankings-content > .pointer-events-none {
+  display: none;
+}
+
+.news-page .news-content [class*="bg-red-600"][class~="text-white"],
+.news-page .news-content a[class~="text-white"],
+.news-page .news-content button[class~="text-white"] {
+  color: #fff !important;
+}
+
+.news-page .news-content .bg-red-600\/10,
+.news-page .news-content .bg-red-500\/10 {
+  background-color: rgb(186 32 41 / 8%);
+}
+
+.rankings-page #athlete-rankings input,
+.rankings-page #athlete-rankings select,
+.academies-page .academies-content input,
+.academies-page .academies-content select {
+  border-color: #dedbd4;
+  background-color: #fff;
+  color: var(--page-ink);
+}
+
+.rankings-page #athlete-rankings input::placeholder,
+.academies-page .academies-content input::placeholder {
+  color: #99958d;
+}
+
+.rankings-page #athlete-rankings input:focus,
+.rankings-page #athlete-rankings select:focus,
+.academies-page .academies-content input:focus,
+.academies-page .academies-content select:focus {
+  border-color: #ba2029;
+  box-shadow: 0 0 0 3px rgb(186 32 41 / 10%);
+}
+
+.rankings-page #athlete-rankings option,
+.academies-page .academies-content option {
+  background: #fff;
+  color: var(--page-ink);
+}
+
+.rankings-page #athlete-rankings thead,
+.academies-page .academies-content thead {
+  background: #f2f0eb;
+}
+
+.rankings-page #athlete-rankings tbody tr:hover,
+.academies-page .academies-content tbody tr:hover {
+  background: #faf9f6;
+}
+
+.academies-page .academies-hero {
+  background-color: #05070a !important;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .rankings-page .rankings-hero [class*="min-h-[610px]"] {
+    min-height: 540px;
+  }
+}
+
+.contact-page {
+  --contact-ink: #292824;
+  --contact-muted: #716e67;
+  --contact-border: #e5e2dc;
+  color: var(--contact-ink);
+  background: #f5f4f0;
+}
+
+.contact-hero {
+  background:
+    radial-gradient(
+      ellipse at 82% 24%,
+      rgb(186 32 41 / 12%),
+      transparent 32%
+    ),
+    linear-gradient(115deg, #080b10 0%, #11141a 72%, #090b10 100%);
+  color: #fff;
+}
+
+.contact-hero [class~="text-white"] {
+  color: #fff !important;
+}
+
+.contact-hero [class~="text-slate-200"] {
+  color: #d7dbe0 !important;
+}
+
+.contact-hero [class~="text-slate-300"] {
+  color: #c4cbd3 !important;
+}
+
+.contact-hero [class~="text-slate-500"] {
+  color: #9da5af !important;
+}
+
+.contact-details,
+.contact-links {
+  background-color: #f5f4f0;
+}
+
+.contact-method-card {
+  border-color: var(--contact-border);
+  box-shadow: 0 8px 26px rgb(34 31 26 / 4%);
+}
+
+.contact-method-card:hover {
+  box-shadow: 0 14px 34px rgb(34 31 26 / 8%);
+}
+
+.contact-enquiries {
+  border-color: var(--contact-border);
+  background: #fff;
+}
+
+.contact-enquiries [class*="rounded-[28px]"],
+.contact-enquiries [class*="rounded-[24px]"] {
+  border-radius: 1rem;
+}
+
+.contact-links [class*="opacity-[0.025]"],
+.contact-links [class*="opacity-[0.07]"] {
+  display: none;
+}
+
+.contact-membership {
+  color: #fff;
+}
+
+.contact-membership [class~="text-white"] {
+  color: #fff !important;
+}
+
+.about-page {
+  color: #292824;
+  background: #f5f4f0;
+}
+
+.about-hero {
+  background-color: #05070a;
+}
+
+.about-hero [class~="text-white"] {
+  color: #fff !important;
+}
+
+.about-hero [class~="text-slate-300"] {
+  color: #d5d9de !important;
+}
+
+.about-intro {
+  background: #f5f4f0;
+}
+
+.about-intro > .pointer-events-none {
+  display: none;
+}
+
+.about-committee {
+  border-color: #e5e2dc;
+  background: #f5f4f0;
+  color: #292824;
+}
+
+.about-committee h2 {
+  color: #292824 !important;
+}
+
+.about-committee p[class~="text-slate-400"] {
+  color: #625f58 !important;
+}
+
+.about-committee article {
+  border-color: #e5e2dc;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(34 31 26 / 5%);
+}
+
+.about-committee article h3 {
+  color: #292824 !important;
+}
+
+.about-committee article > div:last-of-type > p {
+  color: #a71922;
+}
+
+.about-governance {
+  border-color: #e5e2dc;
+  background: #fff;
+  color: #292824;
+}
+
+.about-governance h2 {
+  color: #292824 !important;
+}
+
+.about-governance p[class~="text-slate-400"] {
+  color: #625f58 !important;
+}
+
+.about-registration {
+  border-color: #e5e2dc;
+  background: #f5f4f0;
+}
+
+.about-registration [class~="text-slate-500"] {
+  color: #716e67 !important;
+}
+
 /* Homepage rankings page design */
 .home-rankings {
   --mba-red: #f50919;

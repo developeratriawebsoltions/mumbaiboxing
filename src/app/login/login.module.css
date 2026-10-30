@@ -1,217 +1,22 @@
 .loginPage {
-  position: relative;
-  isolation: isolate;
   min-height: 100vh;
-  padding: 30px;
-  overflow: hidden;
-  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  background: #f4f6f9;
   color: #101f37;
   font-family: var(--font-inter), Arial, sans-serif;
 }
 
-.loginPage::before,
-.loginPage::after {
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  pointer-events: none;
-  content: "";
-}
-
-.loginPage::before {
-  background:
-    radial-gradient(
-      circle at 16% 86%,
-      transparent 0 215px,
-      rgba(237, 32, 41, 0.2) 216px 217px,
-      transparent 218px 245px,
-      rgba(237, 32, 41, 0.045) 246px 275px,
-      transparent 276px 305px,
-      rgba(237, 32, 41, 0.035) 306px 335px,
-      transparent 336px
-    ),
-    linear-gradient(150deg, transparent 0 57%, rgba(237, 32, 41, 0.12) 57.2% 58%, transparent 58.2%),
-    linear-gradient(135deg, transparent 0 21%, rgba(237, 32, 41, 0.94) 21.2% 29%, transparent 29.2% 100%),
-    linear-gradient(145deg, #fffaf7 5%, #fff0eb 60%, #fbe0d9);
-}
-
-.loginPage::after {
-  background-image: repeating-linear-gradient(
-    120deg,
-    transparent 0,
-    transparent 45px,
-    rgba(255, 255, 255, 0.24) 46px,
-    transparent 48px
-  );
-  mask-image: linear-gradient(135deg, #000, transparent 75%);
-}
-
 .loginShell {
-  width: min(1440px, 100%);
-  min-height: calc(100vh - 60px);
-  margin: auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(490px, 1.12fr);
-  align-items: center;
-  gap: clamp(30px, 4.3vw, 75px);
-}
-
-.heroPanel {
-  position: relative;
-  min-height: 700px;
-  height: min(900px, calc(100vh - 60px));
-  overflow: hidden;
-  border-radius: 24px;
-  isolation: isolate;
-  background: transparent;
-}
-
-.heroPanel::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: none;
-  content: "";
-}
-
-.heroPanel::after {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: none;
-  content: "";
-}
-
-.heroRings {
-  position: absolute;
-  z-index: -1;
-  bottom: -100px;
-  left: -170px;
-  width: 510px;
-  height: 510px;
-  display: none;
-}
-
-.brand {
-  position: absolute;
-  z-index: 2;
-  top: 45px;
-  left: 42px;
-  display: flex;
-  align-items: center;
-  gap: 19px;
-}
-
-.brandLogo {
-  color: #c71c24;
-  font-size: clamp(46px, 4.2vw, 66px);
-  font-weight: 900;
-  letter-spacing: -7px;
-  line-height: 1;
-}
-
-.brandDivider {
-  width: 2px;
-  height: 66px;
-  background: #ec9c9b;
-}
-
-.brandName {
-  color: #15233b;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 2.7px;
-  line-height: 1.8;
-}
-
-.heroCopy {
-  position: absolute;
-  top: 37%;
-  right: 7%;
-  width: 48%;
-}
-
-.heroEyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #a72a31;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-}
-
-.heroCopy h1 {
-  margin: 22px 0 13px;
-  color: #101f37;
-  font-size: clamp(39px, 4.1vw, 59px);
-  font-weight: 900;
-  line-height: 0.98;
-  letter-spacing: -2.8px;
-}
-
-.heroCopy h1 span {
-  display: inline-block;
-  margin-top: 5px;
-  color: #dc222b;
-}
-
-.heroUnderline {
-  width: 48px;
-  height: 5px;
-  margin: 20px 0;
-  border-radius: 10px;
-  background: #ed2029;
-}
-
-.heroCopy > p {
-  color: #6e7c96;
-  font-size: 17px;
-  line-height: 1.55;
-}
-
-.heroStats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 22px;
-  margin-top: 36px;
-}
-
-.heroStats div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.heroStats strong {
-  color: #d9232c;
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.heroStats span {
-  color: #71809a;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.heroBottom {
-  position: absolute;
-  bottom: 32px;
-  left: 38px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #6e7c96;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
+  width: 100%;
+  max-width: 520px;
 }
 
 .loginPanel {
-  min-width: 0;
-  padding: 15px 0;
+  width: 100%;
+  padding: 0;
 }
 
 .loginCard {
@@ -605,130 +410,13 @@
 
 @media (max-width: 1050px) {
   .loginPage {
-    padding: 20px;
-  }
-
-  .loginShell {
-    min-height: calc(100vh - 40px);
-    grid-template-columns: minmax(0, 0.8fr) minmax(460px, 1.2fr);
-    gap: 25px;
-  }
-
-  .heroPanel {
-    min-height: 680px;
-    height: calc(100vh - 40px);
-  }
-
-  .brand {
-    top: 35px;
-    left: 24px;
-    gap: 12px;
-  }
-
-  .brandLogo {
-    font-size: 46px;
-  }
-
-  .brandDivider {
-    height: 52px;
-  }
-
-  .brandName {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-  }
-
-  .heroCopy {
-    top: 39%;
-    right: 6%;
-    width: 58%;
-  }
-
-  .heroCopy h1 {
-    font-size: clamp(34px, 4.2vw, 48px);
-  }
-
-  .heroCopy > p {
-    font-size: 15px;
-  }
-
-  .heroStats {
-    gap: 15px;
-  }
-
-  .heroStats span {
-    font-size: 7px;
-  }
-
-  .loginCard {
-    padding: 30px 25px;
-  }
-
-  .roleSelector {
-    gap: 6px;
-  }
-
-  .roleOption {
-    gap: 5px;
-    padding: 9px 4px;
-    font-size: 11px;
-  }
-
-  .roleOption svg {
-    width: 16px;
-    height: 16px;
+    padding: 20px 16px;
   }
 }
 
 @media (max-width: 760px) {
   .loginPage {
-    min-height: 100vh;
     padding: 20px 16px;
-    overflow: visible;
-    background: transparent;
-  }
-
-  .loginPage::before {
-    background:
-      radial-gradient(
-        circle at 16% 86%,
-        transparent 0 150px,
-        rgba(237, 32, 41, 0.16) 151px 152px,
-        transparent 153px 178px,
-        rgba(237, 32, 41, 0.04) 179px 200px,
-        transparent 201px
-      ),
-      linear-gradient(150deg, transparent 0 57%, rgba(237, 32, 41, 0.1) 57.2% 58%, transparent 58.2%),
-      linear-gradient(135deg, transparent 0 20%, rgba(237, 32, 41, 0.9) 20.2% 29%, transparent 29.2% 100%),
-      linear-gradient(145deg, #fffaf7 5%, #fff0eb 60%, #fbe0d9);
-  }
-
-  .loginPage::after {
-    background-image: repeating-linear-gradient(
-      120deg,
-      transparent 0,
-      transparent 45px,
-      rgba(255, 255, 255, 0.2) 46px,
-      transparent 48px
-    );
-  }
-
-  .loginShell {
-    width: 100%;
-    min-height: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0;
-  }
-
-  .heroPanel {
-    display: none;
-  }
-
-  .loginPanel {
-    width: 100%;
-    padding: 0;
   }
 
   .loginCard {

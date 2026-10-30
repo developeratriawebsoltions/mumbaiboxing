@@ -148,7 +148,7 @@ export default function HomeHighlights() {
       aria-labelledby="home-upcoming-tournaments"
       className="relative z-20 bg-white pb-16 pt-10 sm:pt-12"
     >
-      <div className="mx-auto max-w-[1500px] px-5 sm:px-8 lg:px-10 xl:px-12">
+      <div className="mx-auto max-w-[1900px] px-5 sm:px-8 lg:px-10 xl:px-12">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-red-600">

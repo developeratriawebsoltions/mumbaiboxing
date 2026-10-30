@@ -8,10 +8,7 @@ import {
   Dumbbell,
   Landmark,
   Scale,
-  Star,
-  Trophy,
   UserRound,
-  Users,
   type LucideIcon,
 } from 'lucide-react';
 import styles from './register.module.css';
@@ -1994,65 +1991,6 @@ const fee =
   return (
     <main className={styles.registerPage}>
       <div className={styles.registerLayout}>
-        <aside className={styles.registerHero}>
-          <div className={styles.heroRedSplash} />
-          <div className={`${styles.heroLight} ${styles.heroLightOne}`} />
-          <div className={`${styles.heroLight} ${styles.heroLightTwo}`} />
-
-          <Link className={styles.registerBrand} href="/" aria-label="MBA home">
-            <span className={styles.registerBrandLogo}>MBA</span>
-            <span className={styles.registerBrandDivider} />
-            <span className={styles.registerBrandName}>
-              MUMBAI
-              <br />
-              BOXING
-              <br />
-              ASSOCIATION
-            </span>
-          </Link>
-
-          <div className={styles.registerHeroCopy}>
-            <div className={styles.heroKicker}>
-              BUILD <span>•</span> TRAIN <span>•</span> COMPETE
-            </div>
-            <h1>
-              Stronger
-              <br />
-              Athletes
-              <br />
-              <span>Bigger</span>
-              <br />
-              <span>Dreams</span>
-            </h1>
-            <p>
-              Join North Bombay District Amateur Boxing Association (NBDABA)
-              <br className={styles.desktopBreak} />
-              and be part of a community
-              <br className={styles.desktopBreak} />
-              that builds champions.
-            </p>
-            <div className={styles.heroCtaLine}>
-              <span />
-              YOUR JOURNEY STARTS HERE
-            </div>
-          </div>
-
-          <div className={styles.heroFeatures}>
-            <div className={styles.heroFeature}>
-              <Trophy aria-hidden="true" />
-              <span>Professional<br />Training</span>
-            </div>
-            <div className={styles.heroFeature}>
-              <Users aria-hidden="true" />
-              <span>Expert<br />Coaches</span>
-            </div>
-            <div className={styles.heroFeature}>
-              <Star aria-hidden="true" />
-              <span>National &amp;<br />International Exposure</span>
-            </div>
-          </div>
-        </aside>
-
         <section className={styles.registerContent}>
           <div className={styles.registerCard}>
             <header className={styles.registerHeading}>
