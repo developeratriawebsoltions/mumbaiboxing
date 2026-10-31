@@ -487,27 +487,21 @@ export default function AdminTournamentsPage() {
 
         {/* REGISTRATION FORM TAB */}
         {activeTab === "registration" && (
-          <div className="bg-white border rounded-xl shadow-sm p-6 space-y-6 max-w-3xl">
-            <div className="text-center border-b pb-4">
-              <p className="text-2xl font-bold">
-                🥊 NORTH BOMBAY DISTRICT AMATEUR BOXING
-                ASSOCIATION
-              </p>
-
-              <p className="text-lg font-semibold mt-1">
-                BOXER ANNUAL REGISTRATION FORM – 2026
-              </p>
-
-              <p className="text-sm text-gray-500 mt-1">
-                Registration Period: 1 January 2026 to
-                31 December 2026
-              </p>
-
-              <p className="text-sm font-medium text-red-600 mt-1">
-                Annual Boxer Registration Fee: ₹100
-              </p>
-            </div>
-
+          <section className="space-y-5">
+            <div className="rounded-lg border border-slate-200 bg-white p-5 sm:p-7">
+              <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-red-600">North Bombay District Amateur Boxing Association</p>
+                  <h2 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">Boxer Annual Registration Form</h2>
+                  <p className="mt-1 text-sm text-slate-500">Registration requirements for the 2026 calendar year</p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <span className="rounded-md bg-slate-100 px-3 py-2 text-slate-700">1 Jan – 31 Dec 2026</span>
+                  <span className="rounded-md bg-red-50 px-3 py-2 font-semibold text-red-700">Registration fee: ₹100</span>
+                </div>
+              </div>
+              <p className="mt-5 text-sm leading-6 text-slate-600">Review the information and supporting documents required for annual boxer registration. Fields marked <span className="font-semibold text-red-600">*</span> are mandatory.</p>
+              <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
             {[
               {
                 section:
@@ -622,97 +616,60 @@ export default function AdminTournamentsPage() {
                   "Date of Submission *",
                 ],
               },
-            ].map(({ section, fields }) => (
-              <div key={section}>
-                <h3 className="font-semibold text-sm bg-slate-900 text-white px-3 py-2 rounded-lg mb-3">
-                  {section}
-                </h3>
-
-                <ul className="space-y-1.5 pl-2">
-                  {fields.map((field) => (
-                    <li
-                      key={field}
-                      className="text-sm text-gray-700 flex gap-2"
-                    >
-                      <span className="text-gray-400 mt-0.5">
-                        •
-                      </span>
-
-                      <span>{field}</span>
-                    </li>
-                  ))}
-                </ul>
+            ].map(({ section, fields }, index) => (
+                  <div key={section} className="min-w-0 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+                    <div className="mb-4 flex items-start gap-3 border-b border-slate-100 pb-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-900 text-xs font-bold text-white">{index + 1}</span>
+                      <h3 className="pt-1 text-sm font-bold leading-5 text-slate-900">{section.replace(/^SECTION \d+ — /, "")}</h3>
+                    </div>
+                    <ul className="space-y-2.5">
+                      {fields.map((field) => (
+                        <li key={field} className="flex items-start gap-2 text-sm leading-5 text-slate-600">
+                          <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
+                          <span>{field}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-center text-red-700 font-medium">
-              🥊 Register • Train • Compete • Represent
-              North Bombay 🥊
+              <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">Register • Train • Compete • Represent North Bombay</div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* FEE STRUCTURE TAB */}
         {activeTab === "fees" && (
-          <div className="bg-white border rounded-xl shadow-sm p-6 max-w-2xl space-y-4">
-            <div className="text-center border-b pb-4">
-              <p className="text-xl font-bold">
-                🥊 North Bombay District Amateur Boxing
-                Association
-              </p>
-
-              <p className="font-semibold mt-1">
-                Annual Registration & Participation Fee
-                Structure – 2026
-              </p>
-
-              <p className="text-sm text-gray-500 mt-1">
-                Registration Period: 1 January 2026 to
-                31 December 2026
-              </p>
+          <section className="rounded-lg border border-slate-200 bg-white p-5 sm:p-7">
+            <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-red-600">North Bombay District Amateur Boxing Association</p>
+                <h2 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">Registration & Participation Fees</h2>
+                <p className="mt-1 text-sm text-slate-500">Official fee structure for the 2026 calendar year</p>
+              </div>
+              <span className="self-start rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700">1 Jan – 31 Dec 2026</span>
             </div>
-
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-xs uppercase text-gray-500">
-                  <th className="text-left px-4 py-3">
-                    Category
-                  </th>
-
-                  <th className="text-right px-4 py-3">
-                    Fee
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {FEE_TABLE.map(({ category, fee }) => (
-                  <tr
-                    key={category}
-                    className="hover:bg-gray-50"
-                  >
-                    <td className="px-4 py-3">
-                      {category}
-                    </td>
-
-                    <td className="px-4 py-3 text-right font-semibold text-red-600">
-                      {fee}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <p className="text-xs text-gray-500 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
-              ⚠️ <strong>Important:</strong> All
-              Clubs/Academies, Coaches, Boxers and
-              Referees & Judges are requested to complete
-              their annual registration for the 2026
-              calendar year.
-            </p>
-          </div>
+            <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <tr><th scope="col" className="px-4 py-3 sm:px-5">Category</th><th scope="col" className="whitespace-nowrap px-4 py-3 text-right sm:px-5">Fee</th></tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {FEE_TABLE.map(({ category, fee }) => (
+                    <tr key={category} className="hover:bg-slate-50">
+                      <td className="px-4 py-4 font-medium leading-6 text-slate-800 sm:px-5">{category}</td>
+                      <td className="whitespace-nowrap px-4 py-4 text-right font-semibold text-red-600 sm:px-5">{fee}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-slate-700">
+              <strong>Important:</strong> All Clubs/Academies, Coaches, Boxers and Referees & Judges are requested to complete their annual registration for the 2026 calendar year.
+            </div>
+          </section>
         )}
-      </main>
+</main>
 
       {/* CREATE / EDIT MODAL */}
       {showForm && (

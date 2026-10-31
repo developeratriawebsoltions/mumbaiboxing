@@ -20,7 +20,9 @@ export async function GET(req: NextRequest) {
       },
       include: {
         user: {
-          include: {
+          select: {
+            email: true,
+            createdAt: true,
             document: {
               select: {
                 id: true,
@@ -31,10 +33,31 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        boxer: {
+          select: {
+            id: true,
+          },
+        },
+        coach: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(academies);
+    return NextResponse.json(
+      academies.map(({ user, boxer, coach, ...academy }) => ({
+        ...academy,
+        user: {
+          email: user.email,
+          createdAt: user.createdAt,
+          documents: user.document,
+        },
+        boxers: boxer,
+        coaches: coach,
+      }))
+    );
   } catch (error) {
     console.error("Admin academies API error:", error);
 
