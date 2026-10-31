@@ -240,7 +240,7 @@ export default function Navbar() {
               NBDABA
             </div>
 
-            <div
+            {/* <div
               className="
                 mt-1.5 text-[8px]
                 font-bold uppercase
@@ -248,8 +248,8 @@ export default function Navbar() {
                 text-[#536174]
               "
             >
-              North Bombay District
-            </div>
+              North Bombay District Amateur Boxing Association
+            </div> */}
           </div>
         </Link>
 
