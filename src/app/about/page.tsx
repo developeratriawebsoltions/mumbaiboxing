@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { committeeMembers } from "@/data/committee";
+import VideoSection from "@/Components/VideoSection";
 
 import {
   ArrowRight,
@@ -381,6 +382,12 @@ export default function AboutPage() {
     </div>
   </div>
 </section>
+
+      <VideoSection
+        eyebrow="Our story in motion"
+        title="Boxing brings us together"
+        description="See the athletes, coaches, and community that make grassroots boxing thrive across North Bombay."
+      />
 
       {/* =========================================================
           VISION

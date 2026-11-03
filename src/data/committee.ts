@@ -6,18 +6,20 @@ export type CommitteeMember = {
 };
 
 export const committeeMembers: CommitteeMember[] = [
+
   {
     number: "01",
     role: "President",
     name: "Mr. Subhash Mahadeo Kolge",
     image: "/committee/subhash-kolge.jpeg",
   },
-  {
+    {
     number: "02",
     role: "Vice President",
-    name: "Vivek Shrikant Rane",
-    image: "/committee/Vivek Shrikant Rane.jpeg",
-  },
+    name: "Mr. Rajendra Sakharam Jathar",
+    image: "/committee/Mr. Rajendra Sakharam Jathar.jpeg",
+  }
+,
   {
     number: "03",
     role: "Secretary",
@@ -30,11 +32,12 @@ export const committeeMembers: CommitteeMember[] = [
     name: "Mr. Shailesh Chandrabhan Tripathi",
     image: "/committee/shailesh-tripathi.jpeg",
   },
-  {
+
+    {
     number: "05",
     role: "Treasurer",
-    name: "Mr. Rajendra Sakharam Jathar",
-    image: "/committee/Mr. Rajendra Sakharam Jathar.jpeg",
+    name: "Vivek Shrikant Rane",
+    image: "/committee/Vivek Shrikant Rane.jpeg",
   },
   {
     number: "06",
@@ -48,4 +51,5 @@ export const committeeMembers: CommitteeMember[] = [
     name: "Mr. Nitin Thakoor",
     image: "/committee/nitin-thakur.jpeg",
   },
+
 ];
