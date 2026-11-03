@@ -2,6 +2,7 @@
 import Hero from "@/Components/home/Hero";
 import HomeHighlights from "@/Components/home/HomeHighlights";
 import About from "@/Components/home/About";
+import VideoSection from "@/Components/VideoSection";
 import Rankings from "@/Components/home/Rankings";
 import UpcomingTournaments from "@/Components/home/UpcomingTournaments";
 import News from "@/Components/home/News";
@@ -15,6 +16,12 @@ export default function Home() {
       <Hero />
 
       <HomeHighlights />
+
+      <VideoSection
+        eyebrow="Inside the ring"
+        title="Experience the spirit of boxing"
+        description="Watch the North Bombay District Amateur Boxing Association in action and discover the people and passion behind the sport."
+      />
 
       <About />
 
