@@ -129,6 +129,34 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+
+        /*
+         * Cash-pending registrations (payment submitted, not yet approved)
+         */
+        payment: {
+          where: {
+            method: "Cash",
+            status: "Pending",
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          select: {
+            id: true,
+            createdAt: true,
+            tournament: {
+              select: {
+                id: true,
+                name: true,
+                location: true,
+                startDate: true,
+                endDate: true,
+                weightClass: true,
+                status: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -176,6 +204,7 @@ export async function GET(req: NextRequest) {
        * --------------------------------------------------------
        */
       id: boxer.id,
+      userId: user.id,
 
       name: boxer.name,
       dob: boxer.dob,
@@ -255,11 +284,18 @@ export async function GET(req: NextRequest) {
 
       /*
        * --------------------------------------------------------
-       * Tournament Entries
+       * Tournament Entries (confirmed + cash-pending)
        * --------------------------------------------------------
        */
-      tournamentEntries:
-        boxer.tournamententry,
+      tournamentEntries: boxer.tournamententry,
+      cashPendingEntries: boxer.payment
+        .filter((p) => p.tournament !== null)
+        .map((p) => ({
+          id: p.id,
+          createdAt: p.createdAt,
+          pending: true,
+          tournament: p.tournament,
+        })),
     });
   } catch (error) {
     console.error(

@@ -24,15 +24,30 @@ type Tournament = {
   _count: { entries: number };
 };
 
+const AGE_CATEGORIES = [
+  "Sub-Junior (Under 14)",
+  "Junior (Under 17)",
+  "Youth (Under 19)",
+  "Under 22",
+  "Elite (Senior)",
+  "Masters (35+)",
+];
+
 type TournamentForm = {
   name: string;
   location: string;
   startDate: string;
   endDate: string;
+  registrationStartDate: string;
+  registrationEndDate: string;
   weightClass: string;
+  categories: string[];
+  description: string;
+  disclaimer: string;
   status: string;
   entryFee: string;
   isFeatured: boolean;
+  customQuestions: string[];
 };
 
 const EMPTY: TournamentForm = {
@@ -40,10 +55,16 @@ const EMPTY: TournamentForm = {
   location: "",
   startDate: "",
   endDate: "",
+  registrationStartDate: "",
+  registrationEndDate: "",
   weightClass: "",
+  categories: [],
+  description: "",
+  disclaimer: "",
   status: "upcoming",
   entryFee: "500",
   isFeatured: false,
+  customQuestions: [],
 };
 
 const STATUSES = [
@@ -244,13 +265,16 @@ export default function AdminTournamentsPage() {
       location: t.location ?? "",
       startDate: toInputDate(t.startDate),
       endDate: toInputDate(t.endDate),
+      registrationStartDate: toInputDate((t as unknown as Record<string,string|null>).registrationStartDate ?? null),
+      registrationEndDate: toInputDate((t as unknown as Record<string,string|null>).registrationEndDate ?? null),
       weightClass: t.weightClass ?? "",
+      categories: (() => { try { return JSON.parse((t as unknown as Record<string,string>).categories ?? "[]") as string[]; } catch { return []; } })(),
+      description: (t as unknown as Record<string,string>).description ?? "",
+      disclaimer: (t as unknown as Record<string,string>).disclaimer ?? "",
       status: t.status,
-      entryFee:
-        t.entryFee != null
-          ? String(t.entryFee)
-          : "",
+      entryFee: t.entryFee != null ? String(t.entryFee) : "",
       isFeatured: t.isFeatured ?? false,
+      customQuestions: (() => { try { return JSON.parse((t as unknown as Record<string,string>).customQuestions ?? "[]") as string[]; } catch { return []; } })(),
     });
 
     setTournamentImage(null);
@@ -321,16 +345,15 @@ export default function AdminTournamentsPage() {
     try {
       const method = editId ? "PUT" : "POST";
 
-      const body = editId
-        ? {
-            ...form,
-            id: editId,
-          }
-        : form;
+      const body = editId ? { ...form, id: editId } : form;
 
       const requestBody = new FormData();
       Object.entries(body).forEach(([key, value]) => {
-        requestBody.append(key, String(value));
+        if (key === "categories" || key === "customQuestions") {
+          requestBody.append(key, JSON.stringify(value));
+        } else {
+          requestBody.append(key, String(value));
+        }
       });
       if (selectedImage) requestBody.append("image", selectedImage);
 
@@ -421,13 +444,13 @@ export default function AdminTournamentsPage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_88%_35%,rgba(220,38,38,.38),transparent_42%)]" />
           <div className="relative z-10 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div className="max-w-2xl">
-              <p className="mb-3 text-xs font-extrabold uppercase tracking-[.2em] text-red-400">North Bombay District Amateur Boxing Association</p>
-              <h1 className="text-3xl font-black tracking-tight sm:text-5xl">Tournament Management<span className="text-red-500">.</span></h1>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-slate-300">Create championships, manage boxer entries and keep your event calendar organised in one place.</p>
-              <button onClick={openCreate} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700"><Plus size={18}/> Create Tournament</button>
+              <p className="mb-3 text-sm font-extrabold uppercase tracking-[.2em] text-red-400">North Bombay District Amateur Boxing Association</p>
+              <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Tournament Management<span className="text-red-500">.</span></h1>
+              <p className="mt-4 max-w-lg text-base leading-7 text-slate-300">Create championships, manage boxer entries and keep your event calendar organised in one place.</p>
+              <button onClick={openCreate} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-base font-bold text-white transition hover:bg-red-700"><Plus size={18}/> Create Tournament</button>
             </div>
             <div className="grid grid-cols-3 gap-3 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:gap-8">
-              {[["Events",tournaments.length],["Open",tournaments.filter(t=>t.status === "open").length],["Boxer Entries",tournaments.reduce((n,t)=>n+(t._count?.entries ?? 0),0)]].map(([label,value])=><div key={String(label)}><p className="text-2xl font-black sm:text-3xl">{value}</p><p className="mt-1 text-[11px] text-slate-300">{label}</p></div>)}
+              {[["Events",tournaments.length],["Open",tournaments.filter(t=>t.status === "open").length],["Boxer Entries",tournaments.reduce((n,t)=>n+(t._count?.entries ?? 0),0)]].map(([label,value])=><div key={String(label)}><p className="text-2xl font-black sm:text-3xl">{value}</p><p className="mt-1 text-sm text-slate-300">{label}</p></div>)}
             </div>
           </div>
         </section>
@@ -438,19 +461,19 @@ export default function AdminTournamentsPage() {
             {label:"Upcoming",value:upcoming.length,accent:"text-amber-600",icon:<CalendarDays size={20}/>},
             {label:"Open / Ongoing",value:tournaments.filter(t=>["open","ongoing"].includes(t.status)).length,accent:"text-emerald-600",icon:<Users size={20}/>},
             {label:"Completed",value:completed.length,accent:"text-red-600",icon:<Star size={20}/>},
-          ].map(s=><div key={s.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex items-center justify-between text-slate-400"><span className="text-xs font-semibold">{s.label}</span>{s.icon}</div><p className={`mt-3 text-3xl font-black ${s.accent}`}>{s.value}</p></div>)}
+          ].map(s=><div key={s.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex items-center justify-between text-slate-400"><span className="text-sm font-semibold">{s.label}</span>{s.icon}</div><p className={`mt-3 text-3xl font-black ${s.accent}`}>{s.value}</p></div>)}
         </div>
 
         <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
-          {(["tournaments","registration","fees"] as const).map(tab=><button key={tab} onClick={()=>setActiveTab(tab)} className={`rounded-xl px-4 py-2.5 text-sm font-bold ${activeTab===tab?"bg-red-600 text-white":"bg-white text-slate-600 hover:bg-slate-100"}`}>{tab==="tournaments"?"Tournaments":tab==="registration"?"Registration Form":"Fee Structure"}</button>)}
+          {(["tournaments","registration","fees"] as const).map(tab=><button key={tab} onClick={()=>setActiveTab(tab)} className={`rounded-xl px-5 py-2.5 text-base font-bold ${activeTab===tab?"bg-red-600 text-white":"bg-white text-slate-600 hover:bg-slate-100"}`}>{tab==="tournaments"?"Tournaments":tab==="registration"?"Registration Form":"Fee Structure"}</button>)}
         </div>
         {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error} <button onClick={()=>{setError("");setLoading(true);load();}} className="ml-3 font-bold underline">Retry</button></div>}
         {activeTab === "tournaments" && <section className="space-y-5">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div><h2 className="text-xl font-black">All Tournaments</h2><p className="mt-1 text-xs text-slate-500">Manage published and upcoming boxing events</p></div>
+            <div><h2 className="text-2xl font-black">All Tournaments</h2><p className="mt-1 text-sm text-slate-500">Manage published and upcoming boxing events</p></div>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <div className="relative"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input aria-label="Search tournaments" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search tournaments..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm outline-none focus:border-red-400 sm:w-64"/></div>
-              <select aria-label="Filter status" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm">{["all",...STATUSES].map(x=><option key={x} value={x}>{x==="all"?"All Statuses":x[0].toUpperCase()+x.slice(1)}</option>)}</select>
+              <div className="relative"><Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input aria-label="Search tournaments" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search tournaments..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-base outline-none focus:border-slate-200 sm:w-64"/></div>
+              <select aria-label="Filter status" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-base">{["all",...STATUSES].map(x=><option key={x} value={x}>{x==="all"?"All Statuses":x[0].toUpperCase()+x.slice(1)}</option>)}</select>
               <button onClick={()=>{setLoading(true);load();}} aria-label="Refresh tournaments" className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 hover:bg-slate-50"><RefreshCw size={17}/></button>
             </div>
           </div>
@@ -464,14 +487,14 @@ export default function AdminTournamentsPage() {
                 <span className={`absolute right-4 top-4 rounded-lg px-3 py-1 text-[11px] font-bold capitalize ${STATUS_COLOR[t.status]??"bg-slate-100 text-slate-700"}`}>{t.status}</span>
               </div>
               <div className="flex flex-1 flex-col p-5">
-                <h3 className="min-h-14 text-lg font-extrabold leading-7">{t.name}</h3>
-                <div className="mt-3 space-y-3 text-sm text-slate-500">
+                <h3 className="min-h-14 text-xl font-extrabold leading-7">{t.name}</h3>
+                <div className="mt-3 space-y-3 text-base text-slate-500">
                   <p className="flex items-start gap-2"><MapPin size={16} className="mt-0.5 shrink-0 text-red-500"/>{t.location||"Venue to be announced"}</p>
                   <p className="flex items-start gap-2"><CalendarDays size={16} className="mt-0.5 shrink-0 text-red-500"/>{formatDate(t.startDate)}{t.endDate?` – ${formatDate(t.endDate)}`:""}</p>
                   <p className="flex items-start gap-2"><Trophy size={16} className="mt-0.5 shrink-0 text-red-500"/>{t.weightClass||"All weight classes"}</p>
                 </div>
-                <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 mt-5"><span className="flex items-center gap-2 text-xs font-semibold text-slate-500"><Users size={16}/>{t._count?.entries??0} entries</span><span className="text-lg font-black">{t.entryFee==null?"Fee TBD":`₹${t.entryFee.toLocaleString("en-IN")}`}</span></div>
-                <div className="mt-4 grid grid-cols-[1fr_auto_auto_auto] gap-2"><button onClick={()=>router.push(`/dashboard/admin/tournaments/${encodeURIComponent(tournamentSlug(t.name))}`)} className="flex items-center justify-center gap-1 rounded-xl bg-red-600 px-3 py-3 text-xs font-bold text-white hover:bg-red-700">View Entries <ArrowUpRight size={15}/></button><button onClick={()=>void shareTournament(t)} aria-label={`Share ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Share2 size={14}/>Share</button><button onClick={()=>openEdit(t)} aria-label={`Edit ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50"><Pencil size={14}/>Edit</button><button onClick={()=>setDeleteId(t.id)} aria-label={`Delete ${t.name}`} className="flex items-center gap-1 rounded-xl border border-red-100 px-3 text-xs font-semibold text-red-600 hover:bg-red-50"><Trash2 size={14}/>Delete</button></div>
+                <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 mt-5"><span className="flex items-center gap-2 text-sm font-semibold text-slate-500"><Users size={16}/>{t._count?.entries??0} entries</span>{t.entryFee === 0 ? <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-black text-emerald-700">Free</span> : <span className="text-xl font-black">{t.entryFee==null?"Fee TBD":`₹${t.entryFee.toLocaleString("en-IN")}`}</span>}</div>
+                <div className="mt-4 grid grid-cols-[1fr_auto_auto_auto] gap-2"><button onClick={()=>router.push(`/dashboard/admin/tournaments/${encodeURIComponent(tournamentSlug(t.name))}`)} className="flex items-center justify-center gap-1 rounded-xl bg-red-600 px-3 py-3 text-sm font-bold text-white hover:bg-red-700">View Entries <ArrowUpRight size={15}/></button><button onClick={()=>void shareTournament(t)} aria-label={`Share ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-sm font-semibold hover:bg-slate-50"><Share2 size={14}/>Share</button><button onClick={()=>openEdit(t)} aria-label={`Edit ${t.name}`} className="flex items-center gap-1 rounded-xl border border-slate-200 px-3 text-sm font-semibold hover:bg-slate-50"><Pencil size={14}/>Edit</button><button onClick={()=>setDeleteId(t.id)} aria-label={`Delete ${t.name}`} className="flex items-center gap-1 rounded-xl border border-red-100 px-3 text-sm font-semibold text-red-600 hover:bg-red-50"><Trash2 size={14}/>Delete</button></div>
                 {shareFeedback?.tournamentId === t.id && (
                   <p
                     role={shareFeedback.isError ? "alert" : "status"}
@@ -671,274 +694,187 @@ export default function AdminTournamentsPage() {
         )}
 </main>
 
-      {/* CREATE / EDIT MODAL */}
+      {/* CREATE / EDIT INLINE FORM */}
       {showForm && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowForm(false)}
-        >
-          <div
-            className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div className="flex justify-between items-center">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-50">
+          <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+            <div className="mb-6 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-lg">
-                  {editId
-                    ? "Edit Tournament"
-                    : "Add Tournament"}
+                <h3 className="text-2xl font-black text-slate-900">
+                  {editId ? "Edit Tournament" : "Create Tournament"}
                 </h3>
-
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Tournament information
-                </p>
+                <p className="mt-1 text-sm text-slate-500">Fill in the details below and save.</p>
               </div>
-
               <button
                 onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-gray-700 text-xl"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
               >
-                ✕
+                <X size={16} /> Cancel
               </button>
             </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
 
-            <div className="space-y-3">
-              {/* Tournament Name */}
+            <div className="space-y-5">
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">
-                  Tournament Name *
-                </label>
-
-                <input
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      name: e.target.value,
-                    })
-                  }
-                  placeholder="e.g. North Bombay District Championship 2026"
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
+                <label className="text-sm font-medium text-gray-600 block mb-1">Tournament Name *</label>
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. North Bombay District Championship 2026" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
               </div>
 
-              {/* Location */}
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">
-                  Location / Venue
-                </label>
-
-                <input
-                  value={form.location}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      location: e.target.value,
-                    })
-                  }
-                  placeholder="e.g. Kandivali Sports Complex, Mumbai"
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
+                <label className="text-sm font-medium text-gray-600 block mb-1">Location / Venue</label>
+                <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="e.g. Kandivali Sports Complex, Mumbai" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
               </div>
 
-              {/* Tournament Image */}
               <div>
-                <label
-                  htmlFor="tournament-image"
-                  className="text-xs font-medium text-gray-600 block mb-1"
-                >
-                  Tournament Image
-                </label>
-                <input
-                  id="tournament-image"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) =>
-                    setTournamentImage(e.target.files?.[0] ?? null)
-                  }
-                  className="w-full border rounded-lg px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-red-50 file:px-3 file:py-1 file:text-xs file:font-medium file:text-red-700"
-                />
-                <p className="mt-1 text-xs text-gray-400">
-                  JPG, PNG, or WebP; maximum size 5 MB.
-                </p>
+                <label htmlFor="tournament-image" className="text-sm font-medium text-gray-600 block mb-1">Tournament Image</label>
+                <input id="tournament-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setTournamentImage(e.target.files?.[0] ?? null)} className="w-full border rounded-lg px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-red-50 file:px-3 file:py-1 file:text-xs file:font-medium file:text-red-700" />
+                <p className="mt-1 text-xs text-gray-400">JPG, PNG, or WebP; maximum size 5 MB.</p>
                 {(imagePreviewUrl || existingImageUrl) && (
-                  <Image
-                    src={imagePreviewUrl ?? existingImageUrl ?? ""}
-                    alt="Tournament preview"
-                    width={640}
-                    height={144}
-                    unoptimized
-                    className="mt-3 h-36 w-full rounded-lg border object-cover"
-                  />
+                  <Image src={imagePreviewUrl ?? existingImageUrl ?? ""} alt="Tournament preview" width={640} height={144} unoptimized className="mt-3 h-36 w-full rounded-lg border object-cover" />
                 )}
               </div>
 
-              {/* Dates */}
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide pt-1">Tournament Dates</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 block mb-1">
-                    Start Date
-                  </label>
-
-                  <input
-                    type="date"
-                    value={form.startDate}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        startDate: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
+                  <label className="text-sm font-medium text-gray-600 block mb-1">Start Date</label>
+                  <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
                 </div>
-
                 <div>
-                  <label className="text-xs font-medium text-gray-600 block mb-1">
-                    End Date
-                  </label>
-
-                  <input
-                    type="date"
-                    value={form.endDate}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        endDate: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
+                  <label className="text-sm font-medium text-gray-600 block mb-1">End Date</label>
+                  <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
                 </div>
               </div>
 
-              {/* Weight Class */}
+              <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide pt-1">Registration Dates</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-1">Registration Start</label>
+                  <input type="date" value={form.registrationStartDate} onChange={(e) => setForm({ ...form, registrationStartDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600 block mb-1">Registration End</label>
+                  <input type="date" value={form.registrationEndDate} onChange={(e) => setForm({ ...form, registrationEndDate: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
+                </div>
+              </div>
+
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">
-                  Weight Class
-                </label>
-
-                <input
-                  value={form.weightClass}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      weightClass: e.target.value,
-                    })
-                  }
-                  placeholder="e.g. All categories / 60kg / 75kg"
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
+                <label className="text-sm font-medium text-gray-600 block mb-1">Weight Class</label>
+                <input value={form.weightClass} onChange={(e) => setForm({ ...form, weightClass: e.target.value })} placeholder="e.g. All categories / 60kg / 75kg" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
               </div>
 
-              {/* Fee + Status */}
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Age Categories</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {AGE_CATEGORIES.map((cat) => (
+                    <label key={cat} className="flex items-center gap-2 text-base cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.categories.includes(cat)}
+                        onChange={(e) => setForm({ ...form, categories: e.target.checked ? [...form.categories, cat] : form.categories.filter((c) => c !== cat) })}
+                        className="h-4 w-4 accent-red-600"
+                      />
+                      {cat}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 block mb-1">
-                    Entry Fee (₹)
-                  </label>
-
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.entryFee}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        entryFee: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. 500"
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
+                  <label className="text-sm font-medium text-gray-600 block mb-1">Entry Fee (₹)</label>
+                  <input type="number" min="0" value={form.entryFee} onChange={(e) => setForm({ ...form, entryFee: e.target.value })} placeholder="e.g. 500" className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200" />
                 </div>
-
                 <div>
-                  <label className="text-xs font-medium text-gray-600 block mb-1">
-                    Status
-                  </label>
-
-                  <select
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        status: e.target.value,
-                      })
-                    }
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    {STATUSES.map((status) => (
-                      <option
-                        key={status}
-                        value={status}
-                      >
-                        {status.charAt(0).toUpperCase() +
-                          status.slice(1)}
-                      </option>
-                    ))}
+                  <label className="text-sm font-medium text-gray-600 block mb-1">Status</label>
+                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200">
+                    {STATUSES.map((status) => <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* HOMEPAGE HERO */}
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Description</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Tournament details, rules, eligibility..." className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200 resize-none" />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600 block mb-1">Disclaimer</label>
+                <textarea value={form.disclaimer} onChange={(e) => setForm({ ...form, disclaimer: e.target.value })} rows={3} placeholder="Legal disclaimer, terms, conditions..." className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base outline-none focus:outline-none focus:ring-0 focus:border-slate-200 resize-none" />
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Custom Registration Questions</p>
+                    <p className="mt-0.5 text-xs text-slate-500">Boxers will answer these before registering for this tournament.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, customQuestions: [...form.customQuestions, ""] })}
+                    className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-700"
+                  >
+                    <Plus size={13} /> Add Question
+                  </button>
+                </div>
+                {form.customQuestions.length === 0 ? (
+                  <p className="text-xs text-slate-400">No custom questions added. Click &quot;Add Question&quot; to create one.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {form.customQuestions.map((q, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="shrink-0 text-xs font-bold text-slate-400 w-5">{i + 1}.</span>
+                        <input
+                          value={q}
+                          onChange={(e) => {
+                            const updated = [...form.customQuestions];
+                            updated[i] = e.target.value;
+                            setForm({ ...form, customQuestions: updated });
+                          }}
+                          placeholder={`Question ${i + 1}`}
+                          className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, customQuestions: form.customQuestions.filter((_, idx) => idx !== i) })}
+                          className="shrink-0 rounded-lg border border-red-100 p-2 text-red-500 hover:bg-red-50"
+                          aria-label="Remove question"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="rounded-xl border border-red-200 bg-red-50 p-4 mt-2">
                 <label className="flex cursor-pointer items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={form.isFeatured}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        isFeatured: e.target.checked,
-                      })
-                    }
-                    className="mt-1 h-4 w-4 accent-red-600"
-                  />
-
+                  <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })} className="mt-1 h-4 w-4 accent-red-600" />
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      Show on Homepage Hero
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-gray-500">
-                      Display this tournament in the
-                      public homepage Hero section with
-                      its live countdown.
-                    </p>
-
-                    <p className="mt-2 text-xs font-medium text-red-600">
-                      Only one tournament can be featured
-                      at a time.
-                    </p>
+                    <p className="text-sm font-semibold text-slate-900">Show on Homepage Hero</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">Display this tournament in the public homepage Hero section with its live countdown.</p>
+                    <p className="mt-2 text-xs font-medium text-red-600">Only one tournament can be featured at a time.</p>
                   </div>
                 </label>
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setShowForm(false)}
-                className="flex-1 border rounded-lg py-2 text-sm text-gray-600 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleSave}
-                disabled={
-                  saving || !form.name.trim()
-                }
-                className="flex-1 bg-red-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-red-700 disabled:opacity-50"
-              >
-                {saving
-                  ? "Saving..."
-                  : editId
-                  ? "Update"
-                  : "Create"}
-              </button>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="flex-1 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !form.name.trim()}
+                  className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : editId ? "Update Tournament" : "Create Tournament"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

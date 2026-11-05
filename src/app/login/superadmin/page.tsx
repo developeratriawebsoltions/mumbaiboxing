@@ -41,8 +41,8 @@ export default function SuperAdminLoginPage() {
         return;
       }
 
-      router.push(data.redirect || "/dashboard/superadmin");
       router.refresh();
+      router.push(data.redirect || "/dashboard/superadmin");
     } catch {
       setError("Network error. Please try again.");
     } finally {

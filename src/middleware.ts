@@ -18,6 +18,7 @@ const ROLE_ALLOWED: Record<string, string[]> = {
     "/dashboard/medical",
     "/dashboard/certificates",
     "/dashboard/tournament",
+    "/dashboard/tournament/my-entries",
     "/dashboard/ranking",
     "/dashboard/payment",
   ],

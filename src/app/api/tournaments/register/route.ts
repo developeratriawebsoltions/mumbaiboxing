@@ -2,31 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 import Razorpay from "razorpay";
+import { sendFreeRegistrationConfirmation } from "@/lib/tournament-payment-receipt";
 
 export async function POST(req: NextRequest) {
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!keyId || !keySecret) {
-    return NextResponse.json({ error: "Payment service is not configured" }, { status: 500 });
-  }
-
-  const razorpay = new Razorpay({
-    key_id: keyId,
-    key_secret: keySecret,
-  });
-
   const payload = await verifyToken(req.cookies.get("mba_token")?.value ?? "").catch(() => null);
   if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (payload.role !== "boxer") {
     return NextResponse.json({ error: "Only boxers can enter tournaments" }, { status: 403 });
   }
 
-  const { tournamentId } = await req.json();
+  const { tournamentId, answers, tournamentForms } = await req.json();
   if (!Number.isInteger(tournamentId) || tournamentId <= 0) {
     return NextResponse.json({ error: "A valid tournament ID is required" }, { status: 400 });
   }
 
-  const boxer = await prisma.boxer.findUnique({ where: { userId: payload.id } });
+  const boxer = await prisma.boxer.findUnique({
+    where: { userId: payload.id },
+    include: { user: { select: { email: true } } },
+  });
   if (!boxer) return NextResponse.json({ error: "Boxer profile not found" }, { status: 404 });
 
   const tournament = await prisma.tournament.findUnique({ where: { id: tournamentId } });
@@ -41,7 +34,29 @@ export async function POST(req: NextRequest) {
   if (existing) return NextResponse.json({ error: "Already registered" }, { status: 400 });
 
   const feeInRupees = Number(tournament.entryFee ?? 500);
-  if (!Number.isFinite(feeInRupees) || feeInRupees <= 0) {
+
+  // Free tournament — register directly without payment
+  if (feeInRupees === 0) {
+    const combinedData = JSON.stringify({ answers: answers ?? null, forms: tournamentForms ?? null });
+    await prisma.tournamententry.create({
+      data: { tournamentId, boxerId: boxer.id, answers: combinedData },
+    });
+    sendFreeRegistrationConfirmation({
+      email: boxer.user.email,
+      name: boxer.name,
+      tournamentName: tournament.name,
+      paidAt: new Date(),
+    }).catch(() => {});
+    return NextResponse.json({ free: true });
+  }
+
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) {
+    return NextResponse.json({ error: "Payment service is not configured" }, { status: 500 });
+  }
+
+  if (!Number.isFinite(feeInRupees) || feeInRupees < 0) {
     return NextResponse.json({ error: "Tournament entry fee is invalid" }, { status: 400 });
   }
 
@@ -52,19 +67,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
-    });
-
+    const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
     const order = await razorpay.orders.create({
       amount,
       currency: "INR",
       receipt: `t${tournamentId}_b${boxer.id}`,
       notes: { tournamentId: String(tournamentId), boxerId: String(boxer.id) },
     });
-
-    return NextResponse.json({ orderId: order.id, amount, tournamentName: tournament.name });
+    return NextResponse.json({ orderId: order.id, amount, tournamentName: tournament.name, answers: answers ?? null, tournamentForms: tournamentForms ?? null });
   } catch (error) {
     console.error("Razorpay order creation failed:", error);
     return NextResponse.json({ error: "Unable to create payment order for this tournament." }, { status: 500 });

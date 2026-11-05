@@ -23,6 +23,41 @@ function escapeHtml(value: string) {
   });
 }
 
+export async function sendFreeRegistrationConfirmation(receipt: Omit<TournamentPaymentReceipt, "amount" | "invoiceNumber">) {
+  const host = process.env.SMTP_HOST?.trim();
+  const port = Number(process.env.SMTP_PORT || 587);
+  const user = process.env.SMTP_USER?.trim();
+  const configuredPass = process.env.SMTP_PASS?.trim();
+  const from = process.env.SMTP_FROM?.trim() || process.env.EMAIL_FROM?.trim() || user;
+
+  if (!host || !user || !configuredPass || !from) return;
+
+  const pass =
+    host.toLowerCase() === "smtp.gmail.com" || host.toLowerCase() === "smtp.googlemail.com"
+      ? configuredPass.replace(/\s/g, "")
+      : configuredPass;
+
+  const date = receipt.paidAt.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+  const transporter = createTransport({ host, port, secure: process.env.SMTP_SECURE === "true", auth: { user, pass } });
+  await transporter.sendMail({
+    from,
+    to: receipt.email,
+    subject: `Tournament registration confirmed - ${receipt.tournamentName}`,
+    text: `Hello ${receipt.name},\n\nYou have been successfully registered for ${receipt.tournamentName} (Free Entry).\n\nDate: ${date}\n\nThank you,\nNorth Bombay District Amateur Boxing Association (NBDABA)`,
+    html: `
+      <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6">
+        <h2 style="color:#b91c1c">North Bombay District Amateur Boxing Association (NBDABA)</h2>
+        <p>Hello ${escapeHtml(receipt.name)},</p>
+        <p>You have been successfully registered for <strong>${escapeHtml(receipt.tournamentName)}</strong>.</p>
+        <p><strong>Entry Fee:</strong> Free<br />
+        <strong>Date:</strong> ${escapeHtml(date)}</p>
+        <p>No payment is required. See you at the tournament!</p>
+      </div>
+    `,
+  });
+}
+
 export async function sendTournamentPaymentReceipt(
   receipt: TournamentPaymentReceipt,
 ) {

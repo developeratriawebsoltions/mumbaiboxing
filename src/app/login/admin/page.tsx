@@ -42,8 +42,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push(data.redirect || "/dashboard/admin");
       router.refresh();
+      router.push(data.redirect || "/dashboard/admin");
     } catch {
       setError("Unable to connect to the server. Please try again.");
     } finally {

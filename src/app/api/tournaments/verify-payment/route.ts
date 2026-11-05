@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Only boxers can enter tournaments" }, { status: 403 });
   }
 
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tournamentId } = await req.json();
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, tournamentId, answers, tournamentForms } = await req.json();
   if (
     typeof razorpay_order_id !== "string" ||
     typeof razorpay_payment_id !== "string" ||
@@ -69,8 +69,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment does not match this tournament entry" }, { status: 400 });
   }
 
+  const combinedData = JSON.stringify({ answers: answers ?? null, forms: tournamentForms ?? null });
   await prisma.$transaction([
-    prisma.tournamententry.create({ data: { tournamentId, boxerId: boxer.id } }),
+    prisma.tournamententry.create({ data: { tournamentId, boxerId: boxer.id, answers: combinedData } }),
     prisma.payment.create({
       data: {
         boxerId: boxer.id,

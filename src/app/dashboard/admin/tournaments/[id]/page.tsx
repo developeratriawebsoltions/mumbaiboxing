@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays, Download, MapPin, Search, Users, Building2, Wallet, RefreshCw, Trophy, AlertCircle } from "lucide-react";
+import { ArrowLeft, CalendarDays, Download, MapPin, Search, Users, Building2, Wallet, RefreshCw, Trophy, AlertCircle, X, MessageSquare, ClipboardList } from "lucide-react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import { tournamentSlug } from "@/lib/tournament-url";
 
 type Entry = {
   id: number;
   createdAt: string;
+  answers: string | null;
+  customQuestions: string | null;
   boxer: { id: number; name: string; weight: string | null; ageGroup: string | null; academy: { name: string } | null };
 };
 type Tournament = {
@@ -36,6 +38,8 @@ export default function TournamentEntriesPage() {
   const [academy, setAcademy] = useState("all");
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
+  const [answersModal, setAnswersModal] = useState<{ boxerName: string; questions: string[]; answers: string[] } | null>(null);
+  const [formsModal, setFormsModal] = useState<{ boxerName: string; forms: Record<string, unknown> } | null>(null);
   const pageSize = 10;
 
   useEffect(() => {
@@ -130,13 +134,152 @@ export default function TournamentEntriesPage() {
             <div className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:px-7"><div><h2 className="text-xl font-extrabold">Registered Boxers</h2><p className="mt-1 text-sm text-slate-500">Browse and manage tournament participants</p></div><button type="button" onClick={exportCSV} disabled={filtered.length === 0} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"><Download size={16} /> Export CSV</button></div>
             <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/60 px-5 py-4 sm:flex-row sm:items-center sm:px-7"><div className="relative flex-1"><Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input aria-label="Search boxers" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search boxer, academy, weight..." className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100" /></div><select aria-label="Filter by academy" value={academy} onChange={(event) => { setAcademy(event.target.value); setPage(1); }} className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-red-400 sm:w-60"><option value="all">All Academies</option>{academies.map((name) => <option key={name} value={name}>{name}</option>)}</select><span className="text-xs font-semibold text-slate-500 sm:ml-2">{filtered.length} results</span></div>
             {filtered.length === 0 ? <div className="px-5 py-16 text-center"><Users size={38} className="mx-auto text-slate-300" /><h3 className="mt-4 font-bold">{entries.length ? "No matching boxers" : "No boxers registered yet"}</h3><p className="mt-2 text-sm text-slate-500">{entries.length ? "Try another search or academy filter." : "Registrations will appear here when boxers join."}</p></div> : <>
-              <div className="hidden overflow-x-auto md:block"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr>{["Boxer", "Weight", "Age Group", "Academy / Club", "Registered On"].map((heading) => <th key={heading} className="whitespace-nowrap px-6 py-4">{heading}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{visible.map((entry) => <tr key={entry.id} className="transition hover:bg-red-50/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-extrabold text-red-600">{initials(entry.boxer.name)}</span><span className="font-bold text-slate-900">{entry.boxer.name}</span></div></td><td className="px-6 py-4 text-slate-600">{entry.boxer.weight ?? "—"}</td><td className="px-6 py-4 text-slate-600">{entry.boxer.ageGroup ?? "—"}</td><td className="px-6 py-4 text-slate-600">{entry.boxer.academy?.name ?? "—"}</td><td className="whitespace-nowrap px-6 py-4 text-slate-500">{formatDate(entry.createdAt)}</td></tr>)}</tbody></table></div>
-              <div className="divide-y divide-slate-100 md:hidden">{visible.map((entry) => <article key={entry.id} className="p-5"><div className="flex items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-black text-red-600">{initials(entry.boxer.name)}</span><div className="min-w-0"><p className="font-bold text-slate-900">{entry.boxer.name}</p><p className="mt-1 truncate text-xs text-slate-500">{entry.boxer.academy?.name ?? "No academy listed"}</p></div></div><div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3 text-xs"><div><p className="text-slate-400">Weight</p><p className="mt-1 font-semibold">{entry.boxer.weight ?? "—"}</p></div><div><p className="text-slate-400">Age Group</p><p className="mt-1 font-semibold">{entry.boxer.ageGroup ?? "—"}</p></div><div><p className="text-slate-400">Registered</p><p className="mt-1 font-semibold">{formatDate(entry.createdAt)}</p></div></div></article>)}</div>
+              <div className="hidden overflow-x-auto md:block"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr>{["Boxer", "Weight", "Age Group", "Academy / Club", "Forms & Answers", "Registered On"].map((heading) => <th key={heading} className="whitespace-nowrap px-6 py-4">{heading}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{visible.map((entry) => {
+                const parsed = (() => { try { const p = entry.answers ? JSON.parse(entry.answers) as unknown : null; if (p && !Array.isArray(p) && typeof p === "object") return p as { answers?: string[]; forms?: Record<string, unknown> }; return { answers: Array.isArray(p) ? p as string[] : [], forms: null }; } catch { return { answers: [], forms: null }; } })();
+                const questions: string[] = (() => { try { return entry.customQuestions ? JSON.parse(entry.customQuestions) as string[] : []; } catch { return []; } })();
+                const answers = parsed.answers ?? [];
+                const forms = parsed.forms ?? null;
+                const hasAnswers = questions.length > 0 && answers.length > 0;
+                const hasForms = !!forms;
+                return (
+                <tr key={entry.id} className="transition hover:bg-red-50/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-extrabold text-red-600">{initials(entry.boxer.name)}</span><span className="font-bold text-slate-900">{entry.boxer.name}</span></div></td><td className="px-6 py-4 text-slate-600">{entry.boxer.weight ?? "—"}</td><td className="px-6 py-4 text-slate-600">{entry.boxer.ageGroup ?? "—"}</td><td className="px-6 py-4 text-slate-600">{entry.boxer.academy?.name ?? "—"}</td>
+                <td className="px-6 py-4">
+                  <div className="flex flex-wrap gap-2">
+                    {hasAnswers && (
+                      <button
+                        type="button"
+                        onClick={() => setAnswersModal({ boxerName: entry.boxer.name, questions, answers })}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-red-300 hover:text-red-600"
+                      >
+                        <MessageSquare size={13} /> Q&A ({questions.length})
+                      </button>
+                    )}
+                    {hasForms && (
+                      <button
+                        type="button"
+                        onClick={() => setFormsModal({ boxerName: entry.boxer.name, forms: forms as Record<string, unknown> })}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-600"
+                      >
+                        <ClipboardList size={13} /> Forms
+                      </button>
+                    )}
+                    {!hasAnswers && !hasForms && (
+                      <span className="text-xs text-slate-400">{questions.length > 0 ? "Not answered" : "—"}</span>
+                    )}
+                  </div>
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-slate-500">{formatDate(entry.createdAt)}</td></tr>
+                );
+              })}</tbody></table></div>
+              <div className="divide-y divide-slate-100 md:hidden">{visible.map((entry) => {
+                const questions: string[] = (() => { try { return entry.customQuestions ? JSON.parse(entry.customQuestions) as string[] : []; } catch { return []; } })();
+                const answers: string[] = (() => { try { return entry.answers ? JSON.parse(entry.answers) as string[] : []; } catch { return []; } })();
+                const hasAnswers = questions.length > 0 && answers.length > 0;
+                return (
+                <article key={entry.id} className="p-5"><div className="flex items-center gap-3"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-xs font-black text-red-600">{initials(entry.boxer.name)}</span><div className="min-w-0"><p className="font-bold text-slate-900">{entry.boxer.name}</p><p className="mt-1 truncate text-xs text-slate-500">{entry.boxer.academy?.name ?? "No academy listed"}</p></div></div><div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-3 text-xs"><div><p className="text-slate-400">Weight</p><p className="mt-1 font-semibold">{entry.boxer.weight ?? "—"}</p></div><div><p className="text-slate-400">Age Group</p><p className="mt-1 font-semibold">{entry.boxer.ageGroup ?? "—"}</p></div><div><p className="text-slate-400">Registered</p><p className="mt-1 font-semibold">{formatDate(entry.createdAt)}</p></div></div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {hasAnswers && (
+                    <button
+                      type="button"
+                      onClick={() => setAnswersModal({ boxerName: entry.boxer.name, questions, answers })}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-red-600"
+                    >
+                      <MessageSquare size={13} /> Q&A Answers
+                    </button>
+                  )}
+                  {(() => { try { const p = entry.answers ? JSON.parse(entry.answers) as unknown : null; const f = p && !Array.isArray(p) && typeof p === "object" ? (p as { forms?: Record<string, unknown> }).forms : null; return f ? <button type="button" onClick={() => setFormsModal({ boxerName: entry.boxer.name, forms: f })} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-blue-600"><ClipboardList size={13} /> View Forms</button> : null; } catch { return null; } })()}
+                </div>
+                </article>
+                );
+              })}</div>
               <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-7"><span>Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} boxers</span><div className="flex items-center gap-3"><button type="button" disabled={currentPage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg border border-slate-200 px-3 py-2 font-semibold disabled:opacity-40">Previous</button><span className="font-semibold">{currentPage} / {pages}</span><button type="button" disabled={currentPage === pages} onClick={() => setPage((p) => Math.min(pages, p + 1))} className="rounded-lg border border-slate-200 px-3 py-2 font-semibold disabled:opacity-40">Next</button></div></div>
             </>}
           </section>
         </>}
       </main>
+
+      {/* FORMS MODAL */}
+      {formsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setFormsModal(null); }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Registration Forms</h3>
+                <p className="mt-0.5 text-sm text-slate-500">{formsModal.boxerName}</p>
+              </div>
+              <button type="button" onClick={() => setFormsModal(null)} aria-label="Close" className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"><X size={16} /></button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-6">
+              {Object.entries(formsModal.forms).map(([formKey, formData]) => {
+                const label = formKey === "ageVerification" ? "Age Verification" : formKey === "medical" ? "Medical Certificate" : formKey === "nonPregnancy" ? "Non-Pregnancy Declaration" : formKey;
+                const fields: [string, unknown][] = formData && typeof formData === "object" && !Array.isArray(formData)
+                  ? Object.entries(formData as Record<string, unknown>).filter(([, v]) => v !== "" && v !== null && v !== undefined && v !== false)
+                  : [];
+                return (
+                  <div key={formKey}>
+                    <p className="mb-3 text-xs font-extrabold uppercase tracking-wider text-red-600 border-b border-red-100 pb-1">{label}</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {fields.map(([k, v]) => (
+                        <div key={k} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{k.replace(/_/g, " ")}</p>
+                          <p className="mt-0.5 text-xs text-slate-700 break-words">{String(v)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ANSWERS MODAL */}
+      {answersModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setAnswersModal(null); }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Form Answers</h3>
+                <p className="mt-0.5 text-sm text-slate-500">{answersModal.boxerName}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAnswersModal(null)}
+                aria-label="Close"
+                className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
+              {answersModal.questions.map((question, i) => (
+                <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Q{i + 1}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{question}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {answersModal.answers[i]?.trim() || <span className="italic text-slate-400">No answer provided</span>}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

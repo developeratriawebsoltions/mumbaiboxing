@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "next dev -p 9001",
     "build": "prisma generate && next build",
-    "start": "next start -p 9001",
+    "start": "next start -p 9023",
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node --project prisma/tsconfig.seed.json prisma/seed.ts",
+    "db:seed-tournaments": "ts-node --project prisma/tsconfig.seed.json prisma/seed-tournaments.ts",
     "admin:create": "node scripts/create-admin-users.mjs",
     "db:studio": "prisma studio"
   },

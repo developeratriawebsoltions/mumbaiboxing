@@ -107,6 +107,22 @@ type Boxer = {
   tournamentEntries: {
     id: number;
     createdAt: string;
+    pending?: boolean;
+    tournament: {
+      id: number;
+      name: string;
+      location: string | null;
+      startDate: string;
+      endDate: string;
+      weightClass: string | null;
+      status: string;
+    } | null;
+  }[];
+
+  cashPendingEntries: {
+    id: number;
+    createdAt: string;
+    pending: boolean;
     tournament: {
       id: number;
       name: string;
@@ -1401,7 +1417,7 @@ export default function BoxerDashboard() {
               <StatCard
                 icon={Trophy}
                 iconClass="bg-red-50 text-red-600"
-                title={`${boxer.tournamentEntries?.length ?? 0}`}
+                title={`${(boxer.tournamentEntries?.length ?? 0) + (boxer.cashPendingEntries?.length ?? 0)}`}
                 label="Tournament Entries"
                 sub="View activity"
                 subClass="text-emerald-600"
@@ -1864,6 +1880,14 @@ export default function BoxerDashboard() {
                     </p>
                   </div>
 
+                  <a
+                    href="/dashboard/tournament"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    View All
+                    <ArrowRight size={14} />
+                  </a>
+
                   <span
                     className="
                       inline-flex
@@ -1879,11 +1903,11 @@ export default function BoxerDashboard() {
                     "
                   >
                     <Trophy size={14} />
-                    {boxer.tournamentEntries?.length ?? 0}
+                    {(boxer.tournamentEntries?.length ?? 0) + (boxer.cashPendingEntries?.length ?? 0)}
                   </span>
                 </div>
 
-                {(boxer.tournamentEntries ?? []).length === 0 ? (
+                {(boxer.tournamentEntries ?? []).length === 0 && (boxer.cashPendingEntries ?? []).length === 0 ? (
                   <div
                     className="
                       rounded-xl
@@ -1946,7 +1970,7 @@ export default function BoxerDashboard() {
                           </thead>
 
                           <tbody className="divide-y divide-slate-100">
-                            {(boxer.tournamentEntries ?? []).map((entry) => {
+                            {[...(boxer.tournamentEntries ?? []), ...(boxer.cashPendingEntries ?? [])].map((entry) => {
                               const tournament = entry.tournament;
 
                               if (!tournament) {
@@ -1967,36 +1991,17 @@ export default function BoxerDashboard() {
                                 tournament.status || "upcoming"
                               ).toLowerCase();
 
-                              const statusConfig =
-                                status === "completed"
-                                  ? {
-                                      label: "Completed",
-                                      className:
-                                        "bg-emerald-50 text-emerald-700 border-emerald-100",
-                                    }
+                              const statusConfig = entry.pending
+                                ? { label: "Cash Pending", className: "bg-amber-50 text-amber-700 border-amber-100" }
+                                : status === "completed"
+                                  ? { label: "Completed", className: "bg-emerald-50 text-emerald-700 border-emerald-100" }
                                   : status === "ongoing"
-                                    ? {
-                                        label: "Ongoing",
-                                        className:
-                                          "bg-red-50 text-red-700 border-red-100",
-                                      }
+                                    ? { label: "Ongoing", className: "bg-red-50 text-red-700 border-red-100" }
                                     : status === "open"
-                                      ? {
-                                          label: "Open",
-                                          className:
-                                            "bg-blue-50 text-blue-700 border-blue-100",
-                                        }
+                                      ? { label: "Open", className: "bg-blue-50 text-blue-700 border-blue-100" }
                                       : status === "cancelled"
-                                        ? {
-                                            label: "Cancelled",
-                                            className:
-                                              "bg-slate-100 text-slate-600 border-slate-200",
-                                          }
-                                        : {
-                                            label: "Upcoming",
-                                            className:
-                                              "bg-amber-50 text-amber-700 border-amber-100",
-                                          };
+                                        ? { label: "Cancelled", className: "bg-slate-100 text-slate-600 border-slate-200" }
+                                        : { label: "Upcoming", className: "bg-amber-50 text-amber-700 border-amber-100" };
 
                               const startDate = formatDate(
                                 tournament.startDate,
@@ -2097,7 +2102,7 @@ export default function BoxerDashboard() {
 
                     {/* Mobile */}
                     <div className="md:hidden space-y-4">
-                      {(boxer.tournamentEntries ?? []).map((entry) => {
+                      {[...(boxer.tournamentEntries ?? []), ...(boxer.cashPendingEntries ?? [])].map((entry) => {
                         const tournament = entry.tournament;
 
                         if (!tournament) {
@@ -2124,36 +2129,17 @@ export default function BoxerDashboard() {
                           tournament.status || "upcoming"
                         ).toLowerCase();
 
-                        const statusConfig =
-                          status === "completed"
-                            ? {
-                                label: "Completed",
-                                className:
-                                  "bg-emerald-50 text-emerald-700 border-emerald-100",
-                              }
+                        const statusConfig = entry.pending
+                          ? { label: "Cash Pending", className: "bg-amber-50 text-amber-700 border-amber-100" }
+                          : status === "completed"
+                            ? { label: "Completed", className: "bg-emerald-50 text-emerald-700 border-emerald-100" }
                             : status === "ongoing"
-                              ? {
-                                  label: "Ongoing",
-                                  className:
-                                    "bg-red-50 text-red-700 border-red-100",
-                                }
+                              ? { label: "Ongoing", className: "bg-red-50 text-red-700 border-red-100" }
                               : status === "open"
-                                ? {
-                                    label: "Open",
-                                    className:
-                                      "bg-blue-50 text-blue-700 border-blue-100",
-                                  }
+                                ? { label: "Open", className: "bg-blue-50 text-blue-700 border-blue-100" }
                                 : status === "cancelled"
-                                  ? {
-                                      label: "Cancelled",
-                                      className:
-                                        "bg-slate-100 text-slate-600 border-slate-200",
-                                    }
-                                  : {
-                                      label: "Upcoming",
-                                      className:
-                                        "bg-amber-50 text-amber-700 border-amber-100",
-                                    };
+                                  ? { label: "Cancelled", className: "bg-slate-100 text-slate-600 border-slate-200" }
+                                  : { label: "Upcoming", className: "bg-amber-50 text-amber-700 border-amber-100" };
 
                         const startDate = formatDate(tournament.startDate);
 

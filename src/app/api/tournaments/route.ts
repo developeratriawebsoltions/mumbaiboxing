@@ -13,6 +13,13 @@ export async function GET(req: NextRequest) {
       const tournaments = await prisma.tournament.findMany({
         where: { status: { not: "completed" } },
         orderBy: { startDate: "asc" },
+        select: {
+          id: true, name: true, location: true, startDate: true, endDate: true,
+          registrationStartDate: true, registrationEndDate: true,
+          weightClass: true, categories: true, description: true, disclaimer: true,
+          status: true, entryFee: true, isFeatured: true, imageUrl: true,
+          customQuestions: true, createdAt: true,
+        },
       });
       return NextResponse.json(
         tournaments.map((t) => ({ ...t, registered: false }))

@@ -140,7 +140,19 @@ export async function GET(req: NextRequest) {
         },
       });
 
-      return NextResponse.json(entries);
+      // Also fetch tournament's custom questions so admin can pair them with answers
+      const tournamentData = await prisma.tournament.findUnique({
+        where: { id: tournamentId },
+        select: { customQuestions: true },
+      });
+
+      return NextResponse.json(
+        entries.map((entry) => ({
+          ...entry,
+          answers: entry.answers ?? null,
+          customQuestions: tournamentData?.customQuestions ?? null,
+        }))
+      );
     }
 
     // Get all tournaments
@@ -191,10 +203,16 @@ export async function POST(req: NextRequest) {
     location,
     startDate,
     endDate,
+    registrationStartDate,
+    registrationEndDate,
     weightClass,
+    categories,
+    description,
+    disclaimer,
     status,
     entryFee,
     isFeatured,
+    customQuestions,
   } = body;
 
   if (!name || !String(name).trim()) {
@@ -218,53 +236,30 @@ export async function POST(req: NextRequest) {
   const shouldFeature = isFeaturedValue(isFeatured);
 
   const tournament = await prisma.$transaction(async (tx) => {
-    // If this tournament is selected for the homepage,
-    // remove the featured flag from every other tournament.
     if (shouldFeature) {
       await tx.tournament.updateMany({
-        where: {
-          isFeatured: true,
-        },
-        data: {
-          isFeatured: false,
-        },
+        where: { isFeatured: true },
+        data: { isFeatured: false },
       });
     }
 
     return tx.tournament.create({
       data: {
         name: String(name).trim(),
-
-        location:
-          location && String(location).trim()
-            ? String(location).trim()
-            : null,
-
-        startDate: startDate
-          ? new Date(String(startDate))
-          : null,
-
-        endDate: endDate
-          ? new Date(String(endDate))
-          : null,
-
-        weightClass:
-          weightClass && String(weightClass).trim()
-            ? String(weightClass).trim()
-            : null,
-
-        status:
-          status && String(status).trim()
-            ? String(status).trim()
-            : "upcoming",
-
-        entryFee:
-          entryFee !== "" && entryFee != null
-            ? Number(entryFee)
-            : null,
-
+        location: location && String(location).trim() ? String(location).trim() : null,
+        startDate: startDate ? new Date(String(startDate)) : null,
+        endDate: endDate ? new Date(String(endDate)) : null,
+        registrationStartDate: registrationStartDate ? new Date(String(registrationStartDate)) : null,
+        registrationEndDate: registrationEndDate ? new Date(String(registrationEndDate)) : null,
+        weightClass: weightClass && String(weightClass).trim() ? String(weightClass).trim() : null,
+        categories: categories && String(categories).trim() ? String(categories).trim() : null,
+        description: description && String(description).trim() ? String(description).trim() : null,
+        disclaimer: disclaimer && String(disclaimer).trim() ? String(disclaimer).trim() : null,
+        status: status && String(status).trim() ? String(status).trim() : "upcoming",
+        entryFee: entryFee !== "" && entryFee != null ? Number(entryFee) : null,
         isFeatured: shouldFeature,
         imageUrl,
+        customQuestions: customQuestions && String(customQuestions).trim() ? String(customQuestions).trim() : null,
       },
     });
   });
@@ -295,26 +290,26 @@ export async function PUT(req: NextRequest) {
     location,
     startDate,
     endDate,
+    registrationStartDate,
+    registrationEndDate,
     weightClass,
+    categories,
+    description,
+    disclaimer,
     status,
     entryFee,
     isFeatured,
+    customQuestions,
   } = body;
 
   if (!id) {
-    return NextResponse.json(
-      { error: "ID is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "ID is required" }, { status: 400 });
   }
 
   const tournamentId = Number(id);
 
   if (!Number.isFinite(tournamentId)) {
-    return NextResponse.json(
-      { error: "Invalid tournament ID" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid tournament ID" }, { status: 400 });
   }
 
   let imageUrl: string | null | undefined;
@@ -331,63 +326,31 @@ export async function PUT(req: NextRequest) {
   const shouldFeature = isFeaturedValue(isFeatured);
 
   const tournament = await prisma.$transaction(async (tx) => {
-    // If this tournament should appear on the homepage,
-    // make sure every other tournament is unfeatured.
     if (shouldFeature) {
       await tx.tournament.updateMany({
-        where: {
-          id: {
-            not: tournamentId,
-          },
-          isFeatured: true,
-        },
-        data: {
-          isFeatured: false,
-        },
+        where: { id: { not: tournamentId }, isFeatured: true },
+        data: { isFeatured: false },
       });
     }
 
     return tx.tournament.update({
-      where: {
-        id: tournamentId,
-      },
-
+      where: { id: tournamentId },
       data: {
-        name:
-          name && String(name).trim()
-            ? String(name).trim()
-            : undefined,
-
-        location:
-          location && String(location).trim()
-            ? String(location).trim()
-            : null,
-
-        startDate: startDate
-          ? new Date(String(startDate))
-          : null,
-
-        endDate: endDate
-          ? new Date(String(endDate))
-          : null,
-
-        weightClass:
-          weightClass && String(weightClass).trim()
-            ? String(weightClass).trim()
-            : null,
-
-        status:
-          status && String(status).trim()
-            ? String(status).trim()
-            : "upcoming",
-
-        entryFee:
-          entryFee !== "" && entryFee != null
-            ? Number(entryFee)
-            : null,
-
+        name: name && String(name).trim() ? String(name).trim() : undefined,
+        location: location && String(location).trim() ? String(location).trim() : null,
+        startDate: startDate ? new Date(String(startDate)) : null,
+        endDate: endDate ? new Date(String(endDate)) : null,
+        registrationStartDate: registrationStartDate ? new Date(String(registrationStartDate)) : null,
+        registrationEndDate: registrationEndDate ? new Date(String(registrationEndDate)) : null,
+        weightClass: weightClass && String(weightClass).trim() ? String(weightClass).trim() : null,
+        categories: categories && String(categories).trim() ? String(categories).trim() : null,
+        description: description && String(description).trim() ? String(description).trim() : null,
+        disclaimer: disclaimer && String(disclaimer).trim() ? String(disclaimer).trim() : null,
+        status: status && String(status).trim() ? String(status).trim() : "upcoming",
+        entryFee: entryFee !== "" && entryFee != null ? Number(entryFee) : null,
         isFeatured: shouldFeature,
         imageUrl,
+        customQuestions: customQuestions !== undefined ? (customQuestions && String(customQuestions).trim() ? String(customQuestions).trim() : null) : undefined,
       },
     });
   });

@@ -200,17 +200,23 @@ model payment {
 }
 
 model tournament {
-  id          Int       @id @default(autoincrement())
-  name        String
-  location    String?
-  startDate   DateTime?
-  endDate     DateTime?
-  weightClass String?
-  status      String    @default("upcoming")
-  entryFee    Int?      @default(500)
-  isFeatured  Boolean   @default(false)
-  imageUrl    String?
-  createdAt   DateTime  @default(now())
+  id                    Int       @id @default(autoincrement())
+  name                  String
+  location              String?
+  startDate             DateTime?
+  endDate               DateTime?
+  registrationStartDate DateTime?
+  registrationEndDate   DateTime?
+  weightClass           String?
+  categories            String?
+  description           String?   @db.Text
+  disclaimer            String?   @db.Text
+  status                String    @default("upcoming")
+  entryFee              Int?      @default(500)
+  isFeatured            Boolean   @default(false)
+  imageUrl              String?
+  customQuestions       String?   @db.Text
+  createdAt             DateTime  @default(now())
 
   tournamententry        tournamententry[]
   payment                payment[]
@@ -221,6 +227,7 @@ model tournamententry {
   id           Int      @id @default(autoincrement())
   tournamentId Int
   boxerId      Int
+  answers      String?  @db.Text
   createdAt    DateTime @default(now())
 
   boxer      boxer      @relation(fields: [boxerId], references: [id], map: "TournamentEntry_boxerId_fkey")

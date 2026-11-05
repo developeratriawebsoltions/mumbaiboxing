@@ -105,14 +105,18 @@ export default function PendingCashPayments() {
           data.emailError ||
             "Payment was approved, but the receipt email could not be sent. Retry it from this page.",
         );
-      } else {
+        // Keep the payment in the list as a retry item
         setPayments((current) =>
-          current.filter((item) => item.id !== payment.id)
+          current.map((item) =>
+            item.id === payment.id ? { ...item, receiptRetry: true } : item
+          )
         );
+      } else {
+        setPayments((current) => current.filter((item) => item.id !== payment.id));
         setNoticeIsError(false);
         setNotice(
           payment.paymentType === "tournament"
-            ? `Cash payment confirmed for ${payment.tournamentName}. Receipt emailed to ${payment.email}.`
+            ? `Cash payment confirmed for ${payment.tournamentName ?? ""}. Receipt emailed to ${payment.email}.`
             : `${payment.name}'s membership is active; they can now log in.`,
         );
       }
