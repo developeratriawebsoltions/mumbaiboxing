@@ -1,4 +1,6 @@
 import { Prisma } from "@prisma/client";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createTransport } from "nodemailer";
 import { jsPDF } from "jspdf";
 import { prisma } from "@/lib/prisma";
@@ -250,105 +252,226 @@ export function createCertificatePdf(certificate: CertificateRecord) {
 
   pdf.setFillColor(250, 250, 248);
   pdf.rect(0, 0, width, height, "F");
-  pdf.setDrawColor(185, 28, 28);
-  pdf.setLineWidth(3);
-  pdf.roundedRect(28, 28, width - 56, height - 56, 14, 14, "S");
-  pdf.setDrawColor(203, 213, 225);
-  pdf.setLineWidth(0.8);
-  pdf.roundedRect(40, 40, width - 80, height - 80, 10, 10, "S");
+  const logo = readFileSync(
+    join(process.cwd(), "public", "logo", "Favicon", "android-chrome-512x512.png")
+  );
+  const stamp = readFileSync(
+    join(process.cwd(), "public", "certificates", "association-stamp.png")
+  );
+  const signature = readFileSync(
+    join(process.cwd(), "public", "certificates", "association-signature.png")
+  );
+
+  pdf.setFillColor(5, 23, 52);
+  pdf.triangle(0, 0, 130, 0, 0, 95, "F");
+  pdf.triangle(width, height, width - 130, height, width, height - 95, "F");
+  pdf.setFillColor(190, 18, 38);
+  pdf.triangle(0, 13, 108, 0, 0, 75, "F");
+  pdf.triangle(width, height - 13, width - 108, height, width, height - 75, "F");
+  pdf.setFillColor(238, 174, 36);
+  pdf.triangle(0, 6, 72, 0, 0, 50, "F");
+  pdf.triangle(width, height - 6, width - 72, height, width, height - 50, "F");
+
+  pdf.setDrawColor(238, 174, 36);
+  pdf.setLineWidth(4);
+  pdf.roundedRect(10, 10, width - 20, height - 20, 17, 17, "S");
+  pdf.setDrawColor(8, 30, 66);
+  pdf.setLineWidth(1.2);
+  pdf.roundedRect(19, 19, width - 38, height - 38, 13, 13, "S");
+  pdf.setDrawColor(224, 169, 48);
+  pdf.setLineWidth(0.7);
+  pdf.roundedRect(24, 24, width - 48, height - 48, 11, 11, "S");
+
+  pdf.setGState(pdf.GState({ opacity: 0.045 }));
+  pdf.addImage(logo, "PNG", center - 205, 157, 410, 410);
+  pdf.setGState(pdf.GState({ opacity: 1 }));
+
+  pdf.setDrawColor(231, 173, 43);
+  pdf.setFillColor(231, 173, 43);
+  pdf.setLineWidth(1.5);
+  for (const direction of [-1, 1]) {
+    const startX = center + direction * 45;
+    const endX = center + direction * 91;
+    pdf.line(startX, 107, endX, 42);
+    for (let index = 0; index < 5; index += 1) {
+      const progress = (index + 1) / 6;
+      const x = startX + (endX - startX) * progress;
+      const y = 107 - 65 * progress;
+      pdf.ellipse(x - direction * 4, y - 2, 2, 5, "F");
+      pdf.ellipse(x + direction * 4, y + 2, 2, 5, "F");
+    }
+  }
+  pdf.addImage(logo, "PNG", center - 39, 28, 78, 78);
 
   pdf.setTextColor(185, 28, 28);
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(13);
-  pdf.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", center, 104, { align: "center" });
+  pdf.setFontSize(15);
+  pdf.text(
+    "NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION",
+    center,
+    128,
+    { align: "center", maxWidth: width - 100 }
+  );
+  pdf.setTextColor(8, 30, 66);
+  pdf.setFontSize(12);
+  pdf.text(
+    "Affiliated to Maharashtra Boxing Association Section 8 Company",
+    center,
+    148,
+    { align: "center", maxWidth: width - 120 }
+  );
+
+  pdf.setDrawColor(231, 173, 43);
+  pdf.setLineWidth(1);
+  pdf.line(center - 195, 171, center - 19, 171);
+  pdf.line(center + 19, 171, center + 195, 171);
+  for (const offset of [-11, 0, 11]) {
+    pdf.setFillColor(231, 173, 43);
+    pdf.triangle(
+      center + offset - 4,
+      166,
+      center + offset + 4,
+      166,
+      center + offset,
+      175,
+      "F"
+    );
+  }
 
   pdf.setTextColor(15, 23, 42);
-  pdf.setFontSize(31);
+  pdf.setFontSize(34);
   pdf.text(
     isMembershipCertificate
       ? "MEMBERSHIP CERTIFICATE"
       : certificate.type.toUpperCase(),
     center,
-    164,
-    { align: "center", maxWidth: width - 120 }
+    215,
+    { align: "center", maxWidth: width - 110 }
   );
 
   pdf.setTextColor(71, 85, 105);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(14);
-  pdf.text("This certifies that", center, 211, { align: "center" });
+  pdf.text("This certifies that", center, 243, { align: "center" });
 
   pdf.setTextColor(30, 41, 59);
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(27);
-  pdf.text(certificate.memberName || "Member", center, 258, {
+  pdf.setFontSize(30);
+  pdf.text(certificate.memberName || "Member", center, 284, {
     align: "center",
-    maxWidth: width - 160,
+    maxWidth: width - 150,
   });
 
   pdf.setDrawColor(220, 38, 38);
-  pdf.setLineWidth(1.2);
-  pdf.line(center - 155, 274, center + 155, 274);
+  pdf.setLineWidth(1.5);
+  pdf.line(center - 170, 300, center + 170, 300);
 
   pdf.setTextColor(71, 85, 105);
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(14);
+  pdf.setFontSize(13);
   pdf.text(
     isMembershipCertificate
       ? `is registered as a ${certificate.membershipRole?.replace("_", " ") || "member"} of the North Bombay District Amateur Boxing Association (NBDABA).`
       : `has been awarded this certificate for ${certificate.event || certificate.type}.`,
     center,
-    310,
-    { align: "center", maxWidth: width - 150 }
+    330,
+    { align: "center", maxWidth: width - 100 }
   );
 
+  const membershipLabel = isMembershipCertificate
+    ? `Membership ID: ${certificate.membershipId || "—"}`
+    : certificate.event || certificate.type;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(13);
+  const pillWidth = Math.min(
+    width - 160,
+    Math.max(260, pdf.getTextWidth(membershipLabel) + 32)
+  );
+  pdf.setFillColor(5, 23, 52);
+  pdf.setDrawColor(231, 173, 43);
+  pdf.setLineWidth(1.8);
+  pdf.roundedRect(center - pillWidth / 2, 348, pillWidth, 32, 16, 16, "FD");
+  pdf.setTextColor(255, 255, 255);
+  pdf.text(membershipLabel, center, 369, {
+    align: "center",
+    maxWidth: pillWidth - 24,
+  });
+
   if (isMembershipCertificate) {
+    pdf.setDrawColor(185, 18, 38);
+    pdf.setLineWidth(1.4);
+    pdf.rect(center - 210, 396, 13, 13, "S");
+    pdf.line(center - 207, 393, center - 207, 398);
+    pdf.line(center - 200, 393, center - 200, 398);
+    pdf.line(center - 210, 401, center - 197, 401);
     pdf.setTextColor(15, 23, 42);
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(13);
-    pdf.text(`Membership ID: ${certificate.membershipId || "—"}`, center, 356, {
+    pdf.setFontSize(11);
+    pdf.text(
+      `Membership validity: ${dateLabel(certificate.issuedAt)} - ${dateLabel(certificate.membershipExpiresAt)}`,
+      center,
+      407,
+      { align: "center", maxWidth: width - 220 }
+    );
+  }
+
+  pdf.setTextColor(51, 65, 85);
+  pdf.setFontSize(11);
+  if (isMembershipCertificate) {
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`Issued ${dateLabel(certificate.issuedAt)}`, center, 428, {
       align: "center",
     });
   } else {
-    pdf.setTextColor(15, 23, 42);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(13);
-    pdf.text(certificate.event || certificate.type, center, 356, {
+    pdf.text(`Issued ${dateLabel(certificate.issuedAt)}`, center, 407, {
       align: "center",
-      maxWidth: width - 140,
     });
   }
 
-  pdf.setTextColor(71, 85, 105);
-  pdf.setFont("helvetica", "normal");
+  pdf.addImage(signature, "PNG", 62, height - 164, 205, 68);
+  pdf.setDrawColor(8, 30, 66);
+  pdf.setLineWidth(0.8);
+  pdf.line(54, height - 94, 270, height - 94);
+  pdf.setTextColor(8, 30, 66);
+  pdf.setFont("helvetica", "bold");
   pdf.setFontSize(11);
+  pdf.text("Subodh Raorane", 162, height - 75, {
+    align: "center",
+  });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.text("Authorized Honorary Secretary", 162, height - 58, {
+    align: "center",
+  });
+  pdf.text("Authorized Association Representative", 162, height - 43, {
+    align: "center",
+  });
+
+  const stampSize = 116;
+  const stampX = width - stampSize - 114;
+  const stampY = height - 194;
+  pdf.addImage(stamp, "PNG", stampX, stampY, stampSize, stampSize);
+  pdf.setDrawColor(8, 30, 66);
+  pdf.line(stampX - 7, height - 75, width - 37, height - 75);
+  pdf.setTextColor(185, 18, 38);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
   pdf.text(
-    isMembershipCertificate
-      ? `Issued ${dateLabel(certificate.issuedAt)}   |   Valid until ${dateLabel(certificate.membershipExpiresAt)}`
-      : `Issued ${dateLabel(certificate.issuedAt)}`,
-    center,
-    383,
+    ["NORTH BOMBAY DISTRICT", "AMATEUR BOXING ASSOCIATION"],
+    stampX + stampSize / 2,
+    height - 57,
     { align: "center" }
   );
 
-  pdf.setDrawColor(148, 163, 184);
-  pdf.line(86, height - 112, 242, height - 112);
-  pdf.line(width - 242, height - 112, width - 86, height - 112);
-  pdf.setFontSize(10);
-  pdf.text("Authorized Association Representative", 164, height - 92, {
-    align: "center",
-  });
+  pdf.setTextColor(30, 41, 59);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(11);
   pdf.text(
     `Certificate No. MBA-CERT-${String(certificate.id).padStart(6, "0")}`,
     center,
-    height - 65,
+    height - 45,
     { align: "center" }
   );
-  pdf.setFont("helvetica", "bold");
-  pdf.setTextColor(185, 28, 28);
-  pdf.text("NORTH BOMBAY DISTRICT AMATEUR BOXING ASSOCIATION", width - 164, height - 92, {
-    align: "center",
-  });
 
   return Buffer.from(pdf.output("arraybuffer"));
 }
