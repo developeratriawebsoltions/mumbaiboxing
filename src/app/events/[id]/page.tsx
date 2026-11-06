@@ -103,9 +103,9 @@ export default function TournamentDetailsPage() {
   const registrationOpen = tournament?.status.toLowerCase() === "open";
   const statusLabel = tournament?.status.replaceAll("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
-  function goRegister(mode: "online" | "cash" | "free") {
+  function goRegister() {
     if (!tournament) return;
-    router.push(`/dashboard/tournament/register/${tournament.id}?mode=${mode}`);
+    router.push(`/dashboard/tournament/register/${tournament.id}`);
   }
 
   return (
@@ -217,17 +217,10 @@ export default function TournamentDetailsPage() {
                   role === "boxer" ? (
                     <div className="flex flex-wrap gap-3">
                       <button type="button"
-                        onClick={() => goRegister(tournament.entryFee === 0 ? "free" : "online")}
+                        onClick={() => goRegister()}
                         className={`inline-flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full px-8 py-4 text-sm font-extrabold text-white shadow-[0_12px_25px_rgba(245,9,25,0.18)] transition hover:-translate-y-0.5 sm:w-auto sm:min-w-[324px] ${tournament.entryFee === 0 ? "bg-emerald-600 hover:bg-emerald-700" : "bg-[#f50919] hover:bg-[#d60013]"}`}>
                         <Users size={17} /> {tournament.entryFee === 0 ? "Free Entry — Register Now" : "Register Now"}
                       </button>
-                      {tournament.entryFee !== 0 && (
-                        <button type="button"
-                          onClick={() => goRegister("cash")}
-                          className="inline-flex min-h-[52px] w-full items-center justify-center gap-3 rounded-full border border-[#e1e7ef] bg-white px-8 py-4 text-sm font-bold text-[#142033] transition hover:border-[#f50919] hover:text-[#f50919] sm:w-auto">
-                          Request Cash Payment
-                        </button>
-                      )}
                     </div>
                   ) : (
                     <Link href={`/login?redirect=${encodeURIComponent(tournamentUrl(tournament))}`}
