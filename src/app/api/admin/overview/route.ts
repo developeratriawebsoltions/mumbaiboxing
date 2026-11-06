@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
     const [
       totalBoxers,
       totalCoaches,
+      totalReferees,
       totalAcademies,
       totalTournaments,
       totalDocuments,
@@ -59,6 +60,8 @@ export async function GET(req: NextRequest) {
       prisma.boxer.count(),
 
       prisma.coach.count(),
+
+      prisma.referee_judge.count(),
 
       prisma.academy.count(),
 
@@ -256,6 +259,7 @@ export async function GET(req: NextRequest) {
       stats: {
         totalBoxers,
         totalCoaches,
+        totalReferees,
         totalAcademies,
         totalTournaments,
         totalDocuments,

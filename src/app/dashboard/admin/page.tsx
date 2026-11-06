@@ -18,6 +18,7 @@ import {
   IndianRupee,
   CalendarDays,
   RefreshCw,
+  Scale,
 } from "lucide-react";
 import DashboardLayout from "@/Components/layout/DashboardLayout";
 import PageSpinner from "@/Components/ui/PageSpinner";
@@ -29,6 +30,7 @@ type DashboardData = {
   stats: {
     totalBoxers: number;
     totalCoaches: number;
+    totalReferees: number;
     totalAcademies: number;
     totalTournaments: number;
     totalDocuments: number;
@@ -98,6 +100,12 @@ const statCards = [
     title: "Total Coaches",
     icon: UserRound,
     href: "/dashboard/admin/coaches",
+  },
+  {
+    key: "totalReferees",
+    title: "Referees & Judges",
+    icon: Scale,
+    href: "/dashboard/admin/referees",
   },
   {
     key: "totalAcademies",

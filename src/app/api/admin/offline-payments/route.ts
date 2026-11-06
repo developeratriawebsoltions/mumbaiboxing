@@ -11,7 +11,7 @@ import { sendTournamentPaymentReceipt } from "@/lib/tournament-payment-receipt";
 
 const ROLE_FEES = {
   boxer: 100,
-  coach: 1000,
+  coach: 500,
   academy: 1500,
   referee_judge: 1000,
 } as const;

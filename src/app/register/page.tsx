@@ -1979,8 +1979,9 @@ function handleFieldChange(
 const fee =
   normalizedRole === 'boxer'
     ? '100'
-    : normalizedRole === 'coach' ||
-        normalizedRole === 'referee_judge' ||
+    : normalizedRole === 'coach'
+      ? '500'
+      : normalizedRole === 'referee_judge' ||
         normalizedRole === 'referee' ||
         normalizedRole === 'judge' ||
         normalizedRole === 'official' ||
