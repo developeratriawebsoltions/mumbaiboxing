@@ -40,6 +40,7 @@ export default function TournamentEntriesPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [answersModal, setAnswersModal] = useState<{ boxerName: string; questions: string[]; answers: string[] } | null>(null);
   const [formsModal, setFormsModal] = useState<{ boxerName: string; forms: Record<string, unknown> } | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const pageSize = 10;
 
   useEffect(() => {
@@ -202,47 +203,79 @@ export default function TournamentEntriesPage() {
       {formsModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-          onMouseDown={(e) => { if (e.target === e.currentTarget) setFormsModal(null); }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) { setFormsModal(null); setPreviewUrl(null); } }}
         >
           <div
             role="dialog"
             aria-modal="true"
-            className="flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className={`flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-200 ${previewUrl ? "max-w-4xl max-h-[92dvh]" : "max-w-lg max-h-[90dvh]"}`}
           >
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4 shrink-0">
               <div>
                 <h3 className="text-base font-black text-slate-900">Uploaded Documents</h3>
                 <p className="mt-0.5 text-sm text-slate-500">{formsModal.boxerName}</p>
               </div>
-              <button type="button" onClick={() => setFormsModal(null)} aria-label="Close" className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"><X size={16} /></button>
+              <button type="button" onClick={() => { setFormsModal(null); setPreviewUrl(null); }} aria-label="Close" className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"><X size={16} /></button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-3">
-              {([
-                { key: "ageVerification", label: "Age Verification Form" },
-                { key: "medicalCertificate", label: "BFI Medical Certificate" },
-                { key: "nonPregnancy", label: "Declaration of Non-Pregnancy" },
-              ] as { key: string; label: string }[]).map(({ key, label }) => {
-                const url = formsModal.forms[key];
-                if (!url || typeof url !== "string") return null;
-                return (
-                  <a
-                    key={key}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 hover:border-red-300 hover:bg-red-50 transition"
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
-                      <ClipboardList size={16} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-800">{label}</p>
-                      <p className="mt-0.5 text-xs text-slate-400 truncate">{url}</p>
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <div className={`overflow-y-auto p-5 space-y-3 shrink-0 ${previewUrl ? "w-64" : "w-full"}`}>
+                {([
+                  { key: "ageVerification", label: "Age Verification Form" },
+                  { key: "medicalCertificate", label: "BFI Medical Certificate" },
+                  { key: "nonPregnancy", label: "Declaration of Non-Pregnancy" },
+                ] as { key: string; label: string }[]).map(({ key, label }) => {
+                  const url = formsModal.forms[key];
+                  if (!url || typeof url !== "string") return null;
+                  const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(url) || url.includes("/image/upload/");
+                  const downloadUrl = isImage ? url : url.replace("/upload/", "/upload/fl_attachment/");
+                  const active = previewUrl === url;
+                  return (
+                    <div key={key} className={`rounded-xl border p-3 transition ${active ? "border-blue-400 bg-blue-50" : "border-slate-200"}`}>
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                          <ClipboardList size={14} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-800 leading-tight">{label}</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">{isImage ? "Image" : "PDF"}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewUrl(active ? null : url)}
+                          className={`flex flex-1 items-center justify-center gap-1 rounded-lg border py-1.5 text-[11px] font-semibold transition ${
+                            active ? "border-blue-300 bg-blue-100 text-blue-700" : "border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600"
+                          }`}
+                        >
+                          {active ? <X size={11} /> : <ClipboardList size={11} />}{active ? "Close" : "View"}
+                        </button>
+                        <a
+                          href={downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 py-1.5 text-[11px] font-semibold text-slate-600 hover:border-red-300 hover:text-red-600 transition"
+                        >
+                          <Download size={11} />Download
+                        </a>
+                      </div>
                     </div>
-                    <Download size={15} className="shrink-0 text-slate-400" />
-                  </a>
-                );
-              })}
+                  );
+                })}
+              </div>
+              {previewUrl && (
+                <div className="flex-1 border-l border-slate-100 bg-slate-50 min-w-0">
+                  {/\.(jpg|jpeg|png|webp|gif)$/i.test(previewUrl) || previewUrl.includes("/image/upload/") ? (
+                    <img src={previewUrl} alt="Document preview" className="h-full w-full object-contain p-4" />
+                  ) : (
+                    <iframe
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                      title="Document preview"
+                      className="h-full w-full border-0"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     (body as Record<string, unknown>).tournamentId,
   );
   const answers = (body as Record<string, unknown>).answers ?? null;
+  const tournamentForms = (body as Record<string, unknown>).tournamentForms ?? null;
   if (!Number.isInteger(tournamentId) || tournamentId <= 0) {
     return NextResponse.json(
       { error: "A valid tournament ID is required" },
@@ -92,6 +93,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const pendingData = JSON.stringify({ answers: answers ?? null, forms: tournamentForms ?? null });
+
   await prisma.payment.create({
     data: {
       boxerId: boxer.id,
@@ -100,12 +103,9 @@ export async function POST(req: NextRequest) {
       amount,
       method: "Cash",
       status: "Pending",
+      pendingAnswers: pendingData,
     },
   });
-
-  // Store answers in a pending entry placeholder — create entry only after cash approval
-  // answers are passed along for reference; actual entry created on admin approval
-  void answers; // stored via offline payment flow
 
   return NextResponse.json({
     success: true,

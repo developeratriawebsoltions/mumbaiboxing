@@ -203,6 +203,8 @@ export async function POST(req: NextRequest) {
           tournamentId: true,
           invoiceNumber: true,
           receiptEmailSentAt: true,
+          razorpaySignature: true,
+          pendingAnswers: true,
           tournament: {
             select: { id: true, name: true },
           },
@@ -304,6 +306,7 @@ export async function POST(req: NextRequest) {
               data: {
                 tournamentId: payment.tournamentId!,
                 boxerId: payment.boxer!.id,
+                answers: payment.pendingAnswers ?? null,
               },
             });
           }

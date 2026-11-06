@@ -185,6 +185,7 @@ model payment {
   isDeveloperBypass Boolean @default(false)
   invoiceNumber     String? @unique
   receiptEmailSentAt DateTime?
+  pendingAnswers    String? @db.Text
 
   academy      academy?       @relation(fields: [academyId], references: [id], map: "Payment_academyId_fkey")
   boxer        boxer?         @relation(fields: [boxerId], references: [id], map: "Payment_boxerId_fkey")
