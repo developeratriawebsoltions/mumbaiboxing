@@ -14,6 +14,7 @@ import {
   BarChart3,
   CreditCard,
   Users,
+  Scale,
   Building2,
   FileText,
   LogOut,
@@ -65,6 +66,11 @@ const MENUS: Record<string, MenuSection[]> = {
           name: "All Coaches",
           href: "/dashboard/admin/coaches",
           icon: UserRound,
+        },
+        {
+          name: "Referees & Judges",
+          href: "/dashboard/admin/referees",
+          icon: Scale,
         },
         {
           name: "All Academies",
@@ -119,6 +125,11 @@ const MENUS: Record<string, MenuSection[]> = {
           name: "All Coaches",
           href: "/dashboard/admin/coaches",
           icon: UserRound,
+        },
+        {
+          name: "Referees & Judges",
+          href: "/dashboard/admin/referees",
+          icon: Scale,
         },
         {
           name: "All Academies",

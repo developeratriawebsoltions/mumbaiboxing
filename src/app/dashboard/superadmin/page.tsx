@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Users,
   UserRound,
+  Scale,
   Building2,
   Trophy,
   FileText,
@@ -21,6 +22,7 @@ import PendingCashPayments from "@/Components/admin/PendingCashPayments";
 interface DashboardStats {
   totalBoxers: number;
   totalCoaches: number;
+  totalReferees: number;
   totalAcademies: number;
   totalTournaments: number;
   activeMembers: number;
@@ -63,6 +65,12 @@ const managementLinks = [
     description: "Manage registered coaches",
     href: "/dashboard/admin/coaches",
     icon: UserRound,
+  },
+  {
+    title: "Referees & Judges",
+    description: "View registered officials",
+    href: "/dashboard/admin/referees",
+    icon: Scale,
   },
   {
     title: "All Academies",
@@ -160,6 +168,12 @@ export default function SuperAdminPage() {
       value: stats.totalCoaches,
       icon: UserRound,
       href: "/dashboard/admin/coaches",
+    },
+    {
+      label: "Referees & Judges",
+      value: stats.totalReferees,
+      icon: Scale,
+      href: "/dashboard/admin/referees",
     },
     {
       label: "Total Academies",
