@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cloudinaryUpload } from "@/lib/cloudinary";
+import { localUpload } from "@/lib/upload";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,21 +36,22 @@ export async function POST(req: NextRequest) {
 
       try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        const fileType = file.type.startsWith("image/") ? "image" : "raw";
-        const url = await cloudinaryUpload(buffer, `mba/${userId}`, key, fileType as "image" | "raw");
+        const ext = file.type.startsWith("image/") ? (file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg") : "pdf";
+        const storedFileType = file.type.startsWith("image/") ? "image" : "pdf";
+        const url = await localUpload(buffer, `mba/${userId}`, key, ext);
 
         await prisma.document.upsert({
           where: { userId_label: { userId: parseInt(userId), label: key } },
           update: {
             filePath: url,
-            fileType: fileType === "image" ? "image" : "pdf",
+            fileType: storedFileType,
             ...(medicalIssueDates[key] && { issueDate: medicalIssueDates[key] }),
           },
           create: {
             userId: parseInt(userId),
             label: key,
             filePath: url,
-            fileType: fileType === "image" ? "image" : "pdf",
+            fileType: storedFileType,
             issueDate: medicalIssueDates[key],
           },
         });

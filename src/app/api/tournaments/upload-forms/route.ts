@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
-import { cloudinaryUpload } from "@/lib/cloudinary";
+import { localUpload } from "@/lib/upload";
 import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -13,9 +13,8 @@ export async function POST(req: NextRequest) {
   for (const [key, value] of formData.entries()) {
     if (!(value instanceof File) || value.size === 0) continue;
     const buffer = Buffer.from(await value.arrayBuffer());
-    const resourceType = value.type.startsWith("image/") ? "image" : "raw";
-    const publicId = `${key}-${randomUUID()}`;
-    const url = await cloudinaryUpload(buffer, `mba/tournament-forms/${payload.id}`, publicId, resourceType as "image" | "raw");
+    const ext = value.type.startsWith("image/") ? (value.type === "image/png" ? "png" : value.type === "image/webp" ? "webp" : "jpg") : "pdf";
+    const url = await localUpload(buffer, `mba/tournament-forms/${payload.id}`, `${key}-${randomUUID()}`, ext);
     urls[key] = url;
   }
 

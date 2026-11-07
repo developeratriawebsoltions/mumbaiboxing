@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
-import { cloudinaryUpload } from "@/lib/cloudinary";
+import { localUpload } from "@/lib/upload";
 
 type TournamentFields = Record<
   string,
@@ -71,11 +71,8 @@ function isFeaturedValue(value: TournamentFields[string]) {
 async function uploadTournamentImage(image: File | null) {
   if (!image) return null;
   const buffer = Buffer.from(await image.arrayBuffer());
-  return cloudinaryUpload(
-    buffer,
-    "mba/tournaments",
-    `tournament-${randomUUID()}`,
-  );
+  const ext = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
+  return localUpload(buffer, "mba/tournaments", `tournament-${randomUUID()}`, ext);
 }
 
 async function canManageTournaments(req: NextRequest) {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 import { isMedicalDocumentLabel } from "@/lib/medical-documents";
-import { cloudinaryUpload } from "@/lib/cloudinary";
+import { localUpload } from "@/lib/upload";
 
 /* =========================================================
    GET /api/medical
@@ -224,17 +224,19 @@ export async function PATCH(req: NextRequest) {
       newExpiry.setFullYear(newExpiry.getFullYear() + 1);
     }
 
-    // Upload to cloudinary
+    // Upload file locally
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileType = file.type.startsWith("image/") ? "image" : "raw";
-    const url = await cloudinaryUpload(buffer, `mba/${payload.id}`, docType, fileType as "image" | "raw");
+    const ext = file.type.startsWith("image/") ? (file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg") : "pdf";
+    const url = await localUpload(buffer, `mba/${payload.id}`, docType, ext);
+
+    const storedFileType = file.type.startsWith("image/") ? "image" : "pdf";
 
     // Upsert document record — reset status to Pending for re-review
     await prisma.document.upsert({
       where: { userId_label: { userId: payload.id, label: docType } },
       update: {
         filePath: url,
-        fileType: fileType === "image" ? "image" : "pdf",
+        fileType: storedFileType,
         issueDate: parsedIssue,
         status: "Pending",
       },
@@ -242,7 +244,7 @@ export async function PATCH(req: NextRequest) {
         userId: payload.id,
         label: docType,
         filePath: url,
-        fileType: fileType === "image" ? "image" : "pdf",
+        fileType: storedFileType,
         issueDate: parsedIssue,
       },
     });
