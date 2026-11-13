@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     const [
       totalBoxers,
       totalCoaches,
+      totalReferees,
       totalAcademies,
       totalTournaments,
       activeMembers,
@@ -45,6 +46,8 @@ export async function GET(req: NextRequest) {
 
       prisma.coach.count(),
 
+      prisma.referee_judge.count(),
+
       prisma.academy.count(),
 
       prisma.tournament.count(),
@@ -56,7 +59,7 @@ export async function GET(req: NextRequest) {
             gte: new Date(),
           },
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
         },
       }),
@@ -64,7 +67,7 @@ export async function GET(req: NextRequest) {
       prisma.user.count({
         where: {
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
           membershipExpiry: {
             lt: new Date(),
@@ -81,7 +84,7 @@ export async function GET(req: NextRequest) {
       prisma.user.findMany({
         where: {
           role: {
-            in: ["boxer", "coach", "academy"],
+            in: ["boxer", "coach", "academy", "referee_judge"],
           },
         },
         orderBy: {
@@ -122,6 +125,7 @@ export async function GET(req: NextRequest) {
       stats: {
         totalBoxers,
         totalCoaches,
+        totalReferees,
         totalAcademies,
         totalTournaments,
         activeMembers,
